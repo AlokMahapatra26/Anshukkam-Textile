@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Layers, Loader2, Check } from "lucide-react";
+import { Layers, Loader2, Check, ArrowRight, Scroll } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Fabric {
@@ -54,119 +54,96 @@ export function FabricSection() {
     }
 
     return (
-        <section className="section-industrial-alt">
+        <section className="section-industrial-alt bg-[#fafafa]">
             <div className="container-industrial">
                 {/* Section Header */}
-                <div className="mb-12">
-                    <span className="text-sm font-medium text-accent uppercase tracking-wider mb-2 block">
-                        Material Options
-                    </span>
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                        Available Fabrics
-                    </h2>
-                    <p className="text-muted-foreground max-w-2xl">
-                        Quality-tested materials from certified suppliers.
-                        All fabrics available in bulk quantities.
-                    </p>
+                <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                        <span className="text-sm font-medium text-accent uppercase tracking-wider mb-2 block">
+                            Material Options
+                        </span>
+                        <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                            Available Fabrics
+                        </h2>
+                        <p className="text-muted-foreground max-w-2xl">
+                            Quality-tested materials from certified suppliers.
+                            All fabrics available in bulk quantities.
+                        </p>
+                    </div>
+                    <Link href="/fabrics">
+                        <Button variant="outline" className="btn-industrial-outline">
+                            View All Fabrics
+                        </Button>
+                    </Link>
                 </div>
 
-                {/* Fabric Table/Grid - Industrial Style */}
-                <div className="border border-border overflow-hidden">
-                    {/* Header Row */}
-                    <div className="hidden md:grid md:grid-cols-5 bg-primary text-primary-foreground text-sm font-medium">
-                        <div className="p-4 border-r border-primary-foreground/20">Fabric Type</div>
-                        <div className="p-4 border-r border-primary-foreground/20">Composition</div>
-                        <div className="p-4 border-r border-primary-foreground/20">Weight</div>
-                        <div className="p-4 border-r border-primary-foreground/20">Properties</div>
-                        <div className="p-4">Sample</div>
-                    </div>
-
-                    {/* Fabric Rows */}
-                    {fabrics.map((fabric, index) => (
-                        <div
+                {/* Fabric Grid - Textile Card Style */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {fabrics.slice(0, 4).map((fabric) => (
+                        <Link
                             key={fabric.id}
-                            className={`grid grid-cols-1 md:grid-cols-5 border-b border-border last:border-b-0 ${index % 2 === 0 ? "bg-card" : "bg-muted/30"
-                                }`}
+                            href={`/fabrics/${fabric.slug}`}
+                            className="group bg-white p-4 rounded-sm shadow-sm border border-border hover:shadow-md transition-all duration-300 hover:-translate-y-1"
                         >
-                            {/* Fabric Name */}
-                            <div className="p-4 md:border-r border-border">
-                                <div className="flex items-center gap-3">
-                                    <Layers className="h-5 w-5 text-accent flex-shrink-0" />
-                                    <div>
-                                        <p className="font-semibold">{fabric.name}</p>
-                                        <p className="text-xs text-muted-foreground md:hidden">
-                                            {fabric.composition}
-                                        </p>
+                            {/* Fabric Swatch Look */}
+                            <div className="relative aspect-square mb-4 overflow-hidden rounded-sm bg-muted shadow-inner">
+                                {fabric.imageUrl ? (
+                                    <Image
+                                        src={fabric.imageUrl}
+                                        alt={fabric.name}
+                                        fill
+                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-muted/50">
+                                        <Layers className="h-12 w-12 text-muted-foreground/20" />
                                     </div>
-                                </div>
-                            </div>
+                                )}
 
-                            {/* Composition */}
-                            <div className="hidden md:flex p-4 border-r border-border items-center">
-                                <p className="text-sm">{fabric.composition || "—"}</p>
-                            </div>
+                                {/* Texture Overlay Effect */}
+                                <div className="absolute inset-0 bg-[url('/texture-pattern.png')] opacity-10 mix-blend-overlay pointer-events-none" />
 
-                            {/* Weight */}
-                            <div className="hidden md:flex p-4 border-r border-border items-center">
-                                <p className="text-sm font-medium">{fabric.weight || "—"}</p>
-                            </div>
-
-                            {/* Properties */}
-                            <div className="hidden md:flex p-4 border-r border-border items-center">
-                                <div className="flex flex-wrap gap-2">
-                                    <span className="inline-flex items-center text-xs">
-                                        <Check className="h-3 w-3 mr-1 text-green-500" />
-                                        Quality Tested
+                                {/* Hover Info */}
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <span className="text-white text-sm font-medium border border-white/30 px-3 py-1 rounded-full backdrop-blur-sm">
+                                        View Details
                                     </span>
                                 </div>
                             </div>
 
-                            {/* Image/Sample */}
-                            <div className="hidden md:flex p-4 items-center">
-                                {fabric.imageUrl ? (
-                                    <div className="relative h-10 w-16 rounded overflow-hidden bg-muted border border-border">
-                                        <Image
-                                            src={fabric.imageUrl}
-                                            alt={fabric.name}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    </div>
-                                ) : (
-                                    <span className="text-xs text-muted-foreground">On Request</span>
-                                )}
-                            </div>
+                            {/* Fabric Info Card */}
+                            <div className="relative">
+                                {/* Pinking Shears Edge Effect (CSS) */}
+                                <div className="absolute -top-6 left-0 right-0 h-2 bg-[radial-gradient(circle,transparent_2px,#fff_2px)] bg-[length:6px_6px] -mt-1" />
 
-                            {/* Mobile: Additional Info */}
-                            <div className="md:hidden p-4 pt-0 flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground">
-                                    Weight: {fabric.weight || "—"}
-                                </span>
-                                {fabric.imageUrl && (
-                                    <div className="relative h-8 w-12 rounded overflow-hidden bg-muted">
-                                        <Image
-                                            src={fabric.imageUrl}
-                                            alt={fabric.name}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    </div>
-                                )}
+                                <h3 className="font-bold text-lg mb-1 group-hover:text-accent transition-colors">
+                                    {fabric.name}
+                                </h3>
+
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+                                    <span className="px-2 py-0.5 bg-muted rounded-full">
+                                        {fabric.composition || "N/A"}
+                                    </span>
+                                    <span>•</span>
+                                    <span>{fabric.weight || "N/A"}</span>
+                                </div>
+
+                                <div className="flex items-center text-xs font-medium text-accent opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                                    Explore Fabric <ArrowRight className="h-3 w-3 ml-1" />
+                                </div>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
 
                 {/* Bottom Note */}
-                <div className="mt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 bg-muted/50 border border-border">
-                    <p className="text-sm text-muted-foreground">
-                        <strong>Note:</strong> Custom fabric sourcing available for bulk orders.
-                        Contact us for specific material requirements.
+                <div className="mt-12 flex flex-col md:flex-row items-center justify-center gap-2 text-sm text-muted-foreground">
+                    <Scroll className="h-4 w-4" />
+                    <p>
+                        Don't see what you need? We can source custom fabrics for bulk orders.
                     </p>
-                    <Link href="/enquiry">
-                        <Button variant="outline" className="btn-industrial-outline">
-                            Request Fabric Samples
-                        </Button>
+                    <Link href="/contact" className="text-accent hover:underline font-medium">
+                        Contact Sourcing Team
                     </Link>
                 </div>
             </div>

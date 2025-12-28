@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Package, Clock, Ruler, Shirt, Loader2 } from "lucide-react";
+import { Package, Clock, Ruler, Shirt, Loader2, Scissors, PenTool } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ClothingType {
@@ -83,76 +83,69 @@ export default function CataloguePage() {
                                 <Link
                                     key={item.id}
                                     href={`/catalogue/${item.slug}`}
-                                    className="group bg-card border border-border p-6 hover:border-accent transition-all hover:shadow-lg"
+                                    className="group relative bg-card border border-border overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-accent"
                                 >
-                                    {/* Image */}
-                                    <div className="aspect-[16/10] bg-muted mb-6 relative overflow-hidden">
-                                        {item.imageUrl ? (
-                                            <Image
-                                                src={item.imageUrl}
-                                                alt={item.name}
-                                                fill
-                                                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <Shirt className="h-12 w-12 text-muted-foreground/30" />
+                                    {/* Decorative Stitching Pattern */}
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="absolute -left-1 top-4 bottom-4 w-[2px] border-l border-dashed border-muted-foreground/20 group-hover:border-accent/50 transition-colors" />
+                                    <div className="absolute -right-1 top-4 bottom-4 w-[2px] border-r border-dashed border-muted-foreground/20 group-hover:border-accent/50 transition-colors" />
+
+                                    <div className="p-6">
+                                        {/* Image or Icon */}
+                                        <div className="aspect-[4/3] bg-muted mb-6 relative overflow-hidden rounded-sm border border-border group-hover:border-accent/30 transition-colors">
+                                            {item.imageUrl ? (
+                                                <Image
+                                                    src={item.imageUrl}
+                                                    alt={item.name}
+                                                    fill
+                                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-muted/50">
+                                                    <Scissors className="h-12 w-12 text-muted-foreground/20" />
+                                                </div>
+                                            )}
+
+                                            {/* Overlay Tag */}
+                                            <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 text-xs font-medium text-primary border border-primary/10 shadow-sm">
+                                                {item.minOrderQuantity || 500}+ MOQ
                                             </div>
-                                        )}
+                                        </div>
+
+                                        {/* Content */}
+                                        <div className="space-y-3">
+                                            <div className="flex items-start justify-between">
+                                                <h3 className="text-xl font-bold group-hover:text-accent transition-colors">
+                                                    {item.name}
+                                                </h3>
+                                                <PenTool className="h-4 w-4 text-muted-foreground/50 group-hover:text-accent transition-colors" />
+                                            </div>
+
+                                            {item.description && (
+                                                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                                                    {item.description}
+                                                </p>
+                                            )}
+
+                                            {/* Specs */}
+                                            <div className="pt-4 mt-4 border-t border-dashed border-border grid grid-cols-2 gap-4">
+                                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                    <Clock className="h-3 w-3" />
+                                                    <span>{item.leadTime || "3-5 Weeks"}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                    <Ruler className="h-3 w-3" />
+                                                    <span>{item.sizeRange || "XS-5XL"}</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-
-                                    {/* Content */}
-                                    <h2 className="text-xl font-bold mb-2 group-hover:text-accent transition-colors">{item.name}</h2>
-
-                                    {item.description && (
-                                        <p className="text-muted-foreground mb-6 line-clamp-2">
-                                            {item.description}
-                                        </p>
-                                    )}
-
-                                    {/* Specs */}
-                                    <div className="grid grid-cols-3 gap-4 py-4 border-t border-border text-center">
-                                        <div>
-                                            <Package className="h-4 w-4 mx-auto mb-1 text-accent" />
-                                            <p className="text-xs text-muted-foreground">MOQ</p>
-                                            <p className="text-sm font-semibold">{item.minOrderQuantity || 500}+</p>
-                                        </div>
-                                        <div>
-                                            <Clock className="h-4 w-4 mx-auto mb-1 text-accent" />
-                                            <p className="text-xs text-muted-foreground">Lead Time</p>
-                                            <p className="text-sm font-semibold">{item.leadTime || "3-5 Weeks"}</p>
-                                        </div>
-                                        <div>
-                                            <Ruler className="h-4 w-4 mx-auto mb-1 text-accent" />
-                                            <p className="text-xs text-muted-foreground">Sizes</p>
-                                            <p className="text-sm font-semibold">{item.sizeRange || "XS-5XL"}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* CTA */}
-                                    <Button variant="outline" className="w-full mt-4 btn-industrial-outline group-hover:bg-accent group-hover:text-accent-foreground transition-colors">
-                                        View Details
-                                    </Button>
                                 </Link>
                             ))}
                         </div>
                     )}
                 </div>
             </section>
-
-            {/* CTA Section */}
-            {/* <section className="bg-muted py-12">
-                <div className="container-industrial text-center">
-                    <h2 className="text-2xl font-bold mb-4">Need a custom product?</h2>
-                    <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-                        We can manufacture any garment type to your exact specifications.
-                        Contact us to discuss your requirements.
-                    </p>
-                    <Link href="/enquiry">
-                        <Button className="btn-industrial">Request Custom Quote</Button>
-                    </Link>
-                </div>
-            </section> */}
         </div>
     );
 }
