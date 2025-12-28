@@ -133,7 +133,7 @@ export default function CataloguePage() {
             </section>
 
             {/* CTA Section */}
-            <section className="bg-muted py-12">
+            {/* <section className="bg-muted py-12">
                 <div className="container-industrial text-center">
                     <h2 className="text-2xl font-bold mb-4">Need a custom product?</h2>
                     <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
@@ -144,7 +144,7 @@ export default function CataloguePage() {
                         <Button className="btn-industrial">Request Custom Quote</Button>
                     </Link>
                 </div>
-            </section>
+            </section> */}
         </div>
     );
 }

@@ -31,8 +31,8 @@ export default function ContactPage() {
         fetchSettings();
     }, []);
 
-    const email = settings.contact_email || "info@premiumtextiles.com";
-    const phone = settings.contact_phone || "+1 (555) 123-4567";
+    const email = settings.contact_email || "info@anshuukam.com";
+    const phone = settings.contact_phone || "+91 84691 59877";
 
     return (
         <div className="min-h-screen">
@@ -98,9 +98,9 @@ export default function ContactPage() {
                                     <div>
                                         <h3 className="font-semibold mb-1">Address</h3>
                                         <p className="text-muted-foreground">
-                                            123 Industrial Avenue<br />
-                                            Manufacturing District<br />
-                                            City, State 12345
+                                            Anshuukam Textile Pvt Ltd<br />
+                                            Neemuch, Madhya Pradesh<br />
+                                            India
                                         </p>
                                     </div>
                                 </div>

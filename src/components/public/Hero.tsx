@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Factory, Shield, Clock } from "lucide-react";
+import { ArrowRight, Heart, Shield, MapPin } from "lucide-react";
 
 export function Hero() {
     return (
@@ -11,24 +11,22 @@ export function Hero() {
             <div className="relative container-industrial">
                 <div className="py-20 md:py-32 lg:py-40">
                     <div className="max-w-3xl">
-                        {/* Badge */}
-                        {/* <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full text-sm font-medium mb-6">
-                            <Factory className="h-4 w-4" />
-                            <span>Established 1998 · ISO 9001 Certified</span>
-                        </div> */}
+                        {/* Tagline */}
+                        <p className="text-accent font-medium mb-4 tracking-wide">
+                            Every dream starts small. Ours began with a single thread.
+                        </p>
 
                         {/* Headline */}
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-                            High-Volume{" "}
-                            <span className="text-accent">Textile Manufacturing</span>{" "}
-                            You Can Trust
+                            <span className="text-accent">Anshuukam Textile</span>{" "}
+                            — Where Quality Meets Passion
                         </h1>
 
                         {/* Subheadline */}
                         <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl leading-relaxed">
-                            From design to delivery, we produce premium quality garments at scale.
-                            Serving global brands with consistent quality, competitive pricing,
-                            and reliable lead times.
+                            Every stitch, every thread, and every design reflects our belief —
+                            quality isn't just made, it's crafted with care. From fabric checking
+                            to final dispatch, we bring together skill, precision, and trust under one roof.
                         </p>
 
                         {/* CTA Buttons */}
@@ -53,16 +51,16 @@ export function Hero() {
                         {/* Trust Indicators */}
                         <div className="flex flex-wrap gap-8 text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
+                                <Heart className="h-5 w-5 text-accent" />
+                                <span>Crafted with Care</span>
+                            </div>
+                            <div className="flex items-center gap-2">
                                 <Shield className="h-5 w-5 text-accent" />
                                 <span>Quality Guaranteed</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Clock className="h-5 w-5 text-accent" />
-                                <span>On-Time Delivery</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Factory className="h-5 w-5 text-accent" />
-                                <span>100K+ Monthly Capacity</span>
+                                <MapPin className="h-5 w-5 text-accent" />
+                                <span>Made in Neemuch, M.P.</span>
                             </div>
                         </div>
                     </div>

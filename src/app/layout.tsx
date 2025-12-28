@@ -1,31 +1,34 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Space_Grotesk, DM_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const dmMono = DM_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Premium Textiles Manufacturing Co.",
-    template: "%s | Premium Textiles Manufacturing",
+    default: "Anshuukam Textile Pvt Ltd — Where Quality Meets Passion",
+    template: "%s | Anshuukam Textile",
   },
   description:
-    "High-volume garment manufacturing with consistent quality. T-shirts, hoodies, jackets, workwear, and more. Request a quote today.",
+    "Every stitch crafted with care. Premium garment manufacturing from Neemuch, M.P. T-shirts, hoodies, jackets, workwear and more.",
   keywords: [
-    "textile manufacturing",
+    "Anshuukam Textile",
     "garment manufacturing",
+    "textile manufacturing India",
     "bulk clothing",
     "wholesale apparel",
-    "custom clothing",
-    "B2B textiles",
+    "Neemuch textile",
+    "Madhya Pradesh garment",
   ],
 };
 
@@ -37,11 +40,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${spaceGrotesk.variable} ${dmMono.variable} font-sans antialiased`}
       >
         {children}
       </body>
     </html>
   );
 }
-
