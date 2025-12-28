@@ -272,11 +272,11 @@ export default function EnquiriesPage() {
                                     </div>
                                 </div>
                                 {selectedEnquiry.email && (
-                                    <div className="flex items-start gap-3">
-                                        <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
-                                        <div>
+                                    <div className="flex items-start gap-3 min-w-0">
+                                        <Mail className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                        <div className="min-w-0 flex-1">
                                             <p className="text-sm text-muted-foreground">Email</p>
-                                            <p className="font-medium">{selectedEnquiry.email}</p>
+                                            <p className="font-medium break-all">{selectedEnquiry.email}</p>
                                         </div>
                                     </div>
                                 )}

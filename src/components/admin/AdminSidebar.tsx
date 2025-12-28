@@ -44,6 +44,8 @@ export function AdminSidebar() {
         return pathname.startsWith(href);
     };
 
+    const activeIndex = navigation.findIndex((item) => isActive(item.href));
+
     const SidebarContent = () => (
         <>
             {/* Logo */}
@@ -58,21 +60,38 @@ export function AdminSidebar() {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-1">
-                {navigation.map((item) => (
-                    <Link
-                        key={item.name}
-                        href={item.href}
-                        onClick={() => setIsMobileOpen(false)}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive(item.href)
-                            ? "bg-accent text-accent-foreground"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                            }`}
-                    >
-                        <item.icon className="h-5 w-5" />
-                        {item.name}
-                    </Link>
-                ))}
+            <nav className="flex-1 p-4 relative">
+                {/* Sliding Active Background */}
+                <div
+                    className="absolute left-4 right-4 bg-accent rounded-lg transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                    style={{
+                        height: '44px', // py-3 (12*2) + text (20)
+                        top: '16px', // p-4
+                        transform: `translateY(${activeIndex * 48}px)`, // height (44) + space-y-1 (4)
+                        opacity: activeIndex === -1 ? 0 : 1,
+                        zIndex: 0
+                    }}
+                />
+
+                <div className="space-y-1 relative z-10">
+                    {navigation.map((item) => {
+                        const active = isActive(item.href);
+                        return (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                onClick={() => setIsMobileOpen(false)}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${active
+                                        ? "text-accent-foreground"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                                    }`}
+                            >
+                                <item.icon className="h-5 w-5" />
+                                {item.name}
+                            </Link>
+                        );
+                    })}
+                </div>
             </nav>
 
             {/* Footer */}
