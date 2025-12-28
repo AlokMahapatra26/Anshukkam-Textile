@@ -72,9 +72,10 @@ export default function CataloguePage() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {types.map((item) => (
-                                <div
+                                <Link
                                     key={item.id}
-                                    className="bg-card border border-border p-6 hover:border-accent transition-colors"
+                                    href={`/catalogue/${item.slug}`}
+                                    className="group bg-card border border-border p-6 hover:border-accent transition-all hover:shadow-lg"
                                 >
                                     {/* Image */}
                                     <div className="aspect-[16/10] bg-muted mb-6 relative overflow-hidden">
@@ -83,7 +84,7 @@ export default function CataloguePage() {
                                                 src={item.imageUrl}
                                                 alt={item.name}
                                                 fill
-                                                className="object-cover"
+                                                className="object-cover group-hover:scale-105 transition-transform duration-300"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">
@@ -93,10 +94,10 @@ export default function CataloguePage() {
                                     </div>
 
                                     {/* Content */}
-                                    <h2 className="text-xl font-bold mb-2">{item.name}</h2>
+                                    <h2 className="text-xl font-bold mb-2 group-hover:text-accent transition-colors">{item.name}</h2>
 
                                     {item.description && (
-                                        <p className="text-muted-foreground mb-6">
+                                        <p className="text-muted-foreground mb-6 line-clamp-2">
                                             {item.description}
                                         </p>
                                     )}
@@ -121,12 +122,10 @@ export default function CataloguePage() {
                                     </div>
 
                                     {/* CTA */}
-                                    <Link href="/enquiry">
-                                        <Button variant="outline" className="w-full mt-4 btn-industrial-outline">
-                                            Get Quote
-                                        </Button>
-                                    </Link>
-                                </div>
+                                    <Button variant="outline" className="w-full mt-4 btn-industrial-outline group-hover:bg-accent group-hover:text-accent-foreground transition-colors">
+                                        View Details
+                                    </Button>
+                                </Link>
                             ))}
                         </div>
                     )}

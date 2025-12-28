@@ -17,13 +17,14 @@ import {
 const createEnquirySchema = z.object({
     clothingTypeId: z.string().uuid(),
     fabricId: z.string().uuid(),
-    quantity: z.number().int().min(1),
+    quantity: z.number().int().min(0), // 0 = sample request
     sizeRange: z.string().min(1),
     phoneNumber: z.string().min(1),
-    email: z.string().email().optional(),
+    email: z.string().email().optional().or(z.literal("")),
     companyName: z.string().optional(),
     contactPerson: z.string().optional(),
     notes: z.string().optional(),
+    isSampleRequest: z.boolean().optional(),
 });
 
 export async function GET(request: NextRequest) {

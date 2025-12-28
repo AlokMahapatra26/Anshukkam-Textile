@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
     getClothingTypeById,
+    getClothingTypeBySlug,
     updateClothingType,
     deleteClothingType,
 } from "@/lib/services/catalogue";
@@ -18,13 +19,26 @@ const updateClothingTypeSchema = z.object({
     isActive: z.boolean().optional(),
 });
 
+// Helper to check if string is UUID
+function isUUID(str: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+}
+
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const { id } = await params;
-        const type = await getClothingTypeById(id);
+
+        // Try to find by ID (UUID) or by slug
+        let type;
+        if (isUUID(id)) {
+            type = await getClothingTypeById(id);
+        } else {
+            type = await getClothingTypeBySlug(id);
+        }
 
         if (!type) {
             return NextResponse.json(

@@ -19,6 +19,7 @@ import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 interface ClothingType {
     id: string;
     name: string;
+    minOrderQuantity: number | null;
 }
 
 interface Fabric {
@@ -45,6 +46,7 @@ interface FormData {
     companyName: string;
     contactPerson: string;
     notes: string;
+    isSampleRequest: boolean;
 }
 
 const initialFormData: FormData = {
@@ -57,6 +59,7 @@ const initialFormData: FormData = {
     companyName: "",
     contactPerson: "",
     notes: "",
+    isSampleRequest: false,
 };
 
 const steps = [
@@ -105,8 +108,14 @@ export function EnquiryForm() {
         fetchData();
     }, []);
 
-    const updateField = (field: keyof FormData, value: string) => {
+    const updateField = (field: keyof FormData, value: string | boolean) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
+    };
+
+    // Get the selected clothing type's MOQ
+    const getSelectedMOQ = (): number => {
+        const selectedType = clothingTypes.find(t => t.id === formData.clothingTypeId);
+        return selectedType?.minOrderQuantity || 500; // Default MOQ is 500
     };
 
     const validateStep = (step: number): boolean => {
@@ -114,7 +123,13 @@ export function EnquiryForm() {
             case 1:
                 return !!formData.clothingTypeId && !!formData.fabricId;
             case 2:
-                return !!formData.quantity && parseInt(formData.quantity) > 0 && !!formData.sizeRange;
+                if (!formData.sizeRange) return false;
+                // If sample request, quantity is not required
+                if (formData.isSampleRequest) return true;
+                // Otherwise validate quantity against MOQ
+                const quantity = parseInt(formData.quantity);
+                const moq = getSelectedMOQ();
+                return !!formData.quantity && quantity >= moq;
             case 3:
                 return !!formData.phoneNumber;
             default:
@@ -148,7 +163,10 @@ export function EnquiryForm() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...formData,
-                    quantity: parseInt(formData.quantity),
+                    quantity: formData.isSampleRequest ? 0 : parseInt(formData.quantity),
+                    notes: formData.isSampleRequest
+                        ? `[SAMPLE REQUEST] ${formData.notes}`.trim()
+                        : formData.notes,
                 }),
             });
 
@@ -301,22 +319,71 @@ export function EnquiryForm() {
                 {/* Step 2: Order Details */}
                 {currentStep === 2 && (
                     <div className="space-y-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="quantity">
-                                Quantity (units) <span className="text-destructive">*</span>
-                            </Label>
-                            <Input
-                                id="quantity"
-                                type="number"
-                                min="1"
-                                placeholder="e.g., 1000"
-                                value={formData.quantity}
-                                onChange={(e) => updateField("quantity", e.target.value)}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Minimum order quantity varies by product (typically 300-500 units)
-                            </p>
+                        {/* Sample Request Toggle */}
+                        <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                            <div>
+                                <Label htmlFor="sampleRequest" className="font-medium">
+                                    Request Samples Only
+                                </Label>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Get samples before placing a bulk order
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                role="switch"
+                                aria-checked={formData.isSampleRequest}
+                                onClick={() => {
+                                    updateField("isSampleRequest", !formData.isSampleRequest);
+                                    if (!formData.isSampleRequest) {
+                                        updateField("quantity", ""); // Clear quantity when switching to samples
+                                    }
+                                }}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.isSampleRequest ? "bg-accent" : "bg-input"
+                                    }`}
+                            >
+                                <span
+                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.isSampleRequest ? "translate-x-6" : "translate-x-1"
+                                        }`}
+                                />
+                            </button>
                         </div>
+
+                        {/* Quantity Input - Only show if not sample request */}
+                        {!formData.isSampleRequest && (
+                            <div className="space-y-2">
+                                <Label htmlFor="quantity">
+                                    Quantity (units) <span className="text-destructive">*</span>
+                                </Label>
+                                <Input
+                                    id="quantity"
+                                    type="number"
+                                    min={getSelectedMOQ()}
+                                    placeholder={`Minimum ${getSelectedMOQ()} units`}
+                                    value={formData.quantity}
+                                    onChange={(e) => updateField("quantity", e.target.value)}
+                                    className={formData.quantity && parseInt(formData.quantity) < getSelectedMOQ() ? "border-destructive" : ""}
+                                />
+                                {formData.quantity && parseInt(formData.quantity) < getSelectedMOQ() ? (
+                                    <p className="text-xs text-destructive">
+                                        Minimum order quantity for this product is {getSelectedMOQ()} units
+                                    </p>
+                                ) : (
+                                    <p className="text-xs text-muted-foreground">
+                                        Minimum order: {getSelectedMOQ()} units for selected product
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Sample info message */}
+                        {formData.isSampleRequest && (
+                            <div className="bg-accent/10 border border-accent/20 rounded-lg p-4">
+                                <p className="text-sm">
+                                    <strong>Sample Request:</strong> Our team will contact you to discuss sample quantities and shipping details.
+                                </p>
+                            </div>
+                        )}
 
                         <div className="space-y-2">
                             <Label htmlFor="sizeRange">
@@ -425,8 +492,12 @@ export function EnquiryForm() {
 
                             <div className="grid grid-cols-2 gap-4 py-4">
                                 <div>
-                                    <p className="text-sm text-muted-foreground">Quantity</p>
-                                    <p className="font-medium">{formData.quantity} units</p>
+                                    <p className="text-sm text-muted-foreground">Order Type</p>
+                                    <p className="font-medium">
+                                        {formData.isSampleRequest
+                                            ? "Sample Request"
+                                            : `${formData.quantity} units`}
+                                    </p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-muted-foreground">Size Range</p>

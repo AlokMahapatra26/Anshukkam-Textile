@@ -71,30 +71,30 @@ export default function FabricsPage() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {fabrics.map((fabric) => (
-                                <div
+                                <Link
                                     key={fabric.id}
-                                    className="bg-card border border-border p-6 hover:border-accent transition-colors"
+                                    href={`/fabrics/${fabric.slug}`}
+                                    className="group bg-card border border-border p-6 hover:border-accent transition-all hover:shadow-lg"
                                 >
                                     {/* Image */}
-                                    {fabric.imageUrl && (
-                                        <div className="aspect-video relative mb-4 overflow-hidden bg-muted">
+                                    <div className="aspect-video relative mb-4 overflow-hidden bg-muted">
+                                        {fabric.imageUrl ? (
                                             <Image
                                                 src={fabric.imageUrl}
                                                 alt={fabric.name}
                                                 fill
-                                                className="object-cover"
+                                                className="object-cover group-hover:scale-110 transition-transform duration-500"
                                             />
-                                        </div>
-                                    )}
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <Layers className="h-12 w-12 text-muted-foreground/30" />
+                                            </div>
+                                        )}
+                                    </div>
 
                                     {/* Header */}
                                     <div className="flex items-start justify-between mb-4">
-                                        <div className="flex items-center gap-2">
-                                            {!fabric.imageUrl && (
-                                                <Layers className="h-6 w-6 text-accent flex-shrink-0" />
-                                            )}
-                                            <h2 className="text-xl font-bold">{fabric.name}</h2>
-                                        </div>
+                                        <h2 className="text-xl font-bold group-hover:text-accent transition-colors">{fabric.name}</h2>
                                         {fabric.weight && (
                                             <span className="text-sm text-accent font-medium bg-accent/10 px-2 py-1 rounded">
                                                 {fabric.weight}
@@ -104,7 +104,7 @@ export default function FabricsPage() {
 
                                     {/* Description */}
                                     {fabric.description && (
-                                        <p className="text-muted-foreground mb-4">
+                                        <p className="text-muted-foreground mb-4 line-clamp-2">
                                             {fabric.description}
                                         </p>
                                     )}
@@ -130,7 +130,12 @@ export default function FabricsPage() {
                                             Bulk Available
                                         </span>
                                     </div>
-                                </div>
+
+                                    {/* CTA */}
+                                    <Button variant="outline" className="w-full btn-industrial-outline group-hover:bg-accent group-hover:text-accent-foreground transition-colors">
+                                        View Details
+                                    </Button>
+                                </Link>
                             ))}
                         </div>
                     )}
@@ -146,7 +151,7 @@ export default function FabricsPage() {
                         Contact us with your specific requirements.
                     </p>
                     <Link href="/enquiry">
-                        <Button className="btn-industrial">Request Fabric Samples</Button>
+                        <Button className="btn-industrial">Request Quote</Button>
                     </Link>
                 </div>
             </section>
