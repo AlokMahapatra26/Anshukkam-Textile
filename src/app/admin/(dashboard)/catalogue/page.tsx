@@ -33,6 +33,7 @@ interface ClothingType {
     slug: string;
     description: string | null;
     imageUrl: string | null;
+    images: string[] | null;
     minOrderQuantity: number | null;
     leadTime: string | null;
     sizeRange: string | null;
@@ -50,6 +51,7 @@ export default function CataloguePage() {
         slug: "",
         description: "",
         imageUrl: "",
+        images: [] as string[],
         minOrderQuantity: 500,
         leadTime: "3-5 Weeks",
         sizeRange: "XS-5XL",
@@ -99,6 +101,7 @@ export default function CataloguePage() {
             slug: "",
             description: "",
             imageUrl: "",
+            images: [],
             minOrderQuantity: 500,
             leadTime: "3-5 Weeks",
             sizeRange: "XS-5XL",
@@ -110,11 +113,21 @@ export default function CataloguePage() {
 
     const openEditDialog = (type: ClothingType) => {
         setEditingType(type);
+
+        // Handle migration logic for images
+        let initialImages: string[] = [];
+        if (type.images && type.images.length > 0) {
+            initialImages = type.images;
+        } else if (type.imageUrl) {
+            initialImages = [type.imageUrl];
+        }
+
         setFormData({
             name: type.name,
             slug: type.slug,
             description: type.description || "",
             imageUrl: type.imageUrl || "",
+            images: initialImages,
             minOrderQuantity: type.minOrderQuantity || 500,
             leadTime: type.leadTime || "3-5 Weeks",
             sizeRange: type.sizeRange || "XS-5XL",
@@ -134,10 +147,16 @@ export default function CataloguePage() {
                 : "/api/catalogue/types";
             const method = editingType ? "PUT" : "POST";
 
+            // Sync imageUrl with the first image of images array for backward compatibility
+            const payload = {
+                ...formData,
+                imageUrl: formData.images.length > 0 ? formData.images[0] : null,
+            };
+
             const response = await fetch(url, {
                 method,
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             });
 
             const result = await response.json();
@@ -208,16 +227,18 @@ export default function CataloguePage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Left Column - Image Upload */}
                                 <div className="space-y-2">
-                                    <Label>Image</Label>
+                                    <Label>Images (Max 6)</Label>
                                     <ImageUpload
-                                        currentImage={formData.imageUrl || null}
-                                        onImageUploaded={(url) =>
-                                            setFormData((prev) => ({ ...prev, imageUrl: url }))
+                                        currentImages={formData.images}
+                                        onImagesChange={(urls) =>
+                                            setFormData((prev) => ({ ...prev, images: urls }))
                                         }
-                                        onImageRemoved={() =>
-                                            setFormData((prev) => ({ ...prev, imageUrl: "" }))
-                                        }
+                                        multiple={true}
+                                        maxFiles={6}
                                     />
+                                    <p className="text-xs text-muted-foreground">
+                                        First image will be used as the main thumbnail.
+                                    </p>
                                 </div>
 
                                 {/* Right Column - Form Fields */}
@@ -415,13 +436,18 @@ export default function CataloguePage() {
                                     <TableRow key={type.id}>
                                         <TableCell>
                                             {type.imageUrl ? (
-                                                <div className="relative h-10 w-14 rounded overflow-hidden bg-muted">
+                                                <div className="relative h-10 w-14 rounded overflow-hidden bg-muted group">
                                                     <Image
                                                         src={type.imageUrl}
                                                         alt={type.name}
                                                         fill
                                                         className="object-cover"
                                                     />
+                                                    {type.images && type.images.length > 1 && (
+                                                        <div className="absolute bottom-0 right-0 bg-black/60 text-white text-[10px] px-1">
+                                                            +{type.images.length - 1}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ) : (
                                                 <div className="h-10 w-14 rounded bg-muted flex items-center justify-center">

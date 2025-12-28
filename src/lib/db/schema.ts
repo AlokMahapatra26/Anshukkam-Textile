@@ -18,6 +18,7 @@ export const clothingTypes = pgTable("clothing_types", {
     slug: varchar("slug", { length: 255 }).notNull().unique(),
     description: text("description"),
     imageUrl: text("image_url"),
+    images: text("images").array(),
     // Manufacturing specs
     minOrderQuantity: integer("min_order_quantity").default(500),
     leadTime: varchar("lead_time", { length: 100 }).default("3-5 Weeks"),
@@ -37,6 +38,7 @@ export const fabrics = pgTable("fabrics", {
     weight: varchar("weight", { length: 100 }), // e.g., "180 GSM"
     properties: jsonb("properties"), // e.g., { "breathable": true, "stretchable": false }
     imageUrl: text("image_url"),
+    images: text("images").array(),
     displayOrder: integer("display_order").default(0),
     isActive: boolean("is_active").default(true),
     createdAt: timestamp("created_at").defaultNow(),

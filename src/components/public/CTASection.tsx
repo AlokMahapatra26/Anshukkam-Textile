@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Phone, Mail } from "lucide-react";
+import { getSettingValue } from "@/lib/services/settings";
 
-export function CTASection() {
+export async function CTASection() {
+    const contactEmail = await getSettingValue<string>("contact_email", "sales@premiumtextiles.com");
+    const contactPhone = await getSettingValue<string>("contact_phone", "+1 234 567 890");
+
     return (
         <section className="section-industrial bg-primary text-primary-foreground">
             <div className="container-industrial">
@@ -29,7 +33,7 @@ export function CTASection() {
                             <Button
                                 size="lg"
                                 variant="outline"
-                                className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary h-12 px-8"
+                                className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary h-12 px-8"
                             >
                                 Contact Sales
                             </Button>
@@ -39,11 +43,11 @@ export function CTASection() {
                     <div className="flex flex-col sm:flex-row gap-8 justify-center text-sm opacity-80">
                         <div className="flex items-center justify-center gap-2">
                             <Phone className="h-4 w-4" />
-                            <span>+1 234 567 890</span>
+                            <span>{contactPhone}</span>
                         </div>
                         <div className="flex items-center justify-center gap-2">
                             <Mail className="h-4 w-4" />
-                            <span>sales@premiumtextiles.com</span>
+                            <span>{contactEmail}</span>
                         </div>
                     </div>
                 </div>

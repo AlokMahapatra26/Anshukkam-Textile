@@ -145,25 +145,7 @@ export function CatalogueGrid() {
                     ))}
                 </div>
 
-                {/* Bottom CTA */}
-                <div className="mt-12 p-8 bg-muted/30 border border-dashed border-border rounded-lg flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex items-start gap-4">
-                        <div className="p-3 bg-accent/10 rounded-full">
-                            <Scissors className="h-6 w-6 text-accent" />
-                        </div>
-                        <div>
-                            <p className="font-semibold text-lg">Need custom specifications?</p>
-                            <p className="text-sm text-muted-foreground">
-                                We can manufacture any garment type to your exact requirements.
-                            </p>
-                        </div>
-                    </div>
-                    <Link href="/enquiry">
-                        <Button className="btn-industrial whitespace-nowrap">
-                            Contact Sales Team
-                        </Button>
-                    </Link>
-                </div>
+
             </div>
         </section>
     );

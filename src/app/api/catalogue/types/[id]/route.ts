@@ -12,6 +12,7 @@ const updateClothingTypeSchema = z.object({
     slug: z.string().min(1).optional(),
     description: z.string().optional().nullable(),
     imageUrl: z.string().url().optional().nullable(),
+    images: z.array(z.string().url()).optional(),
     minOrderQuantity: z.number().int().optional().nullable(),
     leadTime: z.string().optional().nullable(),
     sizeRange: z.string().optional().nullable(),

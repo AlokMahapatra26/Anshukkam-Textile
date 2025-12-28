@@ -35,6 +35,7 @@ interface Fabric {
     composition: string | null;
     weight: string | null;
     imageUrl: string | null;
+    images: string[] | null;
     displayOrder: number | null;
     isActive: boolean | null;
 }
@@ -51,6 +52,7 @@ export default function FabricsPage() {
         composition: "",
         weight: "",
         imageUrl: "",
+        images: [] as string[],
         displayOrder: 0,
         isActive: true,
     });
@@ -99,6 +101,7 @@ export default function FabricsPage() {
             composition: "",
             weight: "",
             imageUrl: "",
+            images: [],
             displayOrder: fabrics.length,
             isActive: true,
         });
@@ -107,6 +110,15 @@ export default function FabricsPage() {
 
     const openEditDialog = (fabric: Fabric) => {
         setEditingFabric(fabric);
+
+        // Handle migration logic for images
+        let initialImages: string[] = [];
+        if (fabric.images && fabric.images.length > 0) {
+            initialImages = fabric.images;
+        } else if (fabric.imageUrl) {
+            initialImages = [fabric.imageUrl];
+        }
+
         setFormData({
             name: fabric.name,
             slug: fabric.slug,
@@ -114,6 +126,7 @@ export default function FabricsPage() {
             composition: fabric.composition || "",
             weight: fabric.weight || "",
             imageUrl: fabric.imageUrl || "",
+            images: initialImages,
             displayOrder: fabric.displayOrder || 0,
             isActive: fabric.isActive ?? true,
         });
@@ -130,10 +143,16 @@ export default function FabricsPage() {
                 : "/api/catalogue/fabrics";
             const method = editingFabric ? "PUT" : "POST";
 
+            // Sync imageUrl with the first image of images array for backward compatibility
+            const payload = {
+                ...formData,
+                imageUrl: formData.images.length > 0 ? formData.images[0] : null,
+            };
+
             const response = await fetch(url, {
                 method,
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             });
 
             const result = await response.json();
@@ -204,16 +223,18 @@ export default function FabricsPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Left Column - Image Upload */}
                                 <div className="space-y-2">
-                                    <Label>Image</Label>
+                                    <Label>Images (Max 6)</Label>
                                     <ImageUpload
-                                        currentImage={formData.imageUrl || null}
-                                        onImageUploaded={(url) =>
-                                            setFormData((prev) => ({ ...prev, imageUrl: url }))
+                                        currentImages={formData.images}
+                                        onImagesChange={(urls) =>
+                                            setFormData((prev) => ({ ...prev, images: urls }))
                                         }
-                                        onImageRemoved={() =>
-                                            setFormData((prev) => ({ ...prev, imageUrl: "" }))
-                                        }
+                                        multiple={true}
+                                        maxFiles={6}
                                     />
+                                    <p className="text-xs text-muted-foreground">
+                                        First image will be used as the main thumbnail.
+                                    </p>
                                 </div>
 
                                 {/* Right Column - Form Fields */}
@@ -392,13 +413,18 @@ export default function FabricsPage() {
                                     <TableRow key={fabric.id}>
                                         <TableCell>
                                             {fabric.imageUrl ? (
-                                                <div className="relative h-10 w-14 rounded overflow-hidden bg-muted">
+                                                <div className="relative h-10 w-14 rounded overflow-hidden bg-muted group">
                                                     <Image
                                                         src={fabric.imageUrl}
                                                         alt={fabric.name}
                                                         fill
                                                         className="object-cover"
                                                     />
+                                                    {fabric.images && fabric.images.length > 1 && (
+                                                        <div className="absolute bottom-0 right-0 bg-black/60 text-white text-[10px] px-1">
+                                                            +{fabric.images.length - 1}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ) : (
                                                 <div className="h-10 w-14 rounded bg-muted flex items-center justify-center">

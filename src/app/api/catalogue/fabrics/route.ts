@@ -10,6 +10,7 @@ const createFabricSchema = z.object({
     weight: z.string().optional(),
     properties: z.record(z.string(), z.boolean()).optional(),
     imageUrl: z.string().url().optional().nullable(),
+    images: z.array(z.string().url()).optional(),
     displayOrder: z.number().int().optional(),
     isActive: z.boolean().optional(),
 });

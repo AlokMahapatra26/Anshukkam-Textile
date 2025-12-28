@@ -10,6 +10,7 @@ const createClothingTypeSchema = z.object({
     slug: z.string().min(1),
     description: z.string().optional(),
     imageUrl: z.string().url().optional().nullable(),
+    images: z.array(z.string().url()).optional(),
     minOrderQuantity: z.number().int().optional(),
     leadTime: z.string().optional(),
     sizeRange: z.string().optional(),
