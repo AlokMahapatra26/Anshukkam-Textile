@@ -1,59 +1,66 @@
-import { createClient } from "@supabase/supabase-js";
-import dotenv from "dotenv";
+// Create admin user in Supabase Auth
+import { createClient } from '@supabase/supabase-js';
+import { config } from 'dotenv';
 
-// Load environment variables
-dotenv.config({ path: ".env.local" });
+config({ path: '.env.local' });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-if (!supabaseUrl || !serviceRoleKey) {
-    console.error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
-    process.exit(1);
-}
-
-// Create admin client with service role key
-const supabase = createClient(supabaseUrl, serviceRoleKey, {
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
         autoRefreshToken: false,
-        persistSession: false,
-    },
+        persistSession: false
+    }
 });
 
 async function createAdminUser() {
-    const email = "admin@premiumtextiles.com";
-    const password = "Admin@123456";
+    const email = 'alok@gmail.com';
+    const password = 'Admin@123456';
 
-    console.log("Creating admin user...");
-    console.log(`Email: ${email}`);
-    console.log(`Password: ${password}`);
+    console.log('Creating admin user...\n');
+    console.log('Email:', email);
+    console.log('Password:', password);
+    console.log('');
 
-    try {
-        const { data, error } = await supabase.auth.admin.createUser({
-            email,
-            password,
-            email_confirm: true, // Auto-confirm the email
-        });
+    const { data, error } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true, // Skip email verification
+    });
 
-        if (error) {
-            if (error.message.includes("already been registered")) {
-                console.log("\n⚠️  User already exists. You can login with the existing credentials.");
-                console.log("If you forgot the password, delete the user from Supabase Dashboard and run this script again.");
-            } else {
-                console.error("Error creating user:", error.message);
+    if (error) {
+        if (error.message.includes('already been registered')) {
+            console.log('⚠️  User already exists! You can use the existing credentials.');
+
+            // Try to update password
+            const { data: users } = await supabase.auth.admin.listUsers();
+            const existingUser = users?.users?.find(u => u.email === email);
+
+            if (existingUser) {
+                const { error: updateError } = await supabase.auth.admin.updateUserById(
+                    existingUser.id,
+                    { password }
+                );
+
+                if (!updateError) {
+                    console.log('✅ Password reset to:', password);
+                }
             }
-            return;
+        } else {
+            console.error('Error creating user:', error.message);
         }
-
-        console.log("\n✅ Admin user created successfully!");
-        console.log("\n--- Login Credentials ---");
-        console.log(`Email: ${email}`);
-        console.log(`Password: ${password}`);
-        console.log("------------------------");
-        console.log("\nYou can now login at: http://localhost:3000/admin/login");
-    } catch (err) {
-        console.error("Failed to create admin user:", err);
+    } else {
+        console.log('✅ Admin user created successfully!');
+        console.log('User ID:', data.user?.id);
     }
+
+    console.log('\n--- Login Credentials ---');
+    console.log('Email:', email);
+    console.log('Password:', password);
+    console.log('-------------------------\n');
+
+    process.exit(0);
 }
 
-createAdminUser();
+createAdminUser().catch(console.error);

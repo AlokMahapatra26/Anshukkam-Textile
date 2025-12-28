@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     Select,
@@ -15,15 +14,14 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, Save, Eye, EyeOff, Plus, Trash2 } from "lucide-react";
-
-interface SiteSection {
-    id: string;
-    sectionKey: string;
-    title: string | null;
-    isVisible: boolean | null;
-    displayOrder: number | null;
-}
+import {
+    Loader2, Save, Plus, Trash2,
+    Package, TrendingUp, Clock, Ruler, Layers, Award,
+    Factory, Users, Globe, Target, Shield, Zap,
+    Truck, Settings, Star, CheckCircle, Box, Shirt,
+    Scissors, Palette, Sparkles, BadgeCheck, Timer, Calendar,
+    type LucideIcon
+} from "lucide-react";
 
 interface CapacityStat {
     icon: string;
@@ -41,17 +39,42 @@ const defaultStats: CapacityStat[] = [
     { icon: "Award", value: "25+", label: "Years Experience", description: "In the industry" },
 ];
 
+// Icon map for rendering
+const iconMap: Record<string, LucideIcon> = {
+    Package, TrendingUp, Clock, Ruler, Layers, Award,
+    Factory, Users, Globe, Target, Shield, Zap,
+    Truck, Settings, Star, CheckCircle, Box, Shirt,
+    Scissors, Palette, Sparkles, BadgeCheck, Timer, Calendar,
+};
+
 const iconOptions = [
     { value: "Package", label: "Package" },
     { value: "TrendingUp", label: "Trending Up" },
     { value: "Clock", label: "Clock" },
+    { value: "Timer", label: "Timer" },
+    { value: "Calendar", label: "Calendar" },
     { value: "Ruler", label: "Ruler" },
     { value: "Layers", label: "Layers" },
     { value: "Award", label: "Award" },
+    { value: "BadgeCheck", label: "Badge Check" },
+    { value: "Star", label: "Star" },
+    { value: "CheckCircle", label: "Check Circle" },
+    { value: "Factory", label: "Factory" },
+    { value: "Users", label: "Users" },
+    { value: "Globe", label: "Globe" },
+    { value: "Target", label: "Target" },
+    { value: "Shield", label: "Shield" },
+    { value: "Zap", label: "Zap (Lightning)" },
+    { value: "Truck", label: "Truck" },
+    { value: "Settings", label: "Settings" },
+    { value: "Box", label: "Box" },
+    { value: "Shirt", label: "Shirt" },
+    { value: "Scissors", label: "Scissors" },
+    { value: "Palette", label: "Palette" },
+    { value: "Sparkles", label: "Sparkles" },
 ];
 
 export default function SettingsPage() {
-    const [sections, setSections] = useState<SiteSection[]>([]);
     const [settings, setSettings] = useState<Record<string, string>>({});
     const [capacityStats, setCapacityStats] = useState<CapacityStat[]>(defaultStats);
     const [isLoading, setIsLoading] = useState(true);
@@ -60,17 +83,9 @@ export default function SettingsPage() {
 
     const fetchData = async () => {
         try {
-            const [sectionsRes, settingsRes] = await Promise.all([
-                fetch("/api/settings/sections"),
-                fetch("/api/settings"),
-            ]);
-
-            const sectionsData = await sectionsRes.json();
+            const settingsRes = await fetch("/api/settings");
             const settingsData = await settingsRes.json();
 
-            if (sectionsData.success) {
-                setSections(sectionsData.data);
-            }
             if (settingsData.success && settingsData.data) {
                 setSettings(settingsData.data || {});
                 if (settingsData.data.capacity_stats) {
@@ -88,33 +103,6 @@ export default function SettingsPage() {
     useEffect(() => {
         fetchData();
     }, []);
-
-    const handleToggleSection = async (sectionKey: string, isVisible: boolean) => {
-        try {
-            const response = await fetch("/api/settings/sections", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ sectionKey, isVisible }),
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                setSections((prev) =>
-                    prev.map((s) =>
-                        s.sectionKey === sectionKey ? { ...s, isVisible } : s
-                    )
-                );
-                toast.success(
-                    `Section ${isVisible ? "shown" : "hidden"} successfully`
-                );
-            } else {
-                toast.error(result.error || "Failed to update section");
-            }
-        } catch (error) {
-            toast.error("An error occurred");
-        }
-    };
 
     const handleSaveSettings = async () => {
         setIsSaving(true);
@@ -184,6 +172,12 @@ export default function SettingsPage() {
         setCapacityStats((prev) => prev.filter((_, i) => i !== index));
     };
 
+    const renderIcon = (iconName: string, className?: string) => {
+        const IconComponent = iconMap[iconName];
+        if (!IconComponent) return null;
+        return <IconComponent className={className || "h-5 w-5"} />;
+    };
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-16">
@@ -198,61 +192,29 @@ export default function SettingsPage() {
             <div>
                 <h1 className="text-2xl font-bold">Site Settings</h1>
                 <p className="text-muted-foreground">
-                    Manage website content and section visibility
+                    Manage website contact information and content
                 </p>
             </div>
 
-            <Tabs defaultValue="general" className="space-y-6">
+            <Tabs defaultValue="contact" className="space-y-6">
                 <TabsList>
-                    <TabsTrigger value="general">General Settings</TabsTrigger>
+                    <TabsTrigger value="contact">Contact Details</TabsTrigger>
                     <TabsTrigger value="capacity">Production Capabilities</TabsTrigger>
-                    <TabsTrigger value="sections">Section Visibility</TabsTrigger>
                 </TabsList>
 
-                {/* General Settings Tab */}
-                <TabsContent value="general">
+                {/* Contact Details Tab */}
+                <TabsContent value="contact">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Company Information</CardTitle>
+                            <CardTitle>Contact Information</CardTitle>
                             <CardDescription>
-                                Basic information displayed on the website
+                                Email and phone displayed on the public Contact page
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <Label htmlFor="company_name">Company Name</Label>
-                                    <Input
-                                        id="company_name"
-                                        value={settings.company_name || ""}
-                                        onChange={(e) =>
-                                            setSettings((prev) => ({
-                                                ...prev,
-                                                company_name: e.target.value,
-                                            }))
-                                        }
-                                        placeholder="Premium Textiles Mfg."
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="company_tagline">Tagline</Label>
-                                    <Input
-                                        id="company_tagline"
-                                        value={settings.company_tagline || ""}
-                                        onChange={(e) =>
-                                            setSettings((prev) => ({
-                                                ...prev,
-                                                company_tagline: e.target.value,
-                                            }))
-                                        }
-                                        placeholder="Quality Garments, High Volume"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="contact_email">Contact Email</Label>
+                                    <Label htmlFor="contact_email">Email Address</Label>
                                     <Input
                                         id="contact_email"
                                         type="email"
@@ -265,9 +227,12 @@ export default function SettingsPage() {
                                         }
                                         placeholder="info@company.com"
                                     />
+                                    <p className="text-xs text-muted-foreground">
+                                        Displayed on the Contact page
+                                    </p>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="contact_phone">Contact Phone</Label>
+                                    <Label htmlFor="contact_phone">Phone Number</Label>
                                     <Input
                                         id="contact_phone"
                                         value={settings.contact_phone || ""}
@@ -277,8 +242,11 @@ export default function SettingsPage() {
                                                 contact_phone: e.target.value,
                                             }))
                                         }
-                                        placeholder="+1 234 567 890"
+                                        placeholder="+1 (555) 123-4567"
                                     />
+                                    <p className="text-xs text-muted-foreground">
+                                        Displayed on the Contact page
+                                    </p>
                                 </div>
                             </div>
 
@@ -313,25 +281,34 @@ export default function SettingsPage() {
                             {capacityStats.map((stat, index) => (
                                 <div
                                     key={index}
-                                    className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border border-border rounded-lg"
+                                    className="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 border border-border rounded-lg items-end"
                                 >
+                                    {/* Icon Preview */}
                                     <div className="space-y-2">
                                         <Label>Icon</Label>
-                                        <Select
-                                            value={stat.icon}
-                                            onValueChange={(value) => updateStat(index, "icon", value)}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {iconOptions.map((opt) => (
-                                                    <SelectItem key={opt.value} value={opt.value}>
-                                                        {opt.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-3 bg-accent/10 rounded-lg border border-border">
+                                                {renderIcon(stat.icon, "h-6 w-6 text-accent")}
+                                            </div>
+                                            <Select
+                                                value={stat.icon}
+                                                onValueChange={(value) => updateStat(index, "icon", value)}
+                                            >
+                                                <SelectTrigger className="flex-1">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent className="max-h-[300px]">
+                                                    {iconOptions.map((opt) => (
+                                                        <SelectItem key={opt.value} value={opt.value}>
+                                                            <div className="flex items-center gap-2">
+                                                                {renderIcon(opt.value, "h-4 w-4")}
+                                                                <span>{opt.label}</span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Value</Label>
@@ -349,7 +326,7 @@ export default function SettingsPage() {
                                             placeholder="e.g., Minimum Order"
                                         />
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="space-y-2 md:col-span-2">
                                         <Label>Description</Label>
                                         <Input
                                             value={stat.description}
@@ -359,7 +336,7 @@ export default function SettingsPage() {
                                             placeholder="e.g., Units per style"
                                         />
                                     </div>
-                                    <div className="flex items-end">
+                                    <div className="flex items-end justify-end">
                                         <Button
                                             variant="ghost"
                                             size="icon"
@@ -390,55 +367,6 @@ export default function SettingsPage() {
                                     Save Capabilities
                                 </Button>
                             </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                {/* Section Visibility Tab */}
-                <TabsContent value="sections">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Section Visibility</CardTitle>
-                            <CardDescription>
-                                Show or hide sections on the public website
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {sections.length === 0 ? (
-                                <p className="text-muted-foreground text-center py-8">
-                                    No sections configured. Run database migrations to initialize
-                                    default sections.
-                                </p>
-                            ) : (
-                                <div className="space-y-4">
-                                    {sections.map((section) => (
-                                        <div
-                                            key={section.id}
-                                            className="flex items-center justify-between p-4 border border-border rounded-lg"
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                {section.isVisible ? (
-                                                    <Eye className="h-5 w-5 text-green-500" />
-                                                ) : (
-                                                    <EyeOff className="h-5 w-5 text-muted-foreground" />
-                                                )}
-                                                <div>
-                                                    <p className="font-medium">{section.title}</p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {section.sectionKey}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <Switch
-                                                checked={section.isVisible ?? false}
-                                                onCheckedChange={(checked) =>
-                                                    handleToggleSection(section.sectionKey, checked)
-                                                }
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>

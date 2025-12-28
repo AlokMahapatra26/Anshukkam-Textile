@@ -1,8 +1,39 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, MapPin, Clock } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, Loader2 } from "lucide-react";
+
+interface Settings {
+    contact_email?: string;
+    contact_phone?: string;
+}
 
 export default function ContactPage() {
+    const [settings, setSettings] = useState<Settings>({});
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchSettings() {
+            try {
+                const response = await fetch("/api/settings");
+                const result = await response.json();
+                if (result.success && result.data) {
+                    setSettings(result.data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch settings:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchSettings();
+    }, []);
+
+    const email = settings.contact_email || "info@premiumtextiles.com";
+    const phone = settings.contact_phone || "+1 (555) 123-4567";
+
     return (
         <div className="min-h-screen">
             {/* Page Header */}
@@ -34,8 +65,13 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold mb-1">Email</h3>
-                                        <p className="text-muted-foreground">info@premiumtextiles.com</p>
-                                        <p className="text-muted-foreground">sales@premiumtextiles.com</p>
+                                        {isLoading ? (
+                                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                        ) : (
+                                            <a href={`mailto:${email}`} className="text-muted-foreground hover:text-accent transition-colors">
+                                                {email}
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
 
@@ -45,8 +81,13 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold mb-1">Phone</h3>
-                                        <p className="text-muted-foreground">+1 (555) 123-4567</p>
-                                        <p className="text-muted-foreground">+1 (555) 987-6543</p>
+                                        {isLoading ? (
+                                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                        ) : (
+                                            <a href={`tel:${phone}`} className="text-muted-foreground hover:text-accent transition-colors">
+                                                {phone}
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
 
@@ -75,57 +116,40 @@ export default function ContactPage() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Quick Quote Card */}
-                        <div className="bg-card border border-border p-8">
-                            <h2 className="text-2xl font-bold mb-4">Request a Quote</h2>
-                            <p className="text-muted-foreground mb-6">
-                                Ready to start your order? Fill out our detailed enquiry form
-                                to receive a customized quote.
-                            </p>
-
-                            <div className="space-y-4 mb-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center text-accent font-semibold">
-                                        1
-                                    </div>
-                                    <span>Select your product type</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center text-accent font-semibold">
-                                        2
-                                    </div>
-                                    <span>Specify quantity & details</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center text-accent font-semibold">
-                                        3
-                                    </div>
-                                    <span>Receive your quote within 24 hours</span>
-                                </div>
+                            {/* Quick Quote Card */}
+                            <div className="bg-card border border-border p-6 mt-8">
+                                <h3 className="text-xl font-bold mb-4">Request a Quote</h3>
+                                <p className="text-muted-foreground mb-4">
+                                    Fill out our enquiry form to receive a customized quote within 24 hours.
+                                </p>
+                                <Link href="/enquiry">
+                                    <Button className="btn-industrial w-full">
+                                        Start Enquiry Form
+                                    </Button>
+                                </Link>
                             </div>
-
-                            <Link href="/enquiry">
-                                <Button className="btn-industrial w-full" size="lg">
-                                    Start Enquiry Form
-                                </Button>
-                            </Link>
                         </div>
-                    </div>
-                </div>
-            </section>
 
-            {/* CTA Section */}
-            <section className="bg-muted py-12">
-                <div className="container-industrial text-center">
-                    <h2 className="text-2xl font-bold mb-4">Need urgent assistance?</h2>
-                    <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-                        For urgent enquiries, please call our sales hotline directly.
-                    </p>
-                    <div className="flex items-center justify-center gap-4">
-                        <Phone className="h-6 w-6 text-accent" />
-                        <span className="text-2xl font-bold">+1 (555) 123-4567</span>
+                        {/* Google Maps */}
+                        <div className="space-y-4">
+                            <h3 className="text-xl font-bold">Our Location</h3>
+                            <div className="relative w-full h-[400px] lg:h-[500px] rounded-lg overflow-hidden border border-border shadow-lg">
+                                <iframe
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.8354345093747!2d144.9537353153166!3d-37.816279742021665!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d4c2b349649%3A0xb6899234e561db11!2sEnvato!5e0!3m2!1sen!2sus!4v1640000000000!5m2!1sen!2sus"
+                                    width="100%"
+                                    height="100%"
+                                    style={{ border: 0 }}
+                                    allowFullScreen
+                                    loading="lazy"
+                                    referrerPolicy="no-referrer-when-downgrade"
+                                    className="grayscale hover:grayscale-0 transition-all duration-500"
+                                />
+                            </div>
+                            <p className="text-sm text-muted-foreground text-center">
+                                Visit our manufacturing facility for a tour
+                            </p>
+                        </div>
                     </div>
                 </div>
             </section>

@@ -126,6 +126,20 @@ export const siteSections = pgTable("site_sections", {
     updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// ==================== FACTORY PHOTOS TABLE ====================
+
+export const factoryPhotos = pgTable("factory_photos", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    title: varchar("title", { length: 255 }).notNull(),
+    description: text("description"),
+    imageUrl: text("image_url").notNull(),
+    category: varchar("category", { length: 100 }), // e.g., "production", "warehouse", "quality-control"
+    displayOrder: integer("display_order").default(0),
+    isActive: boolean("is_active").default(true),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // ==================== RELATIONS ====================
 
 export const clothingTypesRelations = relations(clothingTypes, ({ many }) => ({
@@ -191,3 +205,6 @@ export type NewSiteSetting = typeof siteSettings.$inferInsert;
 
 export type SiteSection = typeof siteSections.$inferSelect;
 export type NewSiteSection = typeof siteSections.$inferInsert;
+
+export type FactoryPhoto = typeof factoryPhotos.$inferSelect;
+export type NewFactoryPhoto = typeof factoryPhotos.$inferInsert;

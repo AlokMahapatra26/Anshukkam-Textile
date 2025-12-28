@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Package, Layers, Clock, Ruler, TrendingUp, Award, Loader2 } from "lucide-react";
+import {
+    Package, Layers, Clock, Ruler, TrendingUp, Award, Loader2,
+    Factory, Users, Globe, Target, Shield, Zap,
+    Truck, Settings, Star, CheckCircle, Box, Shirt,
+    Scissors, Palette, Sparkles, BadgeCheck, Timer, Calendar,
+} from "lucide-react";
 
 interface CapacityStat {
     icon: string;
@@ -50,12 +55,10 @@ const defaultStats: CapacityStat[] = [
 ];
 
 const iconMap: Record<string, React.ElementType> = {
-    Package,
-    Layers,
-    Clock,
-    Ruler,
-    TrendingUp,
-    Award,
+    Package, Layers, Clock, Ruler, TrendingUp, Award,
+    Factory, Users, Globe, Target, Shield, Zap,
+    Truck, Settings, Star, CheckCircle, Box, Shirt,
+    Scissors, Palette, Sparkles, BadgeCheck, Timer, Calendar,
 };
 
 export function CapacityStats() {

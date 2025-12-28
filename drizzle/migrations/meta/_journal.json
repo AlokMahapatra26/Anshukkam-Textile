@@ -8,6 +8,13 @@
       "when": 1766700842993,
       "tag": "0000_cultured_post",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1766952229112,
+      "tag": "0001_fresh_kylun",
+      "breakpoints": true
     }
   ]
 }

@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
         const supabase = await createAdminClient();
         const formData = await request.formData();
         const file = formData.get("file") as File;
-        const folder = formData.get("folder") as string || "uploads";
+        const bucket = formData.get("bucket") as string || "factory-photos";
 
         if (!file) {
             return NextResponse.json(
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 
         // Generate unique filename
         const extension = file.name.split(".").pop();
-        const filename = `${folder}/${Date.now()}-${Math.random().toString(36).substring(7)}.${extension}`;
+        const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${extension}`;
 
         // Convert file to buffer
         const bytes = await file.arrayBuffer();
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
         // Upload to Supabase Storage
         const { data, error } = await supabase.storage
-            .from("images")
+            .from(bucket)
             .upload(filename, buffer, {
                 contentType: file.type,
                 cacheControl: "3600",
@@ -53,20 +53,22 @@ export async function POST(request: NextRequest) {
         if (error) {
             console.error("Supabase upload error:", error);
             return NextResponse.json(
-                { success: false, error: "Failed to upload file" },
+                { success: false, error: error.message || "Failed to upload file" },
                 { status: 500 }
             );
         }
 
         // Get public URL
         const { data: urlData } = supabase.storage
-            .from("images")
+            .from(bucket)
             .getPublicUrl(data.path);
 
         return NextResponse.json({
             success: true,
-            path: data.path,
-            url: urlData.publicUrl,
+            data: {
+                path: data.path,
+                url: urlData.publicUrl,
+            },
         });
     } catch (error) {
         console.error("Upload failed:", error);
@@ -82,6 +84,7 @@ export async function DELETE(request: NextRequest) {
         const supabase = await createAdminClient();
         const { searchParams } = new URL(request.url);
         const path = searchParams.get("path");
+        const bucket = searchParams.get("bucket") || "factory-photos";
 
         if (!path) {
             return NextResponse.json(
@@ -90,7 +93,7 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        const { error } = await supabase.storage.from("images").remove([path]);
+        const { error } = await supabase.storage.from(bucket).remove([path]);
 
         if (error) {
             console.error("Supabase delete error:", error);

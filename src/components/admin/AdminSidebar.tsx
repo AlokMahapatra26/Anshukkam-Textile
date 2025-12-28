@@ -13,6 +13,7 @@ import {
     LogOut,
     Menu,
     X,
+    Image,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -21,6 +22,7 @@ const navigation = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Catalogue", href: "/admin/catalogue", icon: Package },
     { name: "Fabrics", href: "/admin/fabrics", icon: Layers },
+    { name: "Factory Photos", href: "/admin/factory", icon: Image },
     { name: "Enquiries", href: "/admin/enquiries", icon: MessageSquare },
     { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
@@ -63,8 +65,8 @@ export function AdminSidebar() {
                         href={item.href}
                         onClick={() => setIsMobileOpen(false)}
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive(item.href)
-                                ? "bg-accent text-accent-foreground"
-                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                            ? "bg-accent text-accent-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
                             }`}
                     >
                         <item.icon className="h-5 w-5" />
