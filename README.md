@@ -1,36 +1,147 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Premium Textiles Manufacturing - B2B Website
+
+A production-ready B2B website for high-volume textile/garment manufacturers. Built with Next.js, Supabase, Drizzle ORM, and shadcn/ui.
+
+## Features
+
+### Public Website
+- 🏭 Industrial, manufacturing-grade design language
+- 📦 Product catalogue with MOQ, lead times, size ranges
+- 🧵 Fabric options showcase
+- 📊 Production capacity statistics
+- 📝 Multi-step enquiry form (no auth required)
+
+### Admin Panel
+- 🔐 Supabase Auth protected
+- 📋 Catalogue management (CRUD)
+- 🧵 Fabrics management (CRUD)
+- 💬 Enquiry management with status tracking
+- ⚙️ Site settings and section visibility controls
+- 📸 Image upload to Supabase Storage
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Database**: Supabase PostgreSQL
+- **ORM**: Drizzle ORM
+- **Auth**: Supabase Auth
+- **Storage**: Supabase Storage
+- **UI**: shadcn/ui + Tailwind CSS
+- **Email**: Resend
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm
+- Supabase account
+
+### Installation
 
 ```bash
+# Install dependencies
+npm install
+
+# Copy environment template
+cp .env.example .env.local
+
+# Configure your environment variables (see below)
+
+# Push database schema
+npm run db:push
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Database
+DATABASE_URL=your_database_connection_string
 
-## Learn More
+# Email (Resend)
+RESEND_API_KEY=your_resend_api_key
+EMAIL_FROM=noreply@yourdomain.com
+EMAIL_TO=enquiries@yourdomain.com
 
-To learn more about Next.js, take a look at the following resources:
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Supabase Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Create a new Supabase project
+2. Copy credentials to `.env.local`
+3. Run `npm run db:push` to create tables
+4. Create an admin user in Supabase Dashboard (Authentication → Users)
+5. Create an `images` storage bucket (set to Public)
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run db:generate  # Generate migrations
+npm run db:migrate   # Run migrations
+npm run db:push      # Push schema to database
+npm run db:studio    # Open Drizzle Studio
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── (public)/       # Public pages (home, enquiry)
+│   ├── admin/          # Admin panel
+│   └── api/            # API routes
+├── components/
+│   ├── ui/             # shadcn/ui components
+│   ├── public/         # Public website components
+│   └── admin/          # Admin components
+├── lib/
+│   ├── db/             # Drizzle schema and client
+│   ├── services/       # Business logic
+│   └── supabase/       # Supabase clients
+└── types/              # TypeScript types
+```
+
+## Architecture
+
+- **Frontend never accesses Supabase directly**
+- All database operations go through Next.js API routes
+- Clear service layer for business logic
+- Middleware protects admin routes
+- Environment variables properly separated (public vs server)
+
+## Deployment
+
+### Vercel
+
+1. Push to GitHub
+2. Import to Vercel
+3. Add environment variables
+4. Deploy
+
+### Migrating to Client's Supabase
+
+1. Create new Supabase project
+2. Update environment variables
+3. Run `npm run db:push`
+4. Create admin user
+5. Create `images` storage bucket
+6. Deploy
+
+## License
+
+Private - All rights reserved
