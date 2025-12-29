@@ -27,7 +27,7 @@ export const FadeIn = ({
             filter: "blur(0px)",
             transition: {
                 duration: 0.8,
-                ease: [0.22, 1, 0.36, 1],
+                ease: [0.22, 1, 0.36, 1] as const,
                 delay
             }
         }
@@ -77,7 +77,7 @@ export const FadeInItem = ({ children, className = "" }: { children: React.React
             filter: "blur(0px)",
             transition: {
                 duration: 0.8,
-                ease: [0.22, 1, 0.36, 1]
+                ease: [0.22, 1, 0.36, 1] as const
             }
         }
     };

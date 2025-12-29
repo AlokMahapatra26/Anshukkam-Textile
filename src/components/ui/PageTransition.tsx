@@ -10,7 +10,7 @@ export const PageTransition = ({ children }: { children: React.ReactNode }) => {
             exit={{ opacity: 0, y: -15, filter: "blur(5px)" }}
             transition={{
                 duration: 0.6,
-                ease: [0.22, 1, 0.36, 1] // Custom cubic bezier for "soulful" smooth ease
+                ease: [0.22, 1, 0.36, 1] as const // Custom cubic bezier for "soulful" smooth ease
             }}
             className="w-full h-full"
         >
