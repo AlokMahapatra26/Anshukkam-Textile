@@ -31,7 +31,7 @@ export default function AboutPage() {
             <section className="section-industrial">
                 <div className="container-industrial">
                     <div className="max-w-3xl mx-auto text-center">
-                        <Sparkles className="h-12 w-12 mx-auto mb-6 text-accent" />
+                        {/* <Sparkles className="h-12 w-12 mx-auto mb-6 text-accent" /> */}
                         <blockquote className="text-2xl md:text-3xl font-medium mb-6 leading-relaxed">
                             "Every stitch, every thread, and every design reflects our belief —
                             <span className="text-accent"> quality isn't just made, it's crafted with care.</span>"
