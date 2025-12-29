@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Package, Clock, Ruler, Shirt, Loader2, Scissors, PenTool } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FadeInStagger, FadeInItem } from "@/components/ui/MotionContainer";
 
 interface ClothingType {
     id: string;
@@ -79,71 +80,73 @@ export function CatalogueGrid() {
                 </div>
 
                 {/* Industrial Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Industrial Grid */}
+                <FadeInStagger className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {types.map((item) => (
-                        <Link
-                            key={item.id}
-                            href={`/catalogue/${item.slug}`}
-                            className="group relative bg-card border border-border overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-accent"
-                        >
-                            {/* Decorative Stitching Pattern */}
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <div className="absolute -left-1 top-4 bottom-4 w-[2px] border-l border-dashed border-muted-foreground/20 group-hover:border-accent/50 transition-colors" />
-                            <div className="absolute -right-1 top-4 bottom-4 w-[2px] border-r border-dashed border-muted-foreground/20 group-hover:border-accent/50 transition-colors" />
+                        <FadeInItem key={item.id}>
+                            <Link
+                                href={`/catalogue/${item.slug}`}
+                                className="group relative bg-card overflow-hidden border-stitch border-stitch-hover rounded-lg block h-full"
+                            >
+                                {/* Decorative Stitching Pattern */}
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="absolute -left-1 top-4 bottom-4 w-[2px] border-l border-dashed border-muted-foreground/20 group-hover:border-accent/50 transition-colors" />
+                                <div className="absolute -right-1 top-4 bottom-4 w-[2px] border-r border-dashed border-muted-foreground/20 group-hover:border-accent/50 transition-colors" />
 
-                            <div className="p-6">
-                                {/* Image or Icon */}
-                                <div className="aspect-[4/3] bg-muted mb-6 relative overflow-hidden rounded-sm border border-border group-hover:border-accent/30 transition-colors">
-                                    {item.imageUrl ? (
-                                        <Image
-                                            src={item.imageUrl}
-                                            alt={item.name}
-                                            fill
-                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-muted/50">
-                                            <Scissors className="h-12 w-12 text-muted-foreground/20" />
+                                <div className="p-6">
+                                    {/* Image or Icon */}
+                                    <div className="aspect-[4/3] bg-muted mb-6 relative overflow-hidden rounded-sm border border-border group-hover:border-accent/30 transition-colors">
+                                        {item.imageUrl ? (
+                                            <Image
+                                                src={item.imageUrl}
+                                                alt={item.name}
+                                                fill
+                                                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-muted/50">
+                                                <Scissors className="h-12 w-12 text-muted-foreground/20" />
+                                            </div>
+                                        )}
+
+                                        {/* Overlay Tag */}
+                                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 text-xs font-medium text-primary border border-primary/10 shadow-sm">
+                                            {item.minOrderQuantity || 500}+ MOQ
                                         </div>
-                                    )}
+                                    </div>
 
-                                    {/* Overlay Tag */}
-                                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 text-xs font-medium text-primary border border-primary/10 shadow-sm">
-                                        {item.minOrderQuantity || 500}+ MOQ
+                                    {/* Content */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-start justify-between">
+                                            <h3 className="text-xl font-bold group-hover:text-accent transition-colors">
+                                                {item.name}
+                                            </h3>
+                                            <PenTool className="h-4 w-4 text-muted-foreground/50 group-hover:text-accent transition-colors" />
+                                        </div>
+
+                                        {item.description && (
+                                            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                                                {item.description}
+                                            </p>
+                                        )}
+
+                                        {/* Specs */}
+                                        <div className="pt-4 mt-4 border-t border-dashed border-border grid grid-cols-2 gap-4">
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                <Clock className="h-3 w-3" />
+                                                <span>{item.leadTime || "3-5 Weeks"}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                <Ruler className="h-3 w-3" />
+                                                <span>{item.sizeRange || "XS-5XL"}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-
-                                {/* Content */}
-                                <div className="space-y-3">
-                                    <div className="flex items-start justify-between">
-                                        <h3 className="text-xl font-bold group-hover:text-accent transition-colors">
-                                            {item.name}
-                                        </h3>
-                                        <PenTool className="h-4 w-4 text-muted-foreground/50 group-hover:text-accent transition-colors" />
-                                    </div>
-
-                                    {item.description && (
-                                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                                            {item.description}
-                                        </p>
-                                    )}
-
-                                    {/* Specs */}
-                                    <div className="pt-4 mt-4 border-t border-dashed border-border grid grid-cols-2 gap-4">
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                            <Clock className="h-3 w-3" />
-                                            <span>{item.leadTime || "3-5 Weeks"}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                            <Ruler className="h-3 w-3" />
-                                            <span>{item.sizeRange || "XS-5XL"}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </Link>
+                            </Link>
+                        </FadeInItem>
                     ))}
-                </div>
+                </FadeInStagger>
 
 
             </div>

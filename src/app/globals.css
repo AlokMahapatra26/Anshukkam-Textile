@@ -214,6 +214,20 @@
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
   }
+
+  /* Stitching Aesthetic */
+  .border-stitch {
+    @apply border-2 border-dashed border-accent/30 relative;
+  }
+
+  .border-stitch::after {
+    content: '';
+    @apply absolute inset-1 border border-primary/5 pointer-events-none rounded-[inherit];
+  }
+
+  .border-stitch-hover {
+    @apply transition-all duration-300 hover:border-accent hover:bg-accent/5;
+  }
 }
 
 /* Smooth Scrolling */

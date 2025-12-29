@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { Menu, Factory } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -17,6 +19,7 @@ const navigation = [
 
 export function Header() {
     const [isOpen, setIsOpen] = useState(false);
+    const pathname = usePathname();
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -32,18 +35,35 @@ export function Header() {
                             </span>
                         </div>
                     </Link>
-
                     {/* Desktop Navigation */}
-                    <nav className="hidden md:flex items-center gap-8">
-                        {navigation.map((item) => (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                                {item.name}
-                            </Link>
-                        ))}
+                    <nav className="hidden md:flex items-center gap-2">
+                        {navigation.map((item) => {
+                            const isActive = item.href === "/"
+                                ? pathname === "/"
+                                : pathname.startsWith(item.href);
+
+                            return (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    className={`relative px-4 py-2 text-sm font-medium transition-colors ${isActive ? "text-accent" : "text-muted-foreground hover:text-foreground"
+                                        }`}
+                                >
+                                    {isActive && (
+                                        <motion.span
+                                            layoutId="navbar-active"
+                                            className="absolute inset-0 bg-accent/10 rounded-full -z-10"
+                                            transition={{
+                                                type: "spring",
+                                                stiffness: 380,
+                                                damping: 30
+                                            }}
+                                        />
+                                    )}
+                                    {item.name}
+                                </Link>
+                            );
+                        })}
                     </nav>
 
                     {/* CTA Button */}
