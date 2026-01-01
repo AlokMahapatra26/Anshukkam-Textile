@@ -91,7 +91,6 @@ export default function FactoryPage() {
                             <div
                                 key={stat.label}
                                 className="text-center p-6 bg-card border border-border rounded-lg hover:border-accent transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-                                style={{ animationDelay: `${index * 100}ms` }}
                             >
                                 <div className="text-3xl md:text-4xl font-bold text-accent mb-2">
                                     {stat.value}
@@ -125,8 +124,8 @@ export default function FactoryPage() {
                             <button
                                 onClick={() => setFilter("all")}
                                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${filter === "all"
-                                        ? "bg-accent text-accent-foreground"
-                                        : "bg-muted hover:bg-muted/80"
+                                    ? "bg-accent text-accent-foreground"
+                                    : "bg-muted hover:bg-muted/80"
                                     }`}
                             >
                                 All Photos
@@ -136,8 +135,8 @@ export default function FactoryPage() {
                                     key={cat}
                                     onClick={() => setFilter(cat!)}
                                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${filter === cat
-                                            ? "bg-accent text-accent-foreground"
-                                            : "bg-muted hover:bg-muted/80"
+                                        ? "bg-accent text-accent-foreground"
+                                        : "bg-muted hover:bg-muted/80"
                                         }`}
                                 >
                                     {categoryLabels[cat!] || cat}
@@ -164,8 +163,7 @@ export default function FactoryPage() {
                                     key={photo.id}
                                     className="group relative overflow-hidden rounded-lg cursor-pointer transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl"
                                     style={{
-                                        animationDelay: `${index * 100}ms`,
-                                        animation: "fadeInUp 0.6s ease-out forwards",
+                                        animation: `fadeInUp 0.6s ease-out ${index * 100}ms forwards`,
                                         opacity: 0,
                                     }}
                                     onClick={() => setSelectedPhoto(photo)}
