@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Heart, Mail, Phone, MapPin } from "lucide-react";
+import { Heart, Mail, Phone, MapPin, Youtube, Instagram, Facebook } from "lucide-react";
 
 export function Footer() {
     return (
@@ -86,13 +86,49 @@ export function Footer() {
                         <Heart className="h-4 w-4 mx-1 text-red-400" />
                         in India.
                     </p>
-                    <div className="flex gap-6 text-sm opacity-60">
-                        <Link href="/privacy" className="hover:opacity-100 transition-opacity">
-                            Privacy Policy
-                        </Link>
-                        <Link href="/terms" className="hover:opacity-100 transition-opacity">
-                            Terms of Service
-                        </Link>
+                    <div className="flex items-center gap-3">
+                        <a
+                            href="https://youtube.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 rounded-lg bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-all duration-300 hover:scale-110 group"
+                            aria-label="YouTube"
+                        >
+                            <Youtube className="h-5 w-5 opacity-70 group-hover:opacity-100 transition-opacity" />
+                        </a>
+                        <a
+                            href="https://instagram.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 rounded-lg bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-all duration-300 hover:scale-110 group"
+                            aria-label="Instagram"
+                        >
+                            <Instagram className="h-5 w-5 opacity-70 group-hover:opacity-100 transition-opacity" />
+                        </a>
+                        <a
+                            href="https://facebook.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 rounded-lg bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-all duration-300 hover:scale-110 group"
+                            aria-label="Facebook"
+                        >
+                            <Facebook className="h-5 w-5 opacity-70 group-hover:opacity-100 transition-opacity" />
+                        </a>
+                        <a
+                            href="https://x.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 rounded-lg bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-all duration-300 hover:scale-110 group"
+                            aria-label="X (Twitter)"
+                        >
+                            <svg
+                                className="h-5 w-5 opacity-70 group-hover:opacity-100 transition-opacity"
+                                viewBox="0 0 24 24"
+                                fill="currentColor"
+                            >
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                            </svg>
+                        </a>
                     </div>
                 </div>
             </div>
