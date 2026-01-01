@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Menu, Factory } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 const navigation = [
     { name: "Home", href: "/" },
@@ -83,7 +84,10 @@ export function Header() {
                                 <span className="sr-only">Open menu</span>
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="right" className="w-[300px]">
+                        <SheetContent side="right" className="w-[300px] p-6">
+                            <VisuallyHidden>
+                                <SheetTitle>Navigation Menu</SheetTitle>
+                            </VisuallyHidden>
                             <div className="flex flex-col gap-6 mt-8">
                                 {navigation.map((item) => (
                                     <Link
