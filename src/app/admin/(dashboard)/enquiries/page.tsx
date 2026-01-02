@@ -351,73 +351,76 @@ export default function EnquiriesPage() {
                             </p>
                         </div>
                     ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Contact</TableHead>
-                                    <TableHead>Product</TableHead>
-                                    <TableHead>Quantity</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filteredEnquiries.map((enquiry) => (
-                                    <TableRow key={enquiry.id}>
-                                        <TableCell className="text-muted-foreground text-sm">
-                                            {formatDate(enquiry.createdAt)}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div>
-                                                <p className="font-medium">
-                                                    {enquiry.companyName || enquiry.contactPerson || "N/A"}
-                                                </p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {enquiry.phoneNumber}
-                                                </p>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div>
-                                                <p className="font-medium">{enquiry.clothingTypeName}</p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {enquiry.fabricName}
-                                                </p>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {enquiry.quantity.toLocaleString()} units
-                                        </TableCell>
-                                        <TableCell>{getStatusBadge(enquiry.status)}</TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => openDetail(enquiry)}
-                                                >
-                                                    <Eye className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleDelete(enquiry.id)}
-                                                >
-                                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
+                        <div className="rounded-md border max-h-[60vh] overflow-y-auto relative">
+                            <Table>
+                                <TableHeader className="sticky top-0 bg-card z-10 shadow-sm">
+                                    <TableRow>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Contact</TableHead>
+                                        <TableHead>Product</TableHead>
+                                        <TableHead>Quantity</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    )}
-                </CardContent>
-            </Card>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredEnquiries.map((enquiry) => (
+                                        <TableRow key={enquiry.id}>
+                                            <TableCell className="text-muted-foreground text-sm">
+                                                {formatDate(enquiry.createdAt)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div>
+                                                    <p className="font-medium">
+                                                        {enquiry.companyName || enquiry.contactPerson || "N/A"}
+                                                    </p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {enquiry.phoneNumber}
+                                                    </p>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div>
+                                                    <p className="font-medium">{enquiry.clothingTypeName}</p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {enquiry.fabricName}
+                                                    </p>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {enquiry.quantity.toLocaleString()} units
+                                            </TableCell>
+                                            <TableCell>{getStatusBadge(enquiry.status)}</TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => openDetail(enquiry)}
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleDelete(enquiry.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table >
+                        </div >
+                    )
+                    }
+                </CardContent >
+            </Card >
 
             {/* Detail Dialog */}
-            <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+            < Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen} >
                 <DialogContent className="max-w-3xl">
                     <DialogHeader>
                         <DialogTitle>Enquiry Details</DialogTitle>
@@ -555,7 +558,7 @@ export default function EnquiriesPage() {
                         </div>
                     )}
                 </DialogContent>
-            </Dialog>
+            </Dialog >
         </div >
     );
 }

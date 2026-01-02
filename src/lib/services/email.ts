@@ -55,9 +55,7 @@ const emailBase = (content: string, footerNote: string) => `
                     </p>
                   </td>
                   <td align="right">
-                    <div style="width: 48px; height: 48px; background-color: #f59e0b; border-radius: 8px; display: inline-block; text-align: center; line-height: 48px;">
-                      <span style="color: #1a1a2e; font-size: 20px; font-weight: bold;">PT</span>
-                    </div>
+                    <!-- PT Logo Removed -->
                   </td>
                 </tr>
               </table>
@@ -81,7 +79,7 @@ const emailBase = (content: string, footerNote: string) => `
                 <tr>
                   <td>
                     <p style="margin: 0; color: #94a3b8; font-size: 12px;">
-                      © ${new Date().getFullYear()} Premium Textiles Manufacturing Co.
+                      © ${new Date().getFullYear()} Anshukkam Textile
                     </p>
                   </td>
                   <td align="right">
@@ -176,24 +174,24 @@ export async function sendEnquiryNotification(data: EnquiryEmailData) {
       </h2>
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
-          <td width="50%" style="padding: 12px; background-color: #334155; border-radius: 6px 0 0 0;">
-            <span style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Product Type</span>
-            <p style="margin: 4px 0 0 0; color: #ffffff; font-size: 16px; font-weight: 600;">${data.clothingType}</p>
+          <td width="50%" style="padding: 16px; background-color: #334155; border-radius: 6px 0 0 0;">
+            <span style="color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Product Type</span>
+            <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 20px; font-weight: 700;">${data.clothingType}</p>
           </td>
-          <td width="50%" style="padding: 12px; background-color: #334155; border-radius: 0 6px 0 0; border-left: 1px solid #475569;">
-            <span style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Fabric</span>
-            <p style="margin: 4px 0 0 0; color: #ffffff; font-size: 16px; font-weight: 600;">${data.fabric}</p>
+          <td width="50%" style="padding: 16px; background-color: #334155; border-radius: 0 6px 0 0; border-left: 1px solid #475569;">
+            <span style="color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Fabric</span>
+            <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 20px; font-weight: 700;">${data.fabric}</p>
           </td>
         </tr>
         <tr>
-          <td width="50%" style="padding: 12px; background-color: #334155; border-radius: 0 0 0 6px; border-top: 1px solid #475569;">
-            <span style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Quantity</span>
-            <p style="margin: 4px 0 0 0; color: #f59e0b; font-size: 20px; font-weight: 700;">${data.quantity.toLocaleString()}</p>
-            <span style="color: #94a3b8; font-size: 12px;">units</span>
+          <td width="50%" style="padding: 16px; background-color: #334155; border-radius: 0 0 0 6px; border-top: 1px solid #475569;">
+            <span style="color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Quantity</span>
+            <p style="margin: 8px 0 0 0; color: #f59e0b; font-size: 28px; font-weight: 800;">${data.quantity.toLocaleString()}</p>
+            <span style="color: #94a3b8; font-size: 13px;">units</span>
           </td>
-          <td width="50%" style="padding: 12px; background-color: #334155; border-radius: 0 0 6px 0; border-top: 1px solid #475569; border-left: 1px solid #475569;">
-            <span style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Size Range</span>
-            <p style="margin: 4px 0 0 0; color: #ffffff; font-size: 16px; font-weight: 600;">${data.sizeRange}</p>
+          <td width="50%" style="padding: 16px; background-color: #334155; border-radius: 0 0 6px 0; border-top: 1px solid #475569; border-left: 1px solid #475569;">
+            <span style="color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Size Range</span>
+            <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 20px; font-weight: 700;">${data.sizeRange}</p>
           </td>
         </tr>
       </table>
@@ -249,7 +247,7 @@ export async function sendEnquiryConfirmation(
   data: EnquiryEmailData
 ) {
   const emailFrom = process.env.EMAIL_FROM || "onboarding@resend.dev";
-  const companyName = "Premium Textiles Mfg.";
+  const companyName = "Anshukkam Textile";
 
   const content = `
     <!-- Welcome Message -->
@@ -282,35 +280,35 @@ export async function sendEnquiryConfirmation(
       
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
-          <td style="padding: 12px 0; border-bottom: 1px solid #475569;">
-            <span style="color: #94a3b8; font-size: 13px;">Product</span>
+          <td style="padding: 16px 0; border-bottom: 1px solid #475569;">
+            <span style="color: #94a3b8; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Product</span>
           </td>
-          <td style="padding: 12px 0; border-bottom: 1px solid #475569;" align="right">
-            <strong style="color: #ffffff; font-size: 14px;">${data.clothingType}</strong>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding: 12px 0; border-bottom: 1px solid #475569;">
-            <span style="color: #94a3b8; font-size: 13px;">Fabric</span>
-          </td>
-          <td style="padding: 12px 0; border-bottom: 1px solid #475569;" align="right">
-            <strong style="color: #ffffff; font-size: 14px;">${data.fabric}</strong>
+          <td style="padding: 16px 0; border-bottom: 1px solid #475569;" align="right">
+            <strong style="color: #ffffff; font-size: 18px;">${data.clothingType}</strong>
           </td>
         </tr>
         <tr>
-          <td style="padding: 12px 0; border-bottom: 1px solid #475569;">
-            <span style="color: #94a3b8; font-size: 13px;">Quantity</span>
+          <td style="padding: 16px 0; border-bottom: 1px solid #475569;">
+            <span style="color: #94a3b8; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Fabric</span>
           </td>
-          <td style="padding: 12px 0; border-bottom: 1px solid #475569;" align="right">
-            <strong style="color: #f59e0b; font-size: 16px;">${data.quantity.toLocaleString()} units</strong>
+          <td style="padding: 16px 0; border-bottom: 1px solid #475569;" align="right">
+            <strong style="color: #ffffff; font-size: 18px;">${data.fabric}</strong>
           </td>
         </tr>
         <tr>
-          <td style="padding: 12px 0;">
-            <span style="color: #94a3b8; font-size: 13px;">Size Range</span>
+          <td style="padding: 16px 0; border-bottom: 1px solid #475569;">
+            <span style="color: #94a3b8; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Quantity</span>
           </td>
-          <td style="padding: 12px 0;" align="right">
-            <strong style="color: #ffffff; font-size: 14px;">${data.sizeRange}</strong>
+          <td style="padding: 16px 0; border-bottom: 1px solid #475569;" align="right">
+            <strong style="color: #f59e0b; font-size: 24px;">${data.quantity.toLocaleString()} units</strong>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 16px 0;">
+            <span style="color: #94a3b8; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Size Range</span>
+          </td>
+          <td style="padding: 16px 0;" align="right">
+            <strong style="color: #ffffff; font-size: 18px;">${data.sizeRange}</strong>
           </td>
         </tr>
       </table>
