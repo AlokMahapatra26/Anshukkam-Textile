@@ -26,6 +26,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
     Eye,
@@ -37,6 +39,8 @@ import {
     User,
     Package,
     Layers,
+    Download,
+    Calendar,
 } from "lucide-react";
 
 interface Enquiry {
@@ -69,6 +73,11 @@ export default function EnquiriesPage() {
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [adminNotes, setAdminNotes] = useState("");
     const [isUpdating, setIsUpdating] = useState(false);
+
+    // Date filter state
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+    const [isExporting, setIsExporting] = useState(false);
 
     const fetchEnquiries = async () => {
         try {
@@ -161,31 +170,184 @@ export default function EnquiriesPage() {
         return <Badge variant={option.color as "default" | "secondary" | "outline"}>{option.label}</Badge>;
     };
 
+    // Filter enquiries by date range
+    const filteredEnquiries = enquiries.filter((enquiry) => {
+        if (!startDate && !endDate) return true;
+
+        const enquiryDate = enquiry.createdAt ? new Date(enquiry.createdAt) : null;
+        if (!enquiryDate) return false;
+
+        const start = startDate ? new Date(startDate) : null;
+        const end = endDate ? new Date(endDate + "T23:59:59") : null;
+
+        if (start && enquiryDate < start) return false;
+        if (end && enquiryDate > end) return false;
+
+        return true;
+    });
+
+    // Export to CSV function
+    const exportToCSV = () => {
+        setIsExporting(true);
+
+        try {
+            const dataToExport = filteredEnquiries;
+
+            if (dataToExport.length === 0) {
+                toast.error("No enquiries to export");
+                setIsExporting(false);
+                return;
+            }
+
+            // CSV headers
+            const headers = [
+                "Date",
+                "Phone",
+                "Email",
+                "Company",
+                "Contact Person",
+                "Product",
+                "Fabric",
+                "Quantity",
+                "Size Range",
+                "Status",
+                "Notes",
+                "Admin Notes"
+            ];
+
+            // CSV rows
+            const rows = dataToExport.map((enquiry) => [
+                enquiry.createdAt ? new Date(enquiry.createdAt).toLocaleDateString() : "",
+                enquiry.phoneNumber || "",
+                enquiry.email || "",
+                enquiry.companyName || "",
+                enquiry.contactPerson || "",
+                enquiry.clothingTypeName || "",
+                enquiry.fabricName || "",
+                enquiry.quantity?.toString() || "",
+                enquiry.sizeRange || "",
+                enquiry.status || "",
+                (enquiry.notes || "").replace(/"/g, '""'),
+                (enquiry.adminNotes || "").replace(/"/g, '""'),
+            ]);
+
+            // Build CSV content
+            const csvContent = [
+                headers.join(","),
+                ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+            ].join("\n");
+
+            // Create and download file
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+
+            const dateRange = startDate || endDate
+                ? `_${startDate || "start"}_to_${endDate || "today"}`
+                : "";
+            link.setAttribute("href", url);
+            link.setAttribute("download", `enquiries${dateRange}.csv`);
+            link.style.visibility = "hidden";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            toast.success(`Exported ${dataToExport.length} enquiries`);
+        } catch (error) {
+            console.error("Export failed:", error);
+            toast.error("Failed to export enquiries");
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    const clearFilters = () => {
+        setStartDate("");
+        setEndDate("");
+    };
+
     return (
         <div className="space-y-6">
             {/* Page Header */}
-            <div>
-                <h1 className="text-2xl font-bold">Enquiries</h1>
-                <p className="text-muted-foreground">
-                    Manage customer enquiries and quote requests
-                </p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold">Enquiries</h1>
+                    <p className="text-muted-foreground">
+                        Manage customer enquiries and quote requests
+                    </p>
+                </div>
             </div>
+
+            {/* Date Filter & Export */}
+            <Card>
+                <CardContent className="pt-6">
+                    <div className="flex flex-col md:flex-row gap-4 items-end">
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="startDate" className="flex items-center gap-2">
+                                    <Calendar className="h-4 w-4" />
+                                    From Date
+                                </Label>
+                                <Input
+                                    id="startDate"
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="endDate" className="flex items-center gap-2">
+                                    <Calendar className="h-4 w-4" />
+                                    To Date
+                                </Label>
+                                <Input
+                                    id="endDate"
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            {(startDate || endDate) && (
+                                <Button variant="outline" onClick={clearFilters}>
+                                    Clear
+                                </Button>
+                            )}
+                            <Button
+                                onClick={exportToCSV}
+                                disabled={isExporting || filteredEnquiries.length === 0}
+                                className="btn-industrial"
+                            >
+                                {isExporting ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Download className="mr-2 h-4 w-4" />
+                                )}
+                                Export CSV ({filteredEnquiries.length})
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             {/* Enquiries Table */}
             <Card>
                 <CardHeader>
-                    <CardTitle>All Enquiries</CardTitle>
+                    <CardTitle>
+                        {startDate || endDate ? `Filtered Enquiries (${filteredEnquiries.length})` : "All Enquiries"}
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
                         <div className="flex items-center justify-center py-8">
                             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                         </div>
-                    ) : enquiries.length === 0 ? (
+                    ) : filteredEnquiries.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">
-                            <p>No enquiries yet</p>
+                            <p>{startDate || endDate ? "No enquiries match the selected date range" : "No enquiries yet"}</p>
                             <p className="text-sm">
-                                Enquiries will appear here when customers submit requests
+                                {startDate || endDate ? "Try adjusting your date filters" : "Enquiries will appear here when customers submit requests"}
                             </p>
                         </div>
                     ) : (
@@ -201,7 +363,7 @@ export default function EnquiriesPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {enquiries.map((enquiry) => (
+                                {filteredEnquiries.map((enquiry) => (
                                     <TableRow key={enquiry.id}>
                                         <TableCell className="text-muted-foreground text-sm">
                                             {formatDate(enquiry.createdAt)}
@@ -405,6 +567,6 @@ export default function EnquiriesPage() {
                     )}
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }
