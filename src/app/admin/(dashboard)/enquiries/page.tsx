@@ -418,96 +418,92 @@ export default function EnquiriesPage() {
 
             {/* Detail Dialog */}
             <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-3xl">
                     <DialogHeader>
                         <DialogTitle>Enquiry Details</DialogTitle>
                     </DialogHeader>
                     {selectedEnquiry && (
-                        <div className="space-y-6">
-                            {/* Contact Info */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="flex items-start gap-3">
-                                    <Phone className="h-5 w-5 text-muted-foreground mt-0.5" />
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Phone</p>
-                                        <p className="font-medium">{selectedEnquiry.phoneNumber}</p>
-                                    </div>
+                        <div className="space-y-0 text-sm">
+                            {/* Header Info */}
+                            <div className="grid grid-cols-2 border-b border-border bg-muted/30">
+                                <div className="p-3 border-r border-border">
+                                    <span className="text-muted-foreground text-xs uppercase tracking-wider font-semibold block mb-1">Enquiry ID</span>
+                                    <span className="font-mono text-xs">{selectedEnquiry.id}</span>
                                 </div>
-                                {selectedEnquiry.email && (
-                                    <div className="flex items-start gap-3 min-w-0">
-                                        <Mail className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                                        <div className="min-w-0 flex-1">
-                                            <p className="text-sm text-muted-foreground">Email</p>
-                                            <p className="font-medium break-all">{selectedEnquiry.email}</p>
-                                        </div>
-                                    </div>
-                                )}
-                                {selectedEnquiry.companyName && (
-                                    <div className="flex items-start gap-3">
-                                        <Building className="h-5 w-5 text-muted-foreground mt-0.5" />
-                                        <div>
-                                            <p className="text-sm text-muted-foreground">Company</p>
-                                            <p className="font-medium">{selectedEnquiry.companyName}</p>
-                                        </div>
-                                    </div>
-                                )}
-                                {selectedEnquiry.contactPerson && (
-                                    <div className="flex items-start gap-3">
-                                        <User className="h-5 w-5 text-muted-foreground mt-0.5" />
-                                        <div>
-                                            <p className="text-sm text-muted-foreground">Contact</p>
-                                            <p className="font-medium">{selectedEnquiry.contactPerson}</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="border-t border-border pt-4" />
-
-                            {/* Order Details */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="flex items-start gap-3">
-                                    <Package className="h-5 w-5 text-muted-foreground mt-0.5" />
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Product</p>
-                                        <p className="font-medium">{selectedEnquiry.clothingTypeName}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-3">
-                                    <Layers className="h-5 w-5 text-muted-foreground mt-0.5" />
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Fabric</p>
-                                        <p className="font-medium">{selectedEnquiry.fabricName}</p>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Quantity</p>
-                                    <p className="font-medium">
-                                        {selectedEnquiry.quantity.toLocaleString()} units
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Size Range</p>
-                                    <p className="font-medium">{selectedEnquiry.sizeRange}</p>
+                                <div className="p-3">
+                                    <span className="text-muted-foreground text-xs uppercase tracking-wider font-semibold block mb-1">Date Received</span>
+                                    <span>{formatDate(selectedEnquiry.createdAt)}</span>
                                 </div>
                             </div>
 
-                            {selectedEnquiry.notes && (
-                                <div>
-                                    <p className="text-sm text-muted-foreground mb-1">Notes</p>
-                                    <p className="bg-muted p-3 rounded text-sm">
-                                        {selectedEnquiry.notes}
+                            {/* Customer Information Section */}
+                            <div className="bg-muted/10 p-2 border-b border-border font-semibold text-xs uppercase tracking-wider text-primary">
+                                Customer Information
+                            </div>
+                            <div className="grid grid-cols-2 border-b border-border">
+                                <div className="p-3 border-r border-border">
+                                    <span className="text-muted-foreground text-xs block mb-1">Company Name</span>
+                                    <span className="font-medium">{selectedEnquiry.companyName || "-"}</span>
+                                </div>
+                                <div className="p-3">
+                                    <span className="text-muted-foreground text-xs block mb-1">Contact Person</span>
+                                    <span className="font-medium">{selectedEnquiry.contactPerson || "-"}</span>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 border-b border-border">
+                                <div className="p-3 border-r border-border">
+                                    <span className="text-muted-foreground text-xs block mb-1">Phone Number</span>
+                                    <span className="font-medium">{selectedEnquiry.phoneNumber}</span>
+                                </div>
+                                <div className="p-3">
+                                    <span className="text-muted-foreground text-xs block mb-1">Email Address</span>
+                                    <span className="font-medium">{selectedEnquiry.email || "-"}</span>
+                                </div>
+                            </div>
+
+                            {/* Order Details Section */}
+                            <div className="bg-muted/10 p-2 border-b border-border font-semibold text-xs uppercase tracking-wider text-primary">
+                                Order Specifications
+                            </div>
+                            <div className="grid grid-cols-2 border-b border-border">
+                                <div className="p-3 border-r border-border">
+                                    <span className="text-muted-foreground text-xs block mb-1">Product Type</span>
+                                    <span className="font-medium">{selectedEnquiry.clothingTypeName}</span>
+                                </div>
+                                <div className="p-3">
+                                    <span className="text-muted-foreground text-xs block mb-1">Fabric Selection</span>
+                                    <span className="font-medium">{selectedEnquiry.fabricName}</span>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 border-b border-border">
+                                <div className="p-3 border-r border-border">
+                                    <span className="text-muted-foreground text-xs block mb-1">Quantity Required</span>
+                                    <span className="font-medium">{selectedEnquiry.quantity.toLocaleString()} units</span>
+                                </div>
+                                <div className="p-3">
+                                    <span className="text-muted-foreground text-xs block mb-1">Size Range</span>
+                                    <span className="font-medium">{selectedEnquiry.sizeRange}</span>
+                                </div>
+                            </div>
+
+                            {/* Notes Section */}
+                            <div className="grid grid-cols-1 border-b border-border">
+                                <div className="p-3">
+                                    <span className="text-muted-foreground text-xs block mb-1">Customer Notes</span>
+                                    <p className="text-sm whitespace-pre-wrap bg-muted/20 p-2 border border-border min-h-[60px]">
+                                        {selectedEnquiry.notes || "No notes provided."}
                                     </p>
                                 </div>
-                            )}
+                            </div>
 
-                            <div className="border-t border-border pt-4" />
-
-                            {/* Admin Section */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium mb-2">Status</p>
+                            {/* Admin Management Section */}
+                            <div className="bg-muted/10 p-2 border-b border-border font-semibold text-xs uppercase tracking-wider text-primary">
+                                Internal Management
+                            </div>
+                            <div className="p-4 bg-muted/5 space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-xs font-medium mb-1.5 block">Current Status</label>
                                         <Select
                                             value={selectedEnquiry.status || "pending"}
                                             onValueChange={(value) =>
@@ -515,7 +511,7 @@ export default function EnquiriesPage() {
                                             }
                                             disabled={isUpdating}
                                         >
-                                            <SelectTrigger>
+                                            <SelectTrigger className="bg-background">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -527,40 +523,33 @@ export default function EnquiriesPage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
+                                    <div className="flex items-end justify-end">
+                                        <Button
+                                            onClick={() =>
+                                                handleStatusChange(
+                                                    selectedEnquiry.id,
+                                                    selectedEnquiry.status || "pending"
+                                                )
+                                            }
+                                            disabled={isUpdating}
+                                            className="btn-industrial w-full"
+                                        >
+                                            {isUpdating && (
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            )}
+                                            Update Record
+                                        </Button>
+                                    </div>
                                 </div>
-
                                 <div>
-                                    <p className="text-sm font-medium mb-2">Admin Notes</p>
+                                    <label className="text-xs font-medium mb-1.5 block">Admin Internal Notes</label>
                                     <Textarea
                                         value={adminNotes}
                                         onChange={(e) => setAdminNotes(e.target.value)}
-                                        placeholder="Internal notes about this enquiry..."
+                                        placeholder="Add internal notes regarding this enquiry..."
                                         rows={3}
+                                        className="bg-background resize-none"
                                     />
-                                </div>
-
-                                <div className="flex justify-end gap-3">
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setIsDetailOpen(false)}
-                                    >
-                                        Close
-                                    </Button>
-                                    <Button
-                                        onClick={() =>
-                                            handleStatusChange(
-                                                selectedEnquiry.id,
-                                                selectedEnquiry.status || "pending"
-                                            )
-                                        }
-                                        disabled={isUpdating}
-                                        className="btn-industrial"
-                                    >
-                                        {isUpdating && (
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        )}
-                                        Save Changes
-                                    </Button>
                                 </div>
                             </div>
                         </div>

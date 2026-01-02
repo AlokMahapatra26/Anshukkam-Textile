@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Loader2, ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, ImageIcon, X } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 
 interface ClothingType {
@@ -217,167 +217,198 @@ export default function CataloguePage() {
                             Add Clothing Type
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                            <DialogTitle>
-                                {editingType ? "Edit Clothing Type" : "Add Clothing Type"}
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+                        <DialogHeader className="bg-primary px-6 py-4 border-b border-border flex flex-row items-center justify-between space-y-0">
+                            <DialogTitle className="text-white uppercase tracking-wider text-base">
+                                {editingType ? "Edit Clothing Type" : "Add New Clothing Type"}
                             </DialogTitle>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setIsDialogOpen(false)}
+                                className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10 rounded-none"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
                         </DialogHeader>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Left Column - Image Upload */}
-                                <div className="space-y-2">
-                                    <Label>Images (Max 6)</Label>
-                                    <ImageUpload
-                                        currentImages={formData.images}
-                                        onImagesChange={(urls) =>
-                                            setFormData((prev) => ({ ...prev, images: urls }))
-                                        }
-                                        multiple={true}
-                                        maxFiles={6}
-                                    />
-                                    <p className="text-xs text-muted-foreground">
-                                        First image will be used as the main thumbnail.
-                                    </p>
-                                </div>
-
-                                {/* Right Column - Form Fields */}
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Name *</Label>
-                                        <Input
-                                            id="name"
-                                            value={formData.name}
-                                            onChange={(e) => handleNameChange(e.target.value)}
-                                            placeholder="e.g., T-Shirts & Polos"
-                                            required
-                                        />
+                        <form onSubmit={handleSubmit}>
+                            <div className="p-6 space-y-6">
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                                    {/* Left Column - Image Upload (4 cols) */}
+                                    <div className="lg:col-span-4 space-y-4">
+                                        <div className="bg-muted/10 p-3 border border-border rounded-none">
+                                            <Label className="uppercase text-xs font-bold text-muted-foreground mb-3 block">Product Images</Label>
+                                            <ImageUpload
+                                                currentImages={formData.images}
+                                                onImagesChange={(urls) =>
+                                                    setFormData((prev) => ({ ...prev, images: urls }))
+                                                }
+                                                multiple={true}
+                                                maxFiles={6}
+                                            />
+                                            <p className="text-[10px] text-muted-foreground mt-2">
+                                                Upload up to 6 images. First image is the main thumbnail.
+                                                <br />
+                                                Recommended size: 800x1000px.
+                                            </p>
+                                        </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="slug">Slug *</Label>
-                                        <Input
-                                            id="slug"
-                                            value={formData.slug}
-                                            onChange={(e) =>
-                                                setFormData((prev) => ({ ...prev, slug: e.target.value }))
-                                            }
-                                            placeholder="e.g., t-shirts-polos"
-                                            required
-                                        />
-                                    </div>
+                                    {/* Right Column - Form Fields (8 cols) */}
+                                    <div className="lg:col-span-8 space-y-6">
+                                        {/* Basic Info Section */}
+                                        <div>
+                                            <h4 className="text-xs font-bold uppercase text-primary border-b border-border pb-2 mb-4">Basic Information</h4>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="name" className="text-xs uppercase text-muted-foreground">Product Name *</Label>
+                                                    <Input
+                                                        id="name"
+                                                        value={formData.name}
+                                                        onChange={(e) => handleNameChange(e.target.value)}
+                                                        placeholder="e.g., T-Shirts & Polos"
+                                                        required
+                                                        className="h-9"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="slug" className="text-xs uppercase text-muted-foreground">URL Slug *</Label>
+                                                    <Input
+                                                        id="slug"
+                                                        value={formData.slug}
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({ ...prev, slug: e.target.value }))
+                                                        }
+                                                        placeholder="e.g., t-shirts-polos"
+                                                        required
+                                                        className="h-9 font-mono text-xs"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="mt-4 space-y-1.5">
+                                                <Label htmlFor="description" className="text-xs uppercase text-muted-foreground">Description</Label>
+                                                <Textarea
+                                                    id="description"
+                                                    value={formData.description}
+                                                    onChange={(e) =>
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            description: e.target.value,
+                                                        }))
+                                                    }
+                                                    placeholder="Detailed product description..."
+                                                    rows={4}
+                                                    className="resize-none max-h-[120px] overflow-y-auto"
+                                                />
+                                            </div>
+                                        </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="description">Description</Label>
-                                        <Textarea
-                                            id="description"
-                                            value={formData.description}
-                                            onChange={(e) =>
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    description: e.target.value,
-                                                }))
-                                            }
-                                            placeholder="Brief description of this category"
-                                            rows={2}
-                                        />
+                                        {/* Specs Section */}
+                                        <div>
+                                            <h4 className="text-xs font-bold uppercase text-primary border-b border-border pb-2 mb-4">Manufacturing Specs</h4>
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="minOrderQuantity" className="text-xs uppercase text-muted-foreground">MOQ</Label>
+                                                    <Input
+                                                        id="minOrderQuantity"
+                                                        type="number"
+                                                        value={formData.minOrderQuantity}
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                minOrderQuantity: parseInt(e.target.value) || 0,
+                                                            }))
+                                                        }
+                                                        placeholder="500"
+                                                        className="h-9"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="leadTime" className="text-xs uppercase text-muted-foreground">Lead Time</Label>
+                                                    <Input
+                                                        id="leadTime"
+                                                        value={formData.leadTime}
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                leadTime: e.target.value,
+                                                            }))
+                                                        }
+                                                        placeholder="3-5 Weeks"
+                                                        className="h-9"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="sizeRange" className="text-xs uppercase text-muted-foreground">Size Range</Label>
+                                                    <Input
+                                                        id="sizeRange"
+                                                        value={formData.sizeRange}
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                sizeRange: e.target.value,
+                                                            }))
+                                                        }
+                                                        placeholder="XS-5XL"
+                                                        className="h-9"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Visibility Section */}
+                                        <div>
+                                            <h4 className="text-xs font-bold uppercase text-primary border-b border-border pb-2 mb-4">Visibility & Ordering</h4>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="displayOrder" className="text-xs uppercase text-muted-foreground">Display Order</Label>
+                                                    <Input
+                                                        id="displayOrder"
+                                                        type="number"
+                                                        value={formData.displayOrder}
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                displayOrder: parseInt(e.target.value) || 0,
+                                                            }))
+                                                        }
+                                                        className="h-9"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-xs uppercase text-muted-foreground block">Status</Label>
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            variant={formData.isActive ? "default" : "outline"}
+                                                            onClick={() =>
+                                                                setFormData((prev) => ({ ...prev, isActive: true }))
+                                                            }
+                                                            className="flex-1 h-9"
+                                                        >
+                                                            Active
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            variant={!formData.isActive ? "default" : "outline"}
+                                                            onClick={() =>
+                                                                setFormData((prev) => ({ ...prev, isActive: false }))
+                                                            }
+                                                            className="flex-1 h-9"
+                                                        >
+                                                            Hidden
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Manufacturing Specifications */}
-                            <div className="border-t pt-4 mt-4">
-                                <h4 className="font-medium mb-4">Manufacturing Specifications</h4>
-                                <div className="grid grid-cols-3 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="minOrderQuantity">Min Order Qty (MOQ)</Label>
-                                        <Input
-                                            id="minOrderQuantity"
-                                            type="number"
-                                            value={formData.minOrderQuantity}
-                                            onChange={(e) =>
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    minOrderQuantity: parseInt(e.target.value) || 0,
-                                                }))
-                                            }
-                                            placeholder="500"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="leadTime">Lead Time</Label>
-                                        <Input
-                                            id="leadTime"
-                                            value={formData.leadTime}
-                                            onChange={(e) =>
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    leadTime: e.target.value,
-                                                }))
-                                            }
-                                            placeholder="3-5 Weeks"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="sizeRange">Size Range</Label>
-                                        <Input
-                                            id="sizeRange"
-                                            value={formData.sizeRange}
-                                            onChange={(e) =>
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    sizeRange: e.target.value,
-                                                }))
-                                            }
-                                            placeholder="XS-5XL"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="displayOrder">Display Order</Label>
-                                    <Input
-                                        id="displayOrder"
-                                        type="number"
-                                        value={formData.displayOrder}
-                                        onChange={(e) =>
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                displayOrder: parseInt(e.target.value) || 0,
-                                            }))
-                                        }
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Status</Label>
-                                    <div className="flex gap-2 pt-2">
-                                        <Button
-                                            type="button"
-                                            size="sm"
-                                            variant={formData.isActive ? "default" : "outline"}
-                                            onClick={() =>
-                                                setFormData((prev) => ({ ...prev, isActive: true }))
-                                            }
-                                        >
-                                            Active
-                                        </Button>
-                                        <Button
-                                            type="button"
-                                            size="sm"
-                                            variant={!formData.isActive ? "default" : "outline"}
-                                            onClick={() =>
-                                                setFormData((prev) => ({ ...prev, isActive: false }))
-                                            }
-                                        >
-                                            Hidden
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex justify-end gap-3 pt-4 border-t">
+                            <div className="bg-muted/20 px-6 py-4 border-t border-border flex justify-end gap-3">
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -388,12 +419,12 @@ export default function CataloguePage() {
                                 <Button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="btn-industrial"
+                                    className="btn-industrial min-w-[120px]"
                                 >
                                     {isSubmitting && (
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     )}
-                                    {editingType ? "Update" : "Create"}
+                                    {editingType ? "Save Changes" : "Create Item"}
                                 </Button>
                             </div>
                         </form>

@@ -12,8 +12,6 @@ import {
     TrendingUp,
     Clock,
     ArrowRight,
-    AlertCircle,
-    CheckCircle,
     Loader2,
 } from "lucide-react";
 
@@ -42,8 +40,6 @@ export default function AdminDashboard() {
     });
     const [recentEnquiries, setRecentEnquiries] = useState<Enquiry[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [showBanner, setShowBanner] = useState(true);
-
     useEffect(() => {
         async function fetchData() {
             try {
@@ -77,8 +73,6 @@ export default function AdminDashboard() {
         }
         fetchData();
     }, []);
-
-    const isSetupComplete = stats.catalogueItems > 0 && stats.fabrics > 0;
 
     const statsCards = [
         {
@@ -125,73 +119,18 @@ export default function AdminDashboard() {
                 </p>
             </div>
 
-            {/* Setup Notice - Only show if not setup */}
-            {!isSetupComplete ? (
-                <Card className="border-accent bg-accent/5">
-                    <CardContent className="flex items-start gap-4 pt-6">
-                        <AlertCircle className="h-6 w-6 text-accent flex-shrink-0" />
-                        <div className="flex-1">
-                            <h3 className="font-semibold mb-1">Setup Required</h3>
-                            <p className="text-sm text-muted-foreground mb-4">
-                                {stats.catalogueItems === 0 && stats.fabrics === 0
-                                    ? "Add your catalogue items and fabrics to get started."
-                                    : stats.catalogueItems === 0
-                                        ? "Add catalogue items to complete your setup."
-                                        : "Add fabrics to complete your setup."}
-                            </p>
-                            <div className="flex gap-3">
-                                {stats.catalogueItems === 0 && (
-                                    <Link href="/admin/catalogue">
-                                        <Button size="sm" className="btn-industrial">
-                                            Add Catalogue Items
-                                        </Button>
-                                    </Link>
-                                )}
-                                {stats.fabrics === 0 && (
-                                    <Link href="/admin/fabrics">
-                                        <Button size="sm" variant={stats.catalogueItems === 0 ? "outline" : "default"}>
-                                            Add Fabrics
-                                        </Button>
-                                    </Link>
-                                )}
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            ) : isSetupComplete && showBanner ? (
-                <Card className="border-green-500 bg-green-500/5">
-                    <CardContent className="flex items-center gap-4 pt-6">
-                        <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
-                        <div className="flex-1">
-                            <h3 className="font-semibold text-green-700">Setup Complete</h3>
-                            <p className="text-sm text-muted-foreground">
-                                Your website is ready! You have {stats.catalogueItems} catalogue items and {stats.fabrics} fabrics.
-                            </p>
-                        </div>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setShowBanner(false)}
-                            className="text-muted-foreground hover:text-foreground"
-                        >
-                            <span className="text-xl">&times;</span>
-                        </Button>
-                    </CardContent>
-                </Card>
-            ) : null}
-
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {statsCards.map((stat) => (
                     <Card key={stat.title}>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-4">
                             <CardTitle className="text-sm font-medium text-muted-foreground">
                                 {stat.title}
                             </CardTitle>
-                            <stat.icon className="h-5 w-5 text-muted-foreground" />
+                            <stat.icon className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold">{stat.value}</div>
+                        <CardContent className="px-4 pb-4">
+                            <div className="text-2xl font-bold">{stat.value}</div>
                             <p className="text-xs text-muted-foreground mt-1">
                                 {stat.change}
                             </p>
@@ -200,112 +139,104 @@ export default function AdminDashboard() {
                 ))}
             </div>
 
-            {/* Recent Enquiries */}
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                        <CardTitle>Recent Enquiries</CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Latest customer enquiries
-                        </p>
-                    </div>
-                    <Link href="/admin/enquiries">
-                        <Button variant="outline" size="sm">
-                            View All
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                    </Link>
-                </CardHeader>
-                <CardContent>
-                    {recentEnquiries.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                            <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>No enquiries yet</p>
-                            <p className="text-sm">
-                                Enquiries will appear here once customers submit requests
-                            </p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-280px)] min-h-[400px]">
+                {/* Recent Enquiries - Takes up 2/3 width */}
+                <Card className="lg:col-span-2 flex flex-col overflow-hidden">
+                    <CardHeader className="flex flex-row items-center justify-between py-3 px-4 border-b border-border bg-muted/20">
+                        <div>
+                            <CardTitle className="text-base">Recent Enquiries</CardTitle>
                         </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {recentEnquiries.map((enquiry) => (
-                                <div
-                                    key={enquiry.id}
-                                    className="flex items-center justify-between p-4 border border-border rounded-lg"
-                                >
-                                    <div>
-                                        <p className="font-medium">
-                                            {enquiry.companyName || "Unknown Company"}
-                                        </p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {enquiry.clothingTypeName || "Product"} · {enquiry.quantity.toLocaleString()} units
-                                        </p>
+                        <Link href="/admin/enquiries">
+                            <Button variant="outline" size="sm" className="h-7 text-xs">
+                                View All
+                                <ArrowRight className="ml-2 h-3 w-3" />
+                            </Button>
+                        </Link>
+                    </CardHeader>
+                    <CardContent className="flex-1 overflow-auto p-0">
+                        {recentEnquiries.length === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground">
+                                <MessageSquare className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                                <p className="text-sm">No enquiries yet</p>
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-border">
+                                {recentEnquiries.map((enquiry) => (
+                                    <div
+                                        key={enquiry.id}
+                                        className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
+                                    >
+                                        <div>
+                                            <p className="font-medium text-sm">
+                                                {enquiry.companyName || "Unknown Company"}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {enquiry.clothingTypeName || "Product"} · {enquiry.quantity.toLocaleString()} units
+                                            </p>
+                                        </div>
+                                        <div className="text-right">
+                                            <Badge
+                                                variant={enquiry.status === "pending" ? "default" : "secondary"}
+                                                className="text-[10px] px-1.5 py-0 h-5"
+                                            >
+                                                {enquiry.status || "pending"}
+                                            </Badge>
+                                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                                                {new Date(enquiry.createdAt).toLocaleDateString()}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="text-right">
-                                        <Badge
-                                            variant={enquiry.status === "pending" ? "default" : "secondary"}
-                                        >
-                                            {enquiry.status || "pending"}
-                                        </Badge>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            {new Date(enquiry.createdAt).toLocaleDateString()}
-                                        </p>
+                                ))}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Quick Actions - Takes up 1/3 width */}
+                <div className="space-y-4">
+                    <Card className="hover:border-accent transition-colors cursor-pointer h-full">
+                        <CardHeader className="py-3 px-4 border-b border-border bg-muted/20">
+                            <CardTitle className="text-base">Quick Actions</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4 space-y-3">
+                            <Link href="/admin/catalogue" className="block">
+                                <div className="flex items-center gap-3 p-3 border border-border rounded hover:bg-muted transition-colors">
+                                    <div className="p-2 bg-accent/10 rounded">
+                                        <Package className="h-4 w-4 text-accent" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-medium text-sm">Manage Catalogue</h3>
+                                        <p className="text-xs text-muted-foreground">Add/edit products</p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                            </Link>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="hover:border-accent transition-colors cursor-pointer">
-                    <Link href="/admin/catalogue">
-                        <CardContent className="flex items-center gap-4 pt-6">
-                            <div className="p-3 bg-accent/10 rounded-lg">
-                                <Package className="h-6 w-6 text-accent" />
-                            </div>
-                            <div>
-                                <h3 className="font-semibold">Manage Catalogue</h3>
-                                <p className="text-sm text-muted-foreground">
-                                    Add, edit, or remove products
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Link>
-                </Card>
+                            <Link href="/admin/enquiries" className="block">
+                                <div className="flex items-center gap-3 p-3 border border-border rounded hover:bg-muted transition-colors">
+                                    <div className="p-2 bg-accent/10 rounded">
+                                        <MessageSquare className="h-4 w-4 text-accent" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-medium text-sm">View Enquiries</h3>
+                                        <p className="text-xs text-muted-foreground">Respond to requests</p>
+                                    </div>
+                                </div>
+                            </Link>
 
-                <Card className="hover:border-accent transition-colors cursor-pointer">
-                    <Link href="/admin/enquiries">
-                        <CardContent className="flex items-center gap-4 pt-6">
-                            <div className="p-3 bg-accent/10 rounded-lg">
-                                <MessageSquare className="h-6 w-6 text-accent" />
-                            </div>
-                            <div>
-                                <h3 className="font-semibold">View Enquiries</h3>
-                                <p className="text-sm text-muted-foreground">
-                                    Respond to customer requests
-                                </p>
-                            </div>
+                            <Link href="/admin/settings" className="block">
+                                <div className="flex items-center gap-3 p-3 border border-border rounded hover:bg-muted transition-colors">
+                                    <div className="p-2 bg-accent/10 rounded">
+                                        <TrendingUp className="h-4 w-4 text-accent" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-medium text-sm">Site Settings</h3>
+                                        <p className="text-xs text-muted-foreground">Customize content</p>
+                                    </div>
+                                </div>
+                            </Link>
                         </CardContent>
-                    </Link>
-                </Card>
-
-                <Card className="hover:border-accent transition-colors cursor-pointer">
-                    <Link href="/admin/settings">
-                        <CardContent className="flex items-center gap-4 pt-6">
-                            <div className="p-3 bg-accent/10 rounded-lg">
-                                <TrendingUp className="h-6 w-6 text-accent" />
-                            </div>
-                            <div>
-                                <h3 className="font-semibold">Site Settings</h3>
-                                <p className="text-sm text-muted-foreground">
-                                    Customize content and sections
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Link>
-                </Card>
+                    </Card>
+                </div>
             </div>
         </div>
     );

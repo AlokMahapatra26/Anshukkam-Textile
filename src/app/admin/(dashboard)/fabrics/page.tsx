@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Loader2, ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, ImageIcon, X } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 
 interface Fabric {
@@ -213,148 +213,182 @@ export default function FabricsPage() {
                             Add Fabric
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                            <DialogTitle>
-                                {editingFabric ? "Edit Fabric" : "Add Fabric"}
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+                        <DialogHeader className="bg-primary px-6 py-4 border-b border-border flex flex-row items-center justify-between space-y-0">
+                            <DialogTitle className="text-white uppercase tracking-wider text-base">
+                                {editingFabric ? "Edit Fabric" : "Add New Fabric"}
                             </DialogTitle>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setIsDialogOpen(false)}
+                                className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10 rounded-none"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
                         </DialogHeader>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Left Column - Image Upload */}
-                                <div className="space-y-2">
-                                    <Label>Images (Max 6)</Label>
-                                    <ImageUpload
-                                        currentImages={formData.images}
-                                        onImagesChange={(urls) =>
-                                            setFormData((prev) => ({ ...prev, images: urls }))
-                                        }
-                                        multiple={true}
-                                        maxFiles={6}
-                                    />
-                                    <p className="text-xs text-muted-foreground">
-                                        First image will be used as the main thumbnail.
-                                    </p>
-                                </div>
-
-                                {/* Right Column - Form Fields */}
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Name *</Label>
-                                        <Input
-                                            id="name"
-                                            value={formData.name}
-                                            onChange={(e) => handleNameChange(e.target.value)}
-                                            placeholder="e.g., 100% Cotton"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="slug">Slug *</Label>
-                                        <Input
-                                            id="slug"
-                                            value={formData.slug}
-                                            onChange={(e) =>
-                                                setFormData((prev) => ({ ...prev, slug: e.target.value }))
-                                            }
-                                            placeholder="e.g., cotton"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="composition">Composition</Label>
-                                            <Input
-                                                id="composition"
-                                                value={formData.composition}
-                                                onChange={(e) =>
-                                                    setFormData((prev) => ({
-                                                        ...prev,
-                                                        composition: e.target.value,
-                                                    }))
+                        <form onSubmit={handleSubmit}>
+                            <div className="p-6 space-y-6">
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                                    {/* Left Column - Image Upload (4 cols) */}
+                                    <div className="lg:col-span-4 space-y-4">
+                                        <div className="bg-muted/10 p-3 border border-border rounded-none">
+                                            <Label className="uppercase text-xs font-bold text-muted-foreground mb-3 block">Fabric Images</Label>
+                                            <ImageUpload
+                                                currentImages={formData.images}
+                                                onImagesChange={(urls) =>
+                                                    setFormData((prev) => ({ ...prev, images: urls }))
                                                 }
-                                                placeholder="e.g., 100% Cotton"
+                                                multiple={true}
+                                                maxFiles={6}
                                             />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="weight">Weight (GSM)</Label>
-                                            <Input
-                                                id="weight"
-                                                value={formData.weight}
-                                                onChange={(e) =>
-                                                    setFormData((prev) => ({
-                                                        ...prev,
-                                                        weight: e.target.value,
-                                                    }))
-                                                }
-                                                placeholder="e.g., 180-220 GSM"
-                                            />
+                                            <p className="text-[10px] text-muted-foreground mt-2">
+                                                Upload up to 6 images. First image is the main thumbnail.
+                                                <br />
+                                                Recommended size: 800x800px.
+                                            </p>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea
-                                    id="description"
-                                    value={formData.description}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            description: e.target.value,
-                                        }))
-                                    }
-                                    placeholder="Brief description of this fabric"
-                                    rows={2}
-                                />
-                            </div>
+                                    {/* Right Column - Form Fields (8 cols) */}
+                                    <div className="lg:col-span-8 space-y-6">
+                                        {/* Basic Info Section */}
+                                        <div>
+                                            <h4 className="text-xs font-bold uppercase text-primary border-b border-border pb-2 mb-4">Basic Information</h4>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="name" className="text-xs uppercase text-muted-foreground">Fabric Name *</Label>
+                                                    <Input
+                                                        id="name"
+                                                        value={formData.name}
+                                                        onChange={(e) => handleNameChange(e.target.value)}
+                                                        placeholder="e.g., 100% Cotton"
+                                                        required
+                                                        className="h-9"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="slug" className="text-xs uppercase text-muted-foreground">URL Slug *</Label>
+                                                    <Input
+                                                        id="slug"
+                                                        value={formData.slug}
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({ ...prev, slug: e.target.value }))
+                                                        }
+                                                        placeholder="e.g., cotton"
+                                                        required
+                                                        className="h-9 font-mono text-xs"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="mt-4 space-y-1.5">
+                                                <Label htmlFor="description" className="text-xs uppercase text-muted-foreground">Description</Label>
+                                                <Textarea
+                                                    id="description"
+                                                    value={formData.description}
+                                                    onChange={(e) =>
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            description: e.target.value,
+                                                        }))
+                                                    }
+                                                    placeholder="Detailed fabric description..."
+                                                    rows={4}
+                                                    className="resize-none max-h-[120px] overflow-y-auto"
+                                                />
+                                            </div>
+                                        </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="displayOrder">Display Order</Label>
-                                    <Input
-                                        id="displayOrder"
-                                        type="number"
-                                        value={formData.displayOrder}
-                                        onChange={(e) =>
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                displayOrder: parseInt(e.target.value) || 0,
-                                            }))
-                                        }
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Status</Label>
-                                    <div className="flex gap-2 pt-2">
-                                        <Button
-                                            type="button"
-                                            size="sm"
-                                            variant={formData.isActive ? "default" : "outline"}
-                                            onClick={() =>
-                                                setFormData((prev) => ({ ...prev, isActive: true }))
-                                            }
-                                        >
-                                            Active
-                                        </Button>
-                                        <Button
-                                            type="button"
-                                            size="sm"
-                                            variant={!formData.isActive ? "default" : "outline"}
-                                            onClick={() =>
-                                                setFormData((prev) => ({ ...prev, isActive: false }))
-                                            }
-                                        >
-                                            Hidden
-                                        </Button>
+                                        {/* Specs Section */}
+                                        <div>
+                                            <h4 className="text-xs font-bold uppercase text-primary border-b border-border pb-2 mb-4">Material Specs</h4>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="composition" className="text-xs uppercase text-muted-foreground">Composition</Label>
+                                                    <Input
+                                                        id="composition"
+                                                        value={formData.composition}
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                composition: e.target.value,
+                                                            }))
+                                                        }
+                                                        placeholder="e.g., 100% Cotton"
+                                                        className="h-9"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="weight" className="text-xs uppercase text-muted-foreground">Weight (GSM)</Label>
+                                                    <Input
+                                                        id="weight"
+                                                        value={formData.weight}
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                weight: e.target.value,
+                                                            }))
+                                                        }
+                                                        placeholder="e.g., 180-220 GSM"
+                                                        className="h-9"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Visibility Section */}
+                                        <div>
+                                            <h4 className="text-xs font-bold uppercase text-primary border-b border-border pb-2 mb-4">Visibility & Ordering</h4>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="displayOrder" className="text-xs uppercase text-muted-foreground">Display Order</Label>
+                                                    <Input
+                                                        id="displayOrder"
+                                                        type="number"
+                                                        value={formData.displayOrder}
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                displayOrder: parseInt(e.target.value) || 0,
+                                                            }))
+                                                        }
+                                                        className="h-9"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-xs uppercase text-muted-foreground block">Status</Label>
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            variant={formData.isActive ? "default" : "outline"}
+                                                            onClick={() =>
+                                                                setFormData((prev) => ({ ...prev, isActive: true }))
+                                                            }
+                                                            className="flex-1 h-9"
+                                                        >
+                                                            Active
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            variant={!formData.isActive ? "default" : "outline"}
+                                                            onClick={() =>
+                                                                setFormData((prev) => ({ ...prev, isActive: false }))
+                                                            }
+                                                            className="flex-1 h-9"
+                                                        >
+                                                            Hidden
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex justify-end gap-3 pt-4 border-t">
+                            <div className="bg-muted/20 px-6 py-4 border-t border-border flex justify-end gap-3">
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -365,12 +399,12 @@ export default function FabricsPage() {
                                 <Button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="btn-industrial"
+                                    className="btn-industrial min-w-[120px]"
                                 >
                                     {isSubmitting && (
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     )}
-                                    {editingFabric ? "Update" : "Create"}
+                                    {editingFabric ? "Save Changes" : "Create Fabric"}
                                 </Button>
                             </div>
                         </form>

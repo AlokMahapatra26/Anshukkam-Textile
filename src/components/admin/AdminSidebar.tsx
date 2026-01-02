@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useAdminTheme } from "@/contexts/admin-theme-context";
 
 const navigation = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -31,6 +32,7 @@ export function AdminSidebar() {
     const pathname = usePathname();
     const router = useRouter();
     const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const { theme, toggleTheme } = useAdminTheme();
 
     const handleLogout = async () => {
         const supabase = createClient();
@@ -49,31 +51,37 @@ export function AdminSidebar() {
     const SidebarContent = () => (
         <>
             {/* Logo */}
-            <div className="p-6 border-b border-border">
+            <div className={`border-b border-border ${theme === "enterprise" ? "p-3 bg-primary" : "p-6"}`}>
                 <Link href="/admin" className="flex items-center gap-2">
-                    <Factory className="h-8 w-8 text-accent" />
+                    <Factory className={`h-8 w-8 ${theme === "enterprise" ? "text-white" : "text-accent"}`} />
                     <div>
-                        <span className="font-bold">Admin Panel</span>
-                        <p className="text-xs text-muted-foreground">Anshukkam Textile</p>
+                        <span className={`font-bold ${theme === "enterprise" ? "text-white text-sm uppercase tracking-wide" : ""}`}>
+                            Admin Panel
+                        </span>
+                        <p className={`text-xs ${theme === "enterprise" ? "text-white/70" : "text-muted-foreground"}`}>
+                            Anshukkam Textile
+                        </p>
                     </div>
                 </Link>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 p-4 relative">
-                {/* Sliding Active Background */}
-                <div
-                    className="absolute left-4 right-4 bg-accent rounded-lg transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-                    style={{
-                        height: '44px', // py-3 (12*2) + text (20)
-                        top: '16px', // p-4
-                        transform: `translateY(${activeIndex * 48}px)`, // height (44) + space-y-1 (4)
-                        opacity: activeIndex === -1 ? 0 : 1,
-                        zIndex: 0
-                    }}
-                />
+            <nav className={`flex-1 relative ${theme === "enterprise" ? "p-0" : "p-4"}`}>
+                {/* Sliding Active Background - only in legacy mode */}
+                {theme === "legacy" && (
+                    <div
+                        className="absolute left-4 right-4 bg-accent rounded-lg transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                        style={{
+                            height: '44px',
+                            top: '16px',
+                            transform: `translateY(${activeIndex * 48}px)`,
+                            opacity: activeIndex === -1 ? 0 : 1,
+                            zIndex: 0
+                        }}
+                    />
+                )}
 
-                <div className="space-y-1 relative z-10">
+                <div className={`relative z-10 ${theme === "enterprise" ? "" : "space-y-1"}`}>
                     {navigation.map((item) => {
                         const active = isActive(item.href);
                         return (
@@ -81,10 +89,17 @@ export function AdminSidebar() {
                                 key={item.name}
                                 href={item.href}
                                 onClick={() => setIsMobileOpen(false)}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${active
-                                        ? "text-accent-foreground"
-                                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                                    }`}
+                                className={
+                                    theme === "enterprise"
+                                        ? `flex items-center gap-3 px-4 py-2.5 text-sm font-medium border-b border-border transition-colors ${active
+                                            ? "bg-blue-50 text-primary border-l-4 border-l-primary"
+                                            : "text-gray-600 hover:bg-gray-50 border-l-4 border-l-transparent"
+                                        }`
+                                        : `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${active
+                                            ? "text-accent-foreground"
+                                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                                        }`
+                                }
                             >
                                 <item.icon className="h-5 w-5" />
                                 {item.name}
@@ -95,10 +110,23 @@ export function AdminSidebar() {
             </nav>
 
             {/* Footer */}
-            <div className="p-4 border-t border-border">
+            <div className="p-4 border-t border-border space-y-2">
+                {/* Theme Toggle */}
+                <button
+                    onClick={toggleTheme}
+                    className="w-full flex items-center justify-between px-4 py-2 text-sm rounded-lg bg-muted hover:bg-muted/80 transition-colors"
+                >
+                    <span className="flex items-center gap-2">
+                        <span>{theme === "enterprise" ? "Enterprise" : "Legacy"} UI</span>
+                    </span>
+                    <span className="text-xs text-muted-foreground px-2 py-0.5 bg-background rounded">
+                        {theme === "enterprise" ? "New" : "Classic"}
+                    </span>
+                </button>
+
                 <Link
                     href="/"
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                     View Website →
                 </Link>

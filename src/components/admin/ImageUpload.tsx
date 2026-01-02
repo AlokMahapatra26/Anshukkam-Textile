@@ -160,9 +160,9 @@ export function ImageUpload({
 
             {/* Image Grid */}
             {images.length > 0 && (
-                <div className={`grid gap-4 ${multiple ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-1'}`}>
+                <div className={`grid gap-4 ${multiple ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
                     {images.map((url, index) => (
-                        <div key={url + index} className="relative aspect-video w-full overflow-hidden rounded-lg border border-border bg-muted group">
+                        <div key={url + index} className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-border bg-muted group shadow-sm">
                             <Image
                                 src={url}
                                 alt={`Image ${index + 1}`}
@@ -181,7 +181,7 @@ export function ImageUpload({
                             </div>
                             {/* Primary Badge for first image if multiple */}
                             {multiple && index === 0 && (
-                                <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
+                                <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded shadow-sm">
                                     Main
                                 </div>
                             )}
@@ -192,7 +192,7 @@ export function ImageUpload({
                     {multiple && images.length < maxFiles && (
                         <div
                             onClick={() => !isUploading && fileInputRef.current?.click()}
-                            className="flex flex-col items-center justify-center aspect-video w-full rounded-lg border-2 border-dashed border-border bg-muted/30 cursor-pointer hover:bg-muted transition-colors"
+                            className="flex flex-col items-center justify-center aspect-[4/3] w-full rounded-lg border-2 border-dashed border-border bg-muted/30 cursor-pointer hover:bg-muted transition-colors"
                         >
                             {isUploading ? (
                                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
