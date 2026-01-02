@@ -15,7 +15,7 @@ const AdminThemeContext = createContext<AdminThemeContextType | undefined>(undef
 const STORAGE_KEY = "admin-theme-preference";
 
 export function AdminThemeProvider({ children }: { children: ReactNode }) {
-    const [theme, setThemeState] = useState<AdminTheme>("legacy");
+    const [theme, setThemeState] = useState<AdminTheme>("enterprise");
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -52,7 +52,7 @@ export function useAdminTheme() {
     // Return default values for SSG - actual values come from client-side provider
     if (context === undefined) {
         return {
-            theme: "legacy" as AdminTheme,
+            theme: "enterprise" as AdminTheme,
             setTheme: () => { },
             toggleTheme: () => { },
         };
