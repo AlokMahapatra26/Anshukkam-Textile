@@ -205,22 +205,45 @@ export default function FactoryPhotosPage() {
     };
 
     const handleToggleActive = async (photo: FactoryPhoto) => {
+        const previousState = photo.isActive;
+        const newState = !photo.isActive;
+
+        // Optimistic update - update UI immediately
+        setPhotos((prevPhotos) =>
+            prevPhotos.map((p) =>
+                p.id === photo.id ? { ...p, isActive: newState } : p
+            )
+        );
+
         try {
             const response = await fetch("/api/factory-photos", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     id: photo.id,
-                    isActive: !photo.isActive,
+                    isActive: newState,
                 }),
             });
             const result = await response.json();
 
             if (result.success) {
-                toast.success(photo.isActive ? "Photo hidden" : "Photo visible");
-                fetchPhotos();
+                toast.success(newState ? "Photo visible" : "Photo hidden");
+            } else {
+                // Revert on failure
+                setPhotos((prevPhotos) =>
+                    prevPhotos.map((p) =>
+                        p.id === photo.id ? { ...p, isActive: previousState } : p
+                    )
+                );
+                toast.error("Failed to update");
             }
         } catch (error) {
+            // Revert on error
+            setPhotos((prevPhotos) =>
+                prevPhotos.map((p) =>
+                    p.id === photo.id ? { ...p, isActive: previousState } : p
+                )
+            );
             toast.error("An error occurred");
         }
     };
