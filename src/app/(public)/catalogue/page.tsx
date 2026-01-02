@@ -1,10 +1,14 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Package, Clock, Ruler, Shirt, Loader2, Scissors, PenTool } from "lucide-react";
+import { Clock, Ruler, Shirt, Scissors, PenTool } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getCachedClothingTypes } from "@/lib/services/cached-data";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Product Catalogue | Anshukkam Textile",
+    description: "Explore our full range of garment categories. T-Shirts, Polos, Hoodies, Jackets, Workwear, and more. All products can be customized to your specifications.",
+};
 
 interface ClothingType {
     id: string;
@@ -17,26 +21,8 @@ interface ClothingType {
     sizeRange: string | null;
 }
 
-export default function CataloguePage() {
-    const [types, setTypes] = useState<ClothingType[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const response = await fetch("/api/catalogue/types");
-                const result = await response.json();
-                if (result.success) {
-                    setTypes(result.data);
-                }
-            } catch (error) {
-                console.error("Failed to fetch types:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchData();
-    }, []);
+export default async function CataloguePage() {
+    const types = await getCachedClothingTypes() as ClothingType[];
 
     return (
         <div className="min-h-screen">
@@ -62,11 +48,7 @@ export default function CataloguePage() {
             {/* Catalogue Grid */}
             <section className="section-industrial">
                 <div className="container-industrial">
-                    {isLoading ? (
-                        <div className="flex justify-center py-16">
-                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : types.length === 0 ? (
+                    {types.length === 0 ? (
                         <div className="text-center py-16">
                             <Shirt className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
                             <h2 className="text-xl font-semibold mb-2">No products yet</h2>

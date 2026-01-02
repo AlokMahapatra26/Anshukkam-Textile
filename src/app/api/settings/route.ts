@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import {
     getSiteSettings,
@@ -58,6 +59,9 @@ export async function PUT(request: NextRequest) {
             validatedData.description
         );
 
+        // Invalidate cache so public pages show updated settings immediately
+        revalidateTag("settings", "max");
+
         return NextResponse.json({ success: true, data: result });
     } catch (error) {
         if (error instanceof z.ZodError) {
@@ -85,6 +89,9 @@ export async function POST(request: NextRequest) {
                 upsertSetting(key, value)
             )
         );
+
+        // Invalidate cache so public pages show updated settings immediately
+        revalidateTag("settings", "max");
 
         return NextResponse.json({ success: true, data: results });
     } catch (error) {

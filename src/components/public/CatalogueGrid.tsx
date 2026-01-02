@@ -1,11 +1,9 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Package, Clock, Ruler, Shirt, Loader2, Scissors, PenTool } from "lucide-react";
+import { Clock, Ruler, Scissors, PenTool } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FadeInStagger, FadeInItem } from "@/components/ui/MotionContainer";
+import { getCachedClothingTypes } from "@/lib/services/cached-data";
 
 interface ClothingType {
     id: string;
@@ -18,38 +16,8 @@ interface ClothingType {
     sizeRange: string | null;
 }
 
-export function CatalogueGrid() {
-    const [types, setTypes] = useState<ClothingType[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const response = await fetch("/api/catalogue/types");
-                const result = await response.json();
-                if (result.success) {
-                    setTypes(result.data);
-                }
-            } catch (error) {
-                console.error("Failed to fetch types:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchData();
-    }, []);
-
-    if (isLoading) {
-        return (
-            <section className="section-industrial">
-                <div className="container-industrial">
-                    <div className="flex items-center justify-center py-16">
-                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                    </div>
-                </div>
-            </section>
-        );
-    }
+export async function CatalogueGrid() {
+    const types = await getCachedClothingTypes() as ClothingType[];
 
     if (types.length === 0) {
         return null;
@@ -79,7 +47,6 @@ export function CatalogueGrid() {
                     </Link>
                 </div>
 
-                {/* Industrial Grid */}
                 {/* Industrial Grid */}
                 <FadeInStagger className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {types.map((item) => (
@@ -147,8 +114,6 @@ export function CatalogueGrid() {
                         </FadeInItem>
                     ))}
                 </FadeInStagger>
-
-
             </div>
         </section>
     );

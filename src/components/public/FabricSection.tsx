@@ -1,10 +1,8 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Layers, Loader2, Check, ArrowRight, Scroll } from "lucide-react";
+import { Layers, ArrowRight, Scroll } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getCachedFabrics } from "@/lib/services/cached-data";
 
 interface Fabric {
     id: string;
@@ -16,38 +14,8 @@ interface Fabric {
     imageUrl: string | null;
 }
 
-export function FabricSection() {
-    const [fabrics, setFabrics] = useState<Fabric[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const response = await fetch("/api/catalogue/fabrics");
-                const result = await response.json();
-                if (result.success) {
-                    setFabrics(result.data);
-                }
-            } catch (error) {
-                console.error("Failed to fetch fabrics:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchData();
-    }, []);
-
-    if (isLoading) {
-        return (
-            <section className="section-industrial-alt">
-                <div className="container-industrial">
-                    <div className="flex items-center justify-center py-16">
-                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                    </div>
-                </div>
-            </section>
-        );
-    }
+export async function FabricSection() {
+    const fabrics = await getCachedFabrics() as Fabric[];
 
     if (fabrics.length === 0) {
         return null;

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import {
     getClothingTypeById,
@@ -76,6 +77,9 @@ export async function PUT(
             );
         }
 
+        // Invalidate cache so public pages show updated data immediately
+        revalidateTag("catalogue", "max");
+
         return NextResponse.json({ success: true, data: result });
     } catch (error) {
         if (error instanceof z.ZodError) {
@@ -99,6 +103,9 @@ export async function DELETE(
     try {
         const { id } = await params;
         await deleteClothingType(id);
+
+        // Invalidate cache so public pages reflect deletion immediately
+        revalidateTag("catalogue", "max");
 
         return NextResponse.json({ success: true, message: "Clothing type deleted" });
     } catch (error) {

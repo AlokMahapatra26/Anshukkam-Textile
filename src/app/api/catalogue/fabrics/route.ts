@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { getFabrics, createFabric } from "@/lib/services/catalogue";
 
@@ -38,6 +39,9 @@ export async function POST(request: NextRequest) {
         const validatedData = createFabricSchema.parse(body);
 
         const result = await createFabric(validatedData);
+
+        // Invalidate cache so public pages show new data immediately
+        revalidateTag("fabrics", "max");
 
         return NextResponse.json({ success: true, data: result }, { status: 201 });
     } catch (error) {

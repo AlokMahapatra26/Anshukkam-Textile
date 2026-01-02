@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { db } from "@/lib/db";
 import { factoryPhotos } from "@/lib/db/schema";
 import { eq, asc, desc } from "drizzle-orm";
@@ -58,6 +59,9 @@ export async function POST(request: NextRequest) {
             .values(validatedData)
             .returning();
 
+        // Invalidate cache so public pages show new photo immediately
+        revalidateTag("factory", "max");
+
         return NextResponse.json(
             { success: true, data: result[0] },
             { status: 201 }
@@ -96,6 +100,9 @@ export async function PUT(request: NextRequest) {
                 { status: 404 }
             );
         }
+
+        // Invalidate cache so public pages show updated photo immediately
+        revalidateTag("factory", "max");
 
         return NextResponse.json({ success: true, data: result[0] });
     } catch (error) {
@@ -137,6 +144,9 @@ export async function DELETE(request: NextRequest) {
                 { status: 404 }
             );
         }
+
+        // Invalidate cache so public pages reflect deletion immediately
+        revalidateTag("factory", "max");
 
         return NextResponse.json({ success: true, message: "Photo deleted" });
     } catch (error) {

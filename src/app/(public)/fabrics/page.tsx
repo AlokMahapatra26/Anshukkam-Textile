@@ -1,10 +1,14 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Layers, Check, Loader2, ArrowRight, Scroll } from "lucide-react";
+import { Layers, ArrowRight, Scroll } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getCachedFabrics } from "@/lib/services/cached-data";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Fabric Options | Anshukkam Textile",
+    description: "Explore our premium fabric collection. Quality-tested materials from certified suppliers. Cotton, Polyester, Blends, and more available in bulk quantities.",
+};
 
 interface Fabric {
     id: string;
@@ -16,26 +20,8 @@ interface Fabric {
     imageUrl: string | null;
 }
 
-export default function FabricsPage() {
-    const [fabrics, setFabrics] = useState<Fabric[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const response = await fetch("/api/catalogue/fabrics");
-                const result = await response.json();
-                if (result.success) {
-                    setFabrics(result.data);
-                }
-            } catch (error) {
-                console.error("Failed to fetch fabrics:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchData();
-    }, []);
+export default async function FabricsPage() {
+    const fabrics = await getCachedFabrics() as Fabric[];
 
     return (
         <div className="min-h-screen bg-[#fafafa]">
@@ -61,11 +47,7 @@ export default function FabricsPage() {
             {/* Fabrics Grid */}
             <section className="section-industrial">
                 <div className="container-industrial">
-                    {isLoading ? (
-                        <div className="flex justify-center py-16">
-                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : fabrics.length === 0 ? (
+                    {fabrics.length === 0 ? (
                         <div className="text-center py-16">
                             <Layers className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
                             <h2 className="text-xl font-semibold mb-2">No fabrics listed yet</h2>
