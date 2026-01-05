@@ -61,6 +61,10 @@ export async function deleteEnquiry(id: string) {
     await db.delete(enquiries).where(eq(enquiries.id, id));
 }
 
+export async function deleteAllEnquiries() {
+    await db.delete(enquiries);
+}
+
 export async function getEnquiryStats() {
     const stats = await db
         .select({

@@ -153,6 +153,28 @@ export default function EnquiriesPage() {
         }
     };
 
+    const handleBulkDelete = async () => {
+        if (!confirm("Are you sure you want to delete ALL enquiries? This action cannot be undone.")) return;
+        if (!confirm("Really? This will wipe all enquiry data.")) return;
+
+        try {
+            const response = await fetch("/api/enquiries", {
+                method: "DELETE",
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                toast.success("All enquiries deleted");
+                fetchEnquiries();
+            } else {
+                toast.error(result.error || "Failed to delete enquiries");
+            }
+        } catch (error) {
+            toast.error("An error occurred");
+        }
+    };
+
     const formatDate = (dateString: string | null) => {
         if (!dateString) return "-";
         return new Date(dateString).toLocaleDateString("en-US", {
@@ -325,6 +347,14 @@ export default function EnquiriesPage() {
                                     <Download className="mr-2 h-4 w-4" />
                                 )}
                                 Export CSV ({filteredEnquiries.length})
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={handleBulkDelete}
+                                disabled={enquiries.length === 0}
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete All
                             </Button>
                         </div>
                     </div>

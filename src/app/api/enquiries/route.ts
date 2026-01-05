@@ -4,6 +4,7 @@ import {
     getEnquiries,
     createEnquiry,
     getEnquiryStats,
+    deleteAllEnquiries,
 } from "@/lib/services/enquiries";
 import {
     getClothingTypeById,
@@ -118,6 +119,19 @@ export async function POST(request: NextRequest) {
         console.error("Failed to create enquiry:", error);
         return NextResponse.json(
             { success: false, error: "Failed to submit enquiry" },
+            { status: 500 }
+        );
+    }
+}
+
+export async function DELETE(request: NextRequest) {
+    try {
+        await deleteAllEnquiries();
+        return NextResponse.json({ success: true, message: "All enquiries deleted" });
+    } catch (error) {
+        console.error("Failed to delete all enquiries:", error);
+        return NextResponse.json(
+            { success: false, error: "Failed to delete all enquiries" },
             { status: 500 }
         );
     }
