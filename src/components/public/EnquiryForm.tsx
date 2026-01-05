@@ -27,6 +27,7 @@ interface Product {
     name: string;
     clothingTypeId: string;
     minOrderQuantity: number | null;
+    availableFabrics?: string[];
 }
 
 interface Fabric {
@@ -357,27 +358,42 @@ export function EnquiryForm() {
                             <Label htmlFor="fabric">
                                 Fabric <span className="text-destructive">*</span>
                             </Label>
-                            {fabrics.length === 0 ? (
-                                <p className="text-sm text-muted-foreground p-3 bg-muted rounded">
-                                    No fabrics available. Please contact us directly.
-                                </p>
-                            ) : (
-                                <Select
-                                    value={formData.fabricId}
-                                    onValueChange={(value) => updateField("fabricId", value)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select fabric type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {fabrics.map((fabric) => (
-                                            <SelectItem key={fabric.id} value={fabric.id}>
-                                                {fabric.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            )}
+                            {(() => {
+                                const filteredFabrics = (() => {
+                                    if (!formData.productId) return fabrics;
+                                    const selectedProduct = products.find(p => p.id === formData.productId);
+                                    if (!selectedProduct?.availableFabrics || selectedProduct.availableFabrics.length === 0) {
+                                        return fabrics;
+                                    }
+                                    return fabrics.filter(f => selectedProduct.availableFabrics!.includes(f.id));
+                                })();
+
+                                if (filteredFabrics.length === 0) {
+                                    return (
+                                        <p className="text-sm text-muted-foreground p-3 bg-muted rounded">
+                                            No fabrics available for this product.
+                                        </p>
+                                    );
+                                }
+
+                                return (
+                                    <Select
+                                        value={formData.fabricId}
+                                        onValueChange={(value) => updateField("fabricId", value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select fabric type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {filteredFabrics.map((fabric) => (
+                                                <SelectItem key={fabric.id} value={fabric.id}>
+                                                    {fabric.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                );
+                            })()}
                         </div>
                     </div>
                 )}

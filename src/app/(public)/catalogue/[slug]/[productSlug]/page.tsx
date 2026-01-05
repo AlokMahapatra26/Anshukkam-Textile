@@ -7,7 +7,7 @@ import {
     ArrowLeft, Package, Clock, Ruler,
     CheckCircle2, Mail, Share2
 } from "lucide-react";
-import { getCachedCatalogueItemBySlug, getCachedClothingTypeBySlug } from "@/lib/services/cached-data";
+import { getCachedCatalogueItemBySlug, getCachedClothingTypeBySlug, getCachedNavigationData } from "@/lib/services/cached-data";
 import { Metadata } from "next";
 
 // Generate metadata
@@ -40,6 +40,8 @@ export default async function ProductPage({
     const category = await getCachedClothingTypeBySlug(slug);
     // Fetch product
     const product = await getCachedCatalogueItemBySlug(productSlug);
+    // Fetch all fabrics
+    const { fabrics } = await getCachedNavigationData();
 
     if (!product || !category) {
         notFound();
@@ -54,6 +56,11 @@ export default async function ProductPage({
     const images = product.images && product.images.length > 0
         ? product.images
         : product.imageUrl ? [product.imageUrl] : [];
+
+    const availableFabrics = product.availableFabrics && product.availableFabrics.length > 0
+        // @ts-ignore - availableFabrics might be string[] but includes expects string
+        ? fabrics.filter(f => product.availableFabrics.includes(f.id))
+        : fabrics;
 
     return (
         <div className="min-h-screen">
@@ -159,6 +166,20 @@ export default async function ProductPage({
                                     <p className="font-semibold text-foreground">{product.productionCapacity}</p>
                                 </div>
                             )}
+                        </div>
+
+                        {/* Available Fabrics */}
+                        <div>
+                            <h3 className="text-sm font-bold uppercase text-muted-foreground mb-3">Available Fabrics</h3>
+                            <div className="flex flex-wrap gap-2">
+                                {availableFabrics.map(fabric => (
+                                    <Link key={fabric.id} href={`/fabrics/${fabric.slug}`}>
+                                        <Badge variant="secondary" className="hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer px-3 py-1">
+                                            {fabric.name}
+                                        </Badge>
+                                    </Link>
+                                ))}
+                            </div>
                         </div>
 
                         {/* CTA */}

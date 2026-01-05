@@ -34,6 +34,11 @@ interface Category {
     name: string;
 }
 
+interface Fabric {
+    id: string;
+    name: string;
+}
+
 interface CatalogueImage {
     id: string;
     imageUrl: string;
@@ -51,6 +56,7 @@ interface CatalogueItem {
     sizeRange: string | null;
     displayOrder: number | null;
     isActive: boolean | null;
+    availableFabrics?: string[];
     images?: CatalogueImage[];
 }
 
@@ -61,6 +67,7 @@ export default function CategoryProductsPage() {
 
     const [category, setCategory] = useState<Category | null>(null);
     const [items, setItems] = useState<CatalogueItem[]>([]);
+    const [fabrics, setFabrics] = useState<Fabric[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<CatalogueItem | null>(null);
@@ -75,6 +82,7 @@ export default function CategoryProductsPage() {
         sizeRange: "XS-5XL",
         displayOrder: 0,
         isActive: true,
+        availableFabrics: [] as string[],
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -87,6 +95,18 @@ export default function CategoryProductsPage() {
             }
         } catch (error) {
             console.error("Failed to fetch items:", error);
+        }
+    };
+
+    const fetchFabrics = async () => {
+        try {
+            const response = await fetch("/api/catalogue/fabrics");
+            const result = await response.json();
+            if (result.success) {
+                setFabrics(result.data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch fabrics:", error);
         }
     };
 
@@ -105,6 +125,7 @@ export default function CategoryProductsPage() {
                 }
 
                 await fetchItems();
+                await fetchFabrics();
             } catch (error) {
                 console.error("Failed to fetch data:", error);
                 toast.error("Failed to load data");
@@ -145,6 +166,7 @@ export default function CategoryProductsPage() {
             sizeRange: "XS-5XL",
             displayOrder: items.length,
             isActive: true,
+            availableFabrics: [],
         });
         setIsDialogOpen(true);
     };
@@ -167,6 +189,7 @@ export default function CategoryProductsPage() {
             sizeRange: item.sizeRange || "XS-5XL",
             displayOrder: item.displayOrder || 0,
             isActive: item.isActive ?? true,
+            availableFabrics: item.availableFabrics || [],
         });
         setIsDialogOpen(true);
     };
@@ -452,6 +475,42 @@ export default function CategoryProductsPage() {
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        {/* Fabrics Section */}
+                                        <div>
+                                            <h4 className="text-xs font-bold uppercase text-primary border-b border-border pb-2 mb-4">Available Fabrics</h4>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[200px] overflow-y-auto p-2 border border-border rounded bg-muted/5">
+                                                {fabrics.map((fabric) => (
+                                                    <div key={fabric.id} className="flex items-center space-x-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            id={`fabric-${fabric.id}`}
+                                                            checked={formData.availableFabrics.includes(fabric.id)}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setFormData(prev => ({
+                                                                        ...prev,
+                                                                        availableFabrics: [...prev.availableFabrics, fabric.id]
+                                                                    }));
+                                                                } else {
+                                                                    setFormData(prev => ({
+                                                                        ...prev,
+                                                                        availableFabrics: prev.availableFabrics.filter(id => id !== fabric.id)
+                                                                    }));
+                                                                }
+                                                            }}
+                                                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                        />
+                                                        <Label htmlFor={`fabric-${fabric.id}`} className="text-sm font-normal cursor-pointer">
+                                                            {fabric.name}
+                                                        </Label>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <p className="text-[10px] text-muted-foreground mt-2">
+                                                Select fabrics available for this product. If none selected, all fabrics may be considered available.
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
