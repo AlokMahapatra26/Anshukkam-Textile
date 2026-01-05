@@ -198,3 +198,57 @@ export const getCachedCapacityStats = unstable_cache(
         revalidate: 43200,
     }
 );
+
+export const getCachedNavigationData = unstable_cache(
+    async () => {
+        // Fetch Categories
+        const categories = await db
+            .select()
+            .from(clothingTypes)
+            .where(eq(clothingTypes.isActive, true))
+            .orderBy(asc(clothingTypes.displayOrder));
+
+        // Fetch Products for all active categories
+        const allProducts = await db
+            .select({
+                id: catalogueItems.id,
+                name: catalogueItems.name,
+                slug: catalogueItems.slug,
+                clothingTypeId: catalogueItems.clothingTypeId,
+                description: catalogueItems.description,
+                imageUrl: catalogueImages.imageUrl,
+            })
+            .from(catalogueItems)
+            .leftJoin(
+                catalogueImages,
+                and(
+                    eq(catalogueImages.catalogueItemId, catalogueItems.id),
+                    eq(catalogueImages.isPrimary, true)
+                )
+            )
+            .where(eq(catalogueItems.isActive, true));
+
+        // Group products by category
+        const categoriesWithProducts = categories.map(cat => ({
+            ...cat,
+            products: allProducts.filter(p => p.clothingTypeId === cat.id)
+        }));
+
+        // Fetch Fabrics
+        const fabricList = await db
+            .select()
+            .from(fabrics)
+            .where(eq(fabrics.isActive, true))
+            .orderBy(asc(fabrics.displayOrder));
+
+        return {
+            categories: categoriesWithProducts,
+            fabrics: fabricList
+        };
+    },
+    ["navigation-data"],
+    {
+        tags: ["catalogue", "fabrics"],
+        revalidate: 43200,
+    }
+);
