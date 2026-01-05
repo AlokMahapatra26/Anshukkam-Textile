@@ -5,8 +5,10 @@ import {
     fabrics,
     factoryPhotos,
     siteSettings,
+    catalogueItems,
+    catalogueImages,
 } from "@/lib/db/schema";
-import { eq, asc, desc } from "drizzle-orm";
+import { eq, asc, desc, and } from "drizzle-orm";
 
 // ==================== CLOTHING TYPES ====================
 
@@ -36,6 +38,72 @@ export const getCachedClothingTypeBySlug = unstable_cache(
         return result[0] || null;
     },
     ["clothing-type-by-slug"],
+    {
+        tags: ["catalogue"],
+        revalidate: 43200,
+    }
+);
+
+// ==================== CATALOGUE ITEMS (PRODUCTS) ====================
+
+export const getCachedCatalogueItems = unstable_cache(
+    async (categoryId: string) => {
+        const items = await db
+            .select({
+                id: catalogueItems.id,
+                name: catalogueItems.name,
+                slug: catalogueItems.slug,
+                description: catalogueItems.description,
+                minOrderQuantity: catalogueItems.minOrderQuantity,
+                imageUrl: catalogueImages.imageUrl,
+            })
+            .from(catalogueItems)
+            .leftJoin(
+                catalogueImages,
+                and(
+                    eq(catalogueImages.catalogueItemId, catalogueItems.id),
+                    eq(catalogueImages.isPrimary, true)
+                )
+            )
+            .where(
+                and(
+                    eq(catalogueItems.clothingTypeId, categoryId),
+                    eq(catalogueItems.isActive, true)
+                )
+            )
+            .orderBy(asc(catalogueItems.displayOrder));
+        return items;
+    },
+    ["catalogue-items-by-category"],
+    {
+        tags: ["catalogue"],
+        revalidate: 43200,
+    }
+);
+
+export const getCachedCatalogueItemBySlug = unstable_cache(
+    async (slug: string) => {
+        const item = await db
+            .select()
+            .from(catalogueItems)
+            .where(eq(catalogueItems.slug, slug))
+            .limit(1);
+
+        if (!item[0]) return null;
+
+        const images = await db
+            .select()
+            .from(catalogueImages)
+            .where(eq(catalogueImages.catalogueItemId, item[0].id))
+            .orderBy(asc(catalogueImages.displayOrder));
+
+        return {
+            ...item[0],
+            images: images.map((img) => img.imageUrl),
+            imageUrl: images.find((img) => img.isPrimary)?.imageUrl || images[0]?.imageUrl || null,
+        };
+    },
+    ["catalogue-item-by-slug"],
     {
         tags: ["catalogue"],
         revalidate: 43200,

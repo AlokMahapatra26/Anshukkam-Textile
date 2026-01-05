@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,13 @@ interface ClothingType {
     minOrderQuantity: number | null;
 }
 
+interface Product {
+    id: string;
+    name: string;
+    clothingTypeId: string;
+    minOrderQuantity: number | null;
+}
+
 interface Fabric {
     id: string;
     name: string;
@@ -38,6 +45,7 @@ const sizeRanges = [
 
 interface FormData {
     clothingTypeId: string;
+    productId: string;
     fabricId: string;
     quantity: string;
     sizeRange: string;
@@ -51,6 +59,7 @@ interface FormData {
 
 const initialFormData: FormData = {
     clothingTypeId: "",
+    productId: "",
     fabricId: "",
     quantity: "",
     sizeRange: "",
@@ -71,6 +80,7 @@ const steps = [
 
 export function EnquiryForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState<FormData>(initialFormData);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,6 +88,7 @@ export function EnquiryForm() {
 
     // Dynamic data from API
     const [clothingTypes, setClothingTypes] = useState<ClothingType[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
     const [fabrics, setFabrics] = useState<Fabric[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(true);
 
@@ -108,14 +119,46 @@ export function EnquiryForm() {
         fetchData();
     }, []);
 
-    const updateField = (field: keyof FormData, value: string | boolean) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
+    useEffect(() => {
+        const categoryId = searchParams.get("category");
+        const productId = searchParams.get("product");
+
+        if (categoryId) {
+            setFormData(prev => ({ ...prev, clothingTypeId: categoryId }));
+            fetchProducts(categoryId);
+            if (productId) {
+                setFormData(prev => ({ ...prev, productId: productId }));
+            }
+        }
+    }, [searchParams]);
+
+    const fetchProducts = async (categoryId: string) => {
+        try {
+            const response = await fetch(`/api/catalogue/items?clothingTypeId=${categoryId}`);
+            const result = await response.json();
+            if (result.success) {
+                setProducts(result.data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch products:", error);
+        }
     };
 
-    // Get the selected clothing type's MOQ
+    const updateField = (field: keyof FormData, value: string | boolean) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        if (field === "clothingTypeId") {
+            setFormData((prev) => ({ ...prev, productId: "" })); // Reset product when category changes
+            fetchProducts(value as string);
+        }
+    };
+
+    // Get the selected product's MOQ, fallback to category MOQ, fallback to 500
     const getSelectedMOQ = (): number => {
+        const selectedProduct = products.find(p => p.id === formData.productId);
+        if (selectedProduct?.minOrderQuantity) return selectedProduct.minOrderQuantity;
+
         const selectedType = clothingTypes.find(t => t.id === formData.clothingTypeId);
-        return selectedType?.minOrderQuantity || 500; // Default MOQ is 500
+        return selectedType?.minOrderQuantity || 500;
     };
 
     const validateStep = (step: number): boolean => {
@@ -262,7 +305,7 @@ export function EnquiryForm() {
                     <div className="space-y-6">
                         <div className="space-y-2">
                             <Label htmlFor="clothingType">
-                                Clothing Type <span className="text-destructive">*</span>
+                                Category <span className="text-destructive">*</span>
                             </Label>
                             {clothingTypes.length === 0 ? (
                                 <p className="text-sm text-muted-foreground p-3 bg-muted rounded">
@@ -274,7 +317,7 @@ export function EnquiryForm() {
                                     onValueChange={(value) => updateField("clothingTypeId", value)}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select garment type" />
+                                        <SelectValue placeholder="Select category" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {clothingTypes.map((type) => (
@@ -286,6 +329,29 @@ export function EnquiryForm() {
                                 </Select>
                             )}
                         </div>
+
+                        {formData.clothingTypeId && (
+                            <div className="space-y-2">
+                                <Label htmlFor="product">
+                                    Product (Optional)
+                                </Label>
+                                <Select
+                                    value={formData.productId}
+                                    onValueChange={(value) => updateField("productId", value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select specific product" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {products.map((product) => (
+                                            <SelectItem key={product.id} value={product.id}>
+                                                {product.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
 
                         <div className="space-y-2">
                             <Label htmlFor="fabric">
@@ -477,10 +543,15 @@ export function EnquiryForm() {
                         <div className="space-y-4 divide-y divide-border">
                             <div className="grid grid-cols-2 gap-4 pb-4">
                                 <div>
-                                    <p className="text-sm text-muted-foreground">Clothing Type</p>
+                                    <p className="text-sm text-muted-foreground">Category</p>
                                     <p className="font-medium">
                                         {getSelectedName(formData.clothingTypeId, clothingTypes)}
                                     </p>
+                                    {formData.productId && (
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Product: {getSelectedName(formData.productId, products)}
+                                        </p>
+                                    )}
                                 </div>
                                 <div>
                                     <p className="text-sm text-muted-foreground">Fabric</p>

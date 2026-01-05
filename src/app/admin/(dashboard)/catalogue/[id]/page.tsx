@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -25,60 +26,97 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Loader2, ImageIcon, X, Package } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, ImageIcon, X, ArrowLeft } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 
-interface ClothingType {
+interface Category {
     id: string;
+    name: string;
+}
+
+interface CatalogueImage {
+    id: string;
+    imageUrl: string;
+    isPrimary: boolean;
+}
+
+interface CatalogueItem {
+    id: string;
+    clothingTypeId: string;
     name: string;
     slug: string;
     description: string | null;
-    imageUrl: string | null;
-    images: string[] | null;
     minOrderQuantity: number | null;
     leadTime: string | null;
     sizeRange: string | null;
     displayOrder: number | null;
     isActive: boolean | null;
+    images?: CatalogueImage[];
 }
 
-export default function CataloguePage() {
-    const [types, setTypes] = useState<ClothingType[]>([]);
+export default function CategoryProductsPage() {
+    const params = useParams();
+    const router = useRouter();
+    const categoryId = params.id as string;
+
+    const [category, setCategory] = useState<Category | null>(null);
+    const [items, setItems] = useState<CatalogueItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [editingType, setEditingType] = useState<ClothingType | null>(null);
+    const [editingItem, setEditingItem] = useState<CatalogueItem | null>(null);
+
     const [formData, setFormData] = useState({
         name: "",
         slug: "",
         description: "",
-        imageUrl: "",
         images: [] as string[],
-        minOrderQuantity: 500,
-        leadTime: "3-5 Weeks",
+        minOrderQuantity: 100,
+        leadTime: "3-4 Weeks",
         sizeRange: "XS-5XL",
         displayOrder: 0,
         isActive: true,
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const fetchTypes = async () => {
+    const fetchItems = async () => {
         try {
-            const response = await fetch("/api/catalogue/types?includeInactive=true");
-            const result = await response.json();
-            if (result.success) {
-                setTypes(result.data);
+            const itemsResponse = await fetch(`/api/catalogue/items?clothingTypeId=${categoryId}&includeInactive=true`);
+            const itemsResult = await itemsResponse.json();
+            if (itemsResult.success) {
+                setItems(itemsResult.data);
             }
         } catch (error) {
-            console.error("Failed to fetch types:", error);
-            toast.error("Failed to load catalogue types");
-        } finally {
-            setIsLoading(false);
+            console.error("Failed to fetch items:", error);
         }
     };
 
     useEffect(() => {
-        fetchTypes();
-    }, []);
+        const fetchData = async () => {
+            try {
+                // Fetch category details
+                const catResponse = await fetch(`/api/catalogue/types/${categoryId}`);
+                const catResult = await catResponse.json();
+                if (catResult.success) {
+                    setCategory(catResult.data);
+                } else {
+                    toast.error("Category not found");
+                    router.push("/admin/catalogue");
+                    return;
+                }
+
+                await fetchItems();
+            } catch (error) {
+                console.error("Failed to fetch data:", error);
+                toast.error("Failed to load data");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (categoryId) {
+            fetchData();
+        }
+    }, [categoryId, router]);
 
     const generateSlug = (name: string) => {
         return name
@@ -91,49 +129,44 @@ export default function CataloguePage() {
         setFormData((prev) => ({
             ...prev,
             name,
-            slug: editingType ? prev.slug : generateSlug(name),
+            slug: editingItem ? prev.slug : generateSlug(name),
         }));
     };
 
     const openCreateDialog = () => {
-        setEditingType(null);
+        setEditingItem(null);
         setFormData({
             name: "",
             slug: "",
             description: "",
-            imageUrl: "",
             images: [],
-            minOrderQuantity: 500,
-            leadTime: "3-5 Weeks",
+            minOrderQuantity: 100,
+            leadTime: "3-4 Weeks",
             sizeRange: "XS-5XL",
-            displayOrder: types.length,
+            displayOrder: items.length,
             isActive: true,
         });
         setIsDialogOpen(true);
     };
 
-    const openEditDialog = (type: ClothingType) => {
-        setEditingType(type);
+    const openEditDialog = (item: CatalogueItem) => {
+        setEditingItem(item);
 
-        // Handle migration logic for images
-        let initialImages: string[] = [];
-        if (type.images && type.images.length > 0) {
-            initialImages = type.images;
-        } else if (type.imageUrl) {
-            initialImages = [type.imageUrl];
-        }
+        // Extract image URLs from item.images relation
+        const imageUrls = item.images
+            ? item.images.map(img => img.imageUrl)
+            : [];
 
         setFormData({
-            name: type.name,
-            slug: type.slug,
-            description: type.description || "",
-            imageUrl: type.imageUrl || "",
-            images: initialImages,
-            minOrderQuantity: type.minOrderQuantity || 500,
-            leadTime: type.leadTime || "3-5 Weeks",
-            sizeRange: type.sizeRange || "XS-5XL",
-            displayOrder: type.displayOrder || 0,
-            isActive: type.isActive ?? true,
+            name: item.name,
+            slug: item.slug,
+            description: item.description || "",
+            images: imageUrls,
+            minOrderQuantity: item.minOrderQuantity || 100,
+            leadTime: item.leadTime || "3-4 Weeks",
+            sizeRange: item.sizeRange || "XS-5XL",
+            displayOrder: item.displayOrder || 0,
+            isActive: item.isActive ?? true,
         });
         setIsDialogOpen(true);
     };
@@ -143,15 +176,14 @@ export default function CataloguePage() {
         setIsSubmitting(true);
 
         try {
-            const url = editingType
-                ? `/api/catalogue/types/${editingType.id}`
-                : "/api/catalogue/types";
-            const method = editingType ? "PUT" : "POST";
+            const url = editingItem
+                ? `/api/catalogue/items/${editingItem.id}`
+                : "/api/catalogue/items";
+            const method = editingItem ? "PUT" : "POST";
 
-            // Sync imageUrl with the first image of images array for backward compatibility
             const payload = {
                 ...formData,
-                imageUrl: formData.images.length > 0 ? formData.images[0] : null,
+                clothingTypeId: categoryId,
             };
 
             const response = await fetch(url, {
@@ -164,12 +196,12 @@ export default function CataloguePage() {
 
             if (result.success) {
                 toast.success(
-                    editingType
-                        ? "Type updated successfully"
-                        : "Type created successfully"
+                    editingItem
+                        ? "Product updated successfully"
+                        : "Product created successfully"
                 );
                 setIsDialogOpen(false);
-                fetchTypes();
+                fetchItems();
             } else {
                 toast.error(result.error || "Operation failed");
             }
@@ -181,18 +213,18 @@ export default function CataloguePage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this type?")) return;
+        if (!confirm("Are you sure you want to delete this product?")) return;
 
         try {
-            const response = await fetch(`/api/catalogue/types/${id}`, {
+            const response = await fetch(`/api/catalogue/items/${id}`, {
                 method: "DELETE",
             });
 
             const result = await response.json();
 
             if (result.success) {
-                toast.success("Type deleted successfully");
-                fetchTypes();
+                toast.success("Product deleted successfully");
+                fetchItems();
             } else {
                 toast.error(result.error || "Failed to delete");
             }
@@ -201,27 +233,43 @@ export default function CataloguePage() {
         }
     };
 
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-[50vh]">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             {/* Page Header */}
             <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold">Category Management</h1>
+                <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                        <Link href="/admin/catalogue" className="hover:text-foreground transition-colors flex items-center gap-1 text-sm">
+                            <ArrowLeft className="h-3 w-3" />
+                            Back to Categories
+                        </Link>
+                        <span className="text-border">/</span>
+                        <span className="text-foreground font-medium">{category?.name}</span>
+                    </div>
+                    <h1 className="text-2xl font-bold">Manage Products</h1>
                     <p className="text-muted-foreground">
-                        Manage product categories and manufacturing specifications
+                        Add and edit products for {category?.name}
                     </p>
                 </div>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
                         <Button onClick={openCreateDialog} className="btn-industrial">
                             <Plus className="mr-2 h-4 w-4" />
-                            Add Category
+                            Add Product
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 gap-0">
                         <DialogHeader className="bg-primary px-6 py-4 border-b border-border flex flex-row items-center justify-between space-y-0">
                             <DialogTitle className="text-white uppercase tracking-wider text-base">
-                                {editingType ? "Edit Category" : "Add New Category"}
+                                {editingItem ? "Edit Product" : "Add New Product"}
                             </DialogTitle>
                             <Button
                                 variant="ghost"
@@ -238,19 +286,19 @@ export default function CataloguePage() {
                                     {/* Left Column - Image Upload (4 cols) */}
                                     <div className="lg:col-span-4 space-y-4">
                                         <div className="bg-muted/10 p-3 border border-border rounded-none">
-                                            <Label className="uppercase text-xs font-bold text-muted-foreground mb-3 block">Category Image</Label>
+                                            <Label className="uppercase text-xs font-bold text-muted-foreground mb-3 block">Product Images</Label>
                                             <ImageUpload
                                                 currentImages={formData.images}
                                                 onImagesChange={(urls) =>
                                                     setFormData((prev) => ({ ...prev, images: urls }))
                                                 }
-                                                multiple={false}
-                                                maxFiles={1}
+                                                multiple={true}
+                                                maxFiles={6}
                                             />
                                             <p className="text-[10px] text-muted-foreground mt-2">
-                                                Upload category thumbnail.
+                                                Upload up to 6 images. First image is the main thumbnail.
                                                 <br />
-                                                Recommended size: 800x800px.
+                                                Recommended size: 800x1000px.
                                             </p>
                                         </div>
                                     </div>
@@ -262,12 +310,12 @@ export default function CataloguePage() {
                                             <h4 className="text-xs font-bold uppercase text-primary border-b border-border pb-2 mb-4">Basic Information</h4>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-1.5">
-                                                    <Label htmlFor="name" className="text-xs uppercase text-muted-foreground">Category Name *</Label>
+                                                    <Label htmlFor="name" className="text-xs uppercase text-muted-foreground">Product Name *</Label>
                                                     <Input
                                                         id="name"
                                                         value={formData.name}
                                                         onChange={(e) => handleNameChange(e.target.value)}
-                                                        placeholder="e.g., T-Shirts & Polos"
+                                                        placeholder="e.g., Slim Fit Cotton Kurti"
                                                         required
                                                         className="h-9"
                                                     />
@@ -280,14 +328,14 @@ export default function CataloguePage() {
                                                         onChange={(e) =>
                                                             setFormData((prev) => ({ ...prev, slug: e.target.value }))
                                                         }
-                                                        placeholder="e.g., t-shirts-polos"
+                                                        placeholder="e.g., slim-fit-cotton-kurti"
                                                         required
                                                         className="h-9 font-mono text-xs"
                                                     />
                                                 </div>
                                             </div>
                                             <div className="mt-4 space-y-1.5">
-                                                <Label htmlFor="description" className="text-xs uppercase text-muted-foreground">Category Description</Label>
+                                                <Label htmlFor="description" className="text-xs uppercase text-muted-foreground">Description</Label>
                                                 <Textarea
                                                     id="description"
                                                     value={formData.description}
@@ -297,7 +345,7 @@ export default function CataloguePage() {
                                                             description: e.target.value,
                                                         }))
                                                     }
-                                                    placeholder="Detailed category description..."
+                                                    placeholder="Detailed product description..."
                                                     rows={4}
                                                     className="resize-none max-h-[120px] overflow-y-auto"
                                                 />
@@ -305,7 +353,57 @@ export default function CataloguePage() {
                                         </div>
 
                                         {/* Specs Section */}
-
+                                        <div>
+                                            <h4 className="text-xs font-bold uppercase text-primary border-b border-border pb-2 mb-4">Manufacturing Specs</h4>
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="minOrderQuantity" className="text-xs uppercase text-muted-foreground">MOQ</Label>
+                                                    <Input
+                                                        id="minOrderQuantity"
+                                                        type="number"
+                                                        value={formData.minOrderQuantity}
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                minOrderQuantity: parseInt(e.target.value) || 0,
+                                                            }))
+                                                        }
+                                                        placeholder="100"
+                                                        className="h-9"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="leadTime" className="text-xs uppercase text-muted-foreground">Lead Time</Label>
+                                                    <Input
+                                                        id="leadTime"
+                                                        value={formData.leadTime}
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                leadTime: e.target.value,
+                                                            }))
+                                                        }
+                                                        placeholder="3-4 Weeks"
+                                                        className="h-9"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="sizeRange" className="text-xs uppercase text-muted-foreground">Size Range</Label>
+                                                    <Input
+                                                        id="sizeRange"
+                                                        value={formData.sizeRange}
+                                                        onChange={(e) =>
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                sizeRange: e.target.value,
+                                                            }))
+                                                        }
+                                                        placeholder="XS-5XL"
+                                                        className="h-9"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
 
                                         {/* Visibility Section */}
                                         <div>
@@ -375,7 +473,7 @@ export default function CataloguePage() {
                                     {isSubmitting && (
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     )}
-                                    {editingType ? "Save Category" : "Create Category"}
+                                    {editingItem ? "Save Changes" : "Create Product"}
                                 </Button>
                             </div>
                         </form>
@@ -383,21 +481,17 @@ export default function CataloguePage() {
                 </Dialog>
             </div>
 
-            {/* Clothing Types Table */}
+            {/* Products Table */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Categories</CardTitle>
+                    <CardTitle>Products</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {isLoading ? (
-                        <div className="flex items-center justify-center py-8">
-                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : types.length === 0 ? (
+                    {items.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">
-                            <p>No categories yet</p>
+                            <p>No products yet</p>
                             <p className="text-sm">
-                                Click &quot;Add Category&quot; to get started
+                                Click &quot;Add Product&quot; to get started
                             </p>
                         </div>
                     ) : (
@@ -406,67 +500,69 @@ export default function CataloguePage() {
                                 <TableRow>
                                     <TableHead className="w-16">Image</TableHead>
                                     <TableHead>Name</TableHead>
-
+                                    <TableHead>MOQ</TableHead>
+                                    <TableHead>Lead Time</TableHead>
+                                    <TableHead>Sizes</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {types.map((type) => (
-                                    <TableRow key={type.id}>
-                                        <TableCell>
-                                            {type.imageUrl ? (
-                                                <div className="relative h-10 w-14 rounded overflow-hidden bg-muted group">
-                                                    <Image
-                                                        src={type.imageUrl}
-                                                        alt={type.name}
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                    {type.images && type.images.length > 1 && (
-                                                        <div className="absolute bottom-0 right-0 bg-black/60 text-white text-[10px] px-1">
-                                                            +{type.images.length - 1}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                <div className="h-10 w-14 rounded bg-muted flex items-center justify-center">
-                                                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                                                </div>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="font-medium">{type.name}</TableCell>
-
-                                        <TableCell>
-                                            <Badge variant={type.isActive ? "default" : "secondary"}>
-                                                {type.isActive ? "Active" : "Hidden"}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Link href={`/admin/catalogue/${type.id}`}>
-                                                    <Button variant="ghost" size="icon" title="Manage Products">
-                                                        <Package className="h-4 w-4" />
+                                {items.map((item) => {
+                                    const primaryImage = item.images?.find(img => img.isPrimary)?.imageUrl || item.images?.[0]?.imageUrl;
+                                    return (
+                                        <TableRow key={item.id}>
+                                            <TableCell>
+                                                {primaryImage ? (
+                                                    <div className="relative h-10 w-14 rounded overflow-hidden bg-muted group">
+                                                        <Image
+                                                            src={primaryImage}
+                                                            alt={item.name}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                        {item.images && item.images.length > 1 && (
+                                                            <div className="absolute bottom-0 right-0 bg-black/60 text-white text-[10px] px-1">
+                                                                +{item.images.length - 1}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div className="h-10 w-14 rounded bg-muted flex items-center justify-center">
+                                                        <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="font-medium">{item.name}</TableCell>
+                                            <TableCell>{item.minOrderQuantity || 100}+</TableCell>
+                                            <TableCell>{item.leadTime || "3-4 Weeks"}</TableCell>
+                                            <TableCell>{item.sizeRange || "XS-5XL"}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={item.isActive ? "default" : "secondary"}>
+                                                    {item.isActive ? "Active" : "Hidden"}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => openEditDialog(item)}
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
                                                     </Button>
-                                                </Link>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => openEditDialog(type)}
-                                                >
-                                                    <Pencil className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleDelete(type.id)}
-                                                >
-                                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleDelete(item.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     )}

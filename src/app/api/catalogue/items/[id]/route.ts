@@ -5,6 +5,7 @@ import {
     getCatalogueItemById,
     updateCatalogueItem,
     deleteCatalogueItem,
+    updateCatalogueItemImages,
 } from "@/lib/services/catalogue";
 
 const updateCatalogueItemSchema = z.object({
@@ -22,6 +23,7 @@ const updateCatalogueItemSchema = z.object({
     displayOrder: z.number().int().optional(),
     isActive: z.boolean().optional(),
     isFeatured: z.boolean().optional(),
+    images: z.array(z.string()).optional(),
 });
 
 export async function GET(
@@ -58,13 +60,19 @@ export async function PUT(
         const body = await request.json();
         const validatedData = updateCatalogueItemSchema.parse(body);
 
-        const result = await updateCatalogueItem(id, validatedData);
+        const { images, ...itemData } = validatedData;
+
+        const result = await updateCatalogueItem(id, itemData);
 
         if (!result) {
             return NextResponse.json(
                 { success: false, error: "Catalogue item not found" },
                 { status: 404 }
             );
+        }
+
+        if (images) {
+            await updateCatalogueItemImages(id, images);
         }
 
         // Invalidate cache so public pages show updated item immediately

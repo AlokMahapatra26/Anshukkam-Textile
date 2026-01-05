@@ -3,7 +3,9 @@ import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import {
     getCatalogueItems,
+    getCatalogueItemsByType,
     createCatalogueItem,
+    updateCatalogueItemImages,
 } from "@/lib/services/catalogue";
 
 const createCatalogueItemSchema = z.object({
@@ -21,14 +23,21 @@ const createCatalogueItemSchema = z.object({
     displayOrder: z.number().int().optional(),
     isActive: z.boolean().optional(),
     isFeatured: z.boolean().optional(),
+    images: z.array(z.string()).optional(),
 });
 
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const includeInactive = searchParams.get("includeInactive") === "true";
+        const clothingTypeId = searchParams.get("clothingTypeId");
 
-        const items = await getCatalogueItems(!includeInactive);
+        let items;
+        if (clothingTypeId) {
+            items = await getCatalogueItemsByType(clothingTypeId, !includeInactive);
+        } else {
+            items = await getCatalogueItems(!includeInactive);
+        }
 
         return NextResponse.json({ success: true, data: items });
     } catch (error) {
@@ -45,7 +54,15 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const validatedData = createCatalogueItemSchema.parse(body);
 
-        const result = await createCatalogueItem(validatedData);
+        // Extract images from data as it's not part of the catalogueItems table
+        const { images, ...itemData } = validatedData;
+
+        const result = await createCatalogueItem(itemData);
+
+        // Handle images if provided
+        if (images && images.length > 0) {
+            await updateCatalogueItemImages(result.id, images);
+        }
 
         // Invalidate cache so public pages show new item immediately
         revalidateTag("catalogue", "max");

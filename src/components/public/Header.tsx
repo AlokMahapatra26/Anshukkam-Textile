@@ -11,7 +11,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 const navigation = [
     { name: "Home", href: "/" },
-    { name: "Catalogue", href: "/catalogue" },
+    { name: "Categories", href: "/catalogue" },
     { name: "Fabrics", href: "/fabrics" },
     { name: "Factory", href: "/factory" },
     { name: "About", href: "/about" },

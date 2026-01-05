@@ -266,3 +266,24 @@ export async function setPrimaryCatalogueImage(
         .set({ isPrimary: true })
         .where(eq(catalogueImages.id, imageId));
 }
+
+export async function updateCatalogueItemImages(
+    itemId: string,
+    imageUrls: string[]
+) {
+    // Delete existing images
+    await db
+        .delete(catalogueImages)
+        .where(eq(catalogueImages.catalogueItemId, itemId));
+
+    // Insert new images
+    if (imageUrls.length > 0) {
+        const newImages = imageUrls.map((url, index) => ({
+            catalogueItemId: itemId,
+            imageUrl: url,
+            displayOrder: index,
+            isPrimary: index === 0,
+        }));
+        await db.insert(catalogueImages).values(newImages);
+    }
+}
