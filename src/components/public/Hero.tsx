@@ -5,8 +5,8 @@ import { FadeIn, FadeInStagger, FadeInItem } from "@/components/ui/MotionContain
 
 export function Hero() {
     return (
-        <section className="relative overflow-hidden" style={{ backgroundColor: '#f5f5f5' }}>
-
+        <section className="relative overflow-hidden bg-fabric-pattern">
+            <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px]" />
             <div className="relative container-industrial">
                 <div className="py-16 md:py-24 lg:py-32">
 

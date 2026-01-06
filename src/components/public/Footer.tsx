@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export function Footer() {
     return (
-        <footer className="bg-primary text-primary-foreground">
+        <footer className="bg-primary text-primary-foreground bg-fabric-pattern bg-blend-overlay">
             <div className="container-industrial py-16">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
                     {/* Company Info */}
@@ -85,9 +85,7 @@ export function Footer() {
 
                 <div className="border-t border-primary-foreground/20 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-sm opacity-60 flex items-center gap-1">
-                        © {new Date().getFullYear()} Anshuukam Textile Pvt Ltd. Made with
-                        <Heart className="h-4 w-4 mx-1 text-red-400" />
-                        in India.
+                        © {new Date().getFullYear()} Anshuukam Textile Pvt Ltd.
                     </p>
                     <div className="flex items-center gap-3">
                         <a

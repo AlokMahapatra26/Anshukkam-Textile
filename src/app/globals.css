@@ -396,6 +396,13 @@
   .container-industrial {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
+
+  /* Fabric Pattern Background */
+  .bg-fabric-pattern {
+    background-image: url('/fabric-of-squares.png');
+    background-repeat: repeat;
+    background-size: 400px; /* Adjust size as needed */
+  }
 }
 
 @layer utilities {
