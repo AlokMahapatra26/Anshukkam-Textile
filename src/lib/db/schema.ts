@@ -108,6 +108,49 @@ export const enquiries = pgTable("enquiries", {
     updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// ==================== DESIGN ENQUIRIES TABLE ====================
+
+export const designTemplates = pgTable("design_templates", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: varchar("name", { length: 255 }).notNull(),
+    colorName: varchar("color_name", { length: 100 }).notNull(),
+    colorHex: varchar("color_hex", { length: 50 }).notNull(),
+    frontImageUrl: text("front_image_url").notNull(),
+    backImageUrl: text("back_image_url").notNull(),
+    sideImageUrl: text("side_image_url").notNull(),
+    isActive: boolean("is_active").default(true),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const designEnquiries = pgTable("design_enquiries", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    // Design Data
+    designImageUrl: text("design_image_url").notNull(), // Exported design image
+    originalLogoUrl: text("original_logo_url"), // High-res uploaded logo
+    designJson: jsonb("design_json"), // Canvas state
+    // Product Details
+    fabricId: uuid("fabric_id").references(() => fabrics.id, {
+        onDelete: "set null",
+    }),
+    fabricName: varchar("fabric_name", { length: 255 }),
+    printType: varchar("print_type", { length: 100 }).notNull(),
+    quantity: integer("quantity").notNull(),
+    sizeRange: varchar("size_range", { length: 255 }),
+    // Contact Information
+    phoneNumber: varchar("phone_number", { length: 50 }).notNull(),
+    email: varchar("email", { length: 255 }),
+    companyName: varchar("company_name", { length: 255 }),
+    contactPerson: varchar("contact_person", { length: 255 }),
+    notes: text("notes"),
+    // Status
+    status: varchar("status", { length: 50 }).default("pending"),
+    adminNotes: text("admin_notes"),
+    // Timestamps
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // ==================== SITE SETTINGS TABLES ====================
 
 export const siteSettings = pgTable("site_settings", {
@@ -151,6 +194,7 @@ export const clothingTypesRelations = relations(clothingTypes, ({ many }) => ({
 
 export const fabricsRelations = relations(fabrics, ({ many }) => ({
     enquiries: many(enquiries),
+    designEnquiries: many(designEnquiries),
 }));
 
 export const catalogueItemsRelations = relations(
@@ -185,6 +229,13 @@ export const enquiriesRelations = relations(enquiries, ({ one }) => ({
     }),
 }));
 
+export const designEnquiriesRelations = relations(designEnquiries, ({ one }) => ({
+    fabric: one(fabrics, {
+        fields: [designEnquiries.fabricId],
+        references: [fabrics.id],
+    }),
+}));
+
 // ==================== TYPES ====================
 
 export type ClothingType = typeof clothingTypes.$inferSelect;
@@ -210,3 +261,9 @@ export type NewSiteSection = typeof siteSections.$inferInsert;
 
 export type FactoryPhoto = typeof factoryPhotos.$inferSelect;
 export type NewFactoryPhoto = typeof factoryPhotos.$inferInsert;
+
+export type DesignEnquiry = typeof designEnquiries.$inferSelect;
+export type NewDesignEnquiry = typeof designEnquiries.$inferInsert;
+
+export type DesignTemplate = typeof designTemplates.$inferSelect;
+export type NewDesignTemplate = typeof designTemplates.$inferInsert;

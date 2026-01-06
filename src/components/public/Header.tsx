@@ -14,6 +14,7 @@ const navigation = [
     { name: "Home", href: "/" },
     { name: "Categories", href: "/catalogue" },
     { name: "Fabrics", href: "/fabrics" },
+    { name: "Design", href: "/design" },
     { name: "Factory", href: "/factory" },
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
@@ -109,8 +110,8 @@ export function Header({ navigationData }: HeaderProps) {
                                                                     <div
                                                                         key={cat.id}
                                                                         className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer text-sm transition-colors ${activeCategory?.id === cat.id
-                                                                                ? "bg-accent text-accent-foreground font-medium"
-                                                                                : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                                                                            ? "bg-accent text-accent-foreground font-medium"
+                                                                            : "hover:bg-muted text-muted-foreground hover:text-foreground"
                                                                             }`}
                                                                         onMouseEnter={() => setActiveCategory(cat)}
                                                                     >
