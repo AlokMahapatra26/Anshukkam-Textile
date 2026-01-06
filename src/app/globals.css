@@ -9,6 +9,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+  --font-serif-display: var(--font-serif-display);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -336,7 +338,9 @@
   h4,
   h5,
   h6 {
-    @apply font-semibold tracking-tight;
+    @apply tracking-tight;
+    font-family: var(--font-serif-display), serif;
+    font-weight: 500;
   }
 }
 
@@ -401,7 +405,8 @@
   .bg-fabric-pattern {
     background-image: url('/fabric-of-squares.png');
     background-repeat: repeat;
-    background-size: 400px; /* Adjust size as needed */
+    background-size: 400px;
+    /* Adjust size as needed */
   }
 }
 
@@ -412,6 +417,15 @@
 
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+  }
+
+  /* Serif Font Utilities */
+  .font-serif {
+    font-family: var(--font-serif), serif;
+  }
+
+  .font-serif-display {
+    font-family: var(--font-serif-display), serif;
   }
 
   /* Stitching Aesthetic */
@@ -427,6 +441,17 @@
   .border-stitch-hover {
     @apply transition-all duration-300 hover:border-accent hover:bg-accent/5;
   }
+}
+
+/* Admin panel override - keep sans-serif fonts */
+.admin-enterprise h1,
+.admin-enterprise h2,
+.admin-enterprise h3,
+.admin-enterprise h4,
+.admin-enterprise h5,
+.admin-enterprise h6 {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 600;
 }
 
 /* Smooth Scrolling */
