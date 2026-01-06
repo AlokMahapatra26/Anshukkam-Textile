@@ -131,7 +131,9 @@ export const enquiries = pgTable("enquiries", {
 export const designEnquiries = pgTable("design_enquiries", {
     id: uuid("id").primaryKey().defaultRandom(),
     // Design Data
-    designImageUrl: text("design_image_url").notNull(), // Exported design image
+    designImageUrl: text("design_image_url").notNull(), // Front design image
+    backDesignImageUrl: text("back_design_image_url"), // Back design image
+    sideDesignImageUrl: text("side_design_image_url"), // Side design image
     originalLogoUrl: text("original_logo_url"), // High-res uploaded logo
     designJson: jsonb("design_json"), // Canvas state
     // Product Details

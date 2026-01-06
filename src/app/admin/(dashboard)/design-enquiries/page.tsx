@@ -44,6 +44,8 @@ import Image from "next/image";
 interface DesignEnquiry {
     id: string;
     designImageUrl: string;
+    backDesignImageUrl: string | null;
+    sideDesignImageUrl: string | null;
     originalLogoUrl: string | null;
     designJson: any;
     fabricName: string | null;
@@ -329,35 +331,85 @@ export default function DesignEnquiriesPage() {
                     </DialogHeader>
                     {selectedEnquiry && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Left Column - Design Preview */}
+                            {/* Left Column - Design Previews */}
                             <div className="space-y-4">
-                                <div className="aspect-square relative rounded-lg overflow-hidden border border-border bg-muted">
-                                    <Image
-                                        src={selectedEnquiry.designImageUrl}
-                                        alt="Design"
-                                        fill
-                                        className="object-contain"
-                                    />
-                                </div>
-                                <div className="grid gap-2">
+                                {/* Front Design */}
+                                <div>
+                                    <p className="text-xs uppercase tracking-wide text-muted-foreground mb-2 font-medium">Front Design</p>
+                                    <div className="aspect-square relative rounded-lg overflow-hidden border border-border bg-muted">
+                                        <Image
+                                            src={selectedEnquiry.designImageUrl}
+                                            alt="Front Design"
+                                            fill
+                                            className="object-contain"
+                                        />
+                                    </div>
                                     <Button
                                         variant="outline"
-                                        className="w-full"
-                                        onClick={() => downloadDesignImage(selectedEnquiry.designImageUrl, selectedEnquiry.id)}
+                                        className="w-full mt-2"
+                                        onClick={() => downloadDesignImage(selectedEnquiry.designImageUrl, `${selectedEnquiry.id}-front`)}
                                     >
                                         <Download className="mr-2 h-4 w-4" />
-                                        Download Preview
+                                        Download Front
                                     </Button>
-                                    {selectedEnquiry.originalLogoUrl && (
-                                        <Button
-                                            className="w-full"
-                                            onClick={() => downloadDesignImage(selectedEnquiry.originalLogoUrl!, `${selectedEnquiry.id}-logo`)}
-                                        >
-                                            <ImageIcon className="mr-2 h-4 w-4" />
-                                            Download Original Logo
-                                        </Button>
-                                    )}
                                 </div>
+
+                                {/* Back Design */}
+                                {selectedEnquiry.backDesignImageUrl && (
+                                    <div>
+                                        <p className="text-xs uppercase tracking-wide text-muted-foreground mb-2 font-medium">Back Design</p>
+                                        <div className="aspect-square relative rounded-lg overflow-hidden border border-border bg-muted">
+                                            <Image
+                                                src={selectedEnquiry.backDesignImageUrl}
+                                                alt="Back Design"
+                                                fill
+                                                className="object-contain"
+                                            />
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            className="w-full mt-2"
+                                            onClick={() => downloadDesignImage(selectedEnquiry.backDesignImageUrl!, `${selectedEnquiry.id}-back`)}
+                                        >
+                                            <Download className="mr-2 h-4 w-4" />
+                                            Download Back
+                                        </Button>
+                                    </div>
+                                )}
+
+                                {/* Side Design */}
+                                {selectedEnquiry.sideDesignImageUrl && (
+                                    <div>
+                                        <p className="text-xs uppercase tracking-wide text-muted-foreground mb-2 font-medium">Side Design</p>
+                                        <div className="aspect-square relative rounded-lg overflow-hidden border border-border bg-muted">
+                                            <Image
+                                                src={selectedEnquiry.sideDesignImageUrl}
+                                                alt="Side Design"
+                                                fill
+                                                className="object-contain"
+                                            />
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            className="w-full mt-2"
+                                            onClick={() => downloadDesignImage(selectedEnquiry.sideDesignImageUrl!, `${selectedEnquiry.id}-side`)}
+                                        >
+                                            <Download className="mr-2 h-4 w-4" />
+                                            Download Side
+                                        </Button>
+                                    </div>
+                                )}
+
+                                {/* Original Logo */}
+                                {selectedEnquiry.originalLogoUrl && (
+                                    <Button
+                                        className="w-full"
+                                        onClick={() => downloadDesignImage(selectedEnquiry.originalLogoUrl!, `${selectedEnquiry.id}-logo`)}
+                                    >
+                                        <ImageIcon className="mr-2 h-4 w-4" />
+                                        Download Original Logo
+                                    </Button>
+                                )}
                             </div>
 
                             {/* Right Column - Details */}

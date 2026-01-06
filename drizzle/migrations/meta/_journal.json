@@ -36,6 +36,13 @@
       "when": 1767689761065,
       "tag": "0004_red_radioactive_man",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1767730977753,
+      "tag": "0005_add_back_design_image",
+      "breakpoints": true
     }
   ]
 }

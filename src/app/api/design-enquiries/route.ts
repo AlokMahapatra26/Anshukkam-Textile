@@ -10,7 +10,9 @@ import { getFabricById } from "@/lib/services/catalogue";
 import { sendDesignEnquiryNotification } from "@/lib/services/email";
 
 const createDesignEnquirySchema = z.object({
-    designImageUrl: z.string(), // Can be data URL
+    designImageUrl: z.string(), // Front design - Can be data URL
+    backDesignImageUrl: z.string().nullable().optional(), // Back design - Can be data URL
+    sideDesignImageUrl: z.string().nullable().optional(), // Side design - Can be data URL
     originalLogoUrl: z.string().nullable().optional(), // Can be data URL
     designJson: z.any().nullable().optional(),
     fabricId: z.string().uuid(),
@@ -81,7 +83,6 @@ export async function POST(request: NextRequest) {
                 companyName: validatedData.companyName,
                 contactPerson: validatedData.contactPerson,
                 notes: validatedData.notes,
-                designImageUrl: validatedData.designImageUrl,
                 printType: validatedData.printType,
             });
         } catch (emailError) {

@@ -28,7 +28,6 @@ interface EnquiryEmailData {
 }
 
 interface DesignEnquiryEmailData extends EnquiryEmailData {
-  designImageUrl: string;
   printType: string;
 }
 
@@ -263,14 +262,8 @@ export async function sendDesignEnquiryNotification(data: DesignEnquiryEmailData
         🎨 New Design Enquiry Received
       </p>
       <p style="margin: 4px 0 0 0; color: #a16207; font-size: 13px;">
-        A new custom design enquiry has been submitted.
+        A new custom design enquiry has been submitted. View the design in the admin panel.
       </p>
-    </div>
-
-    <!-- Design Preview -->
-    <div style="margin-bottom: 24px; text-align: center; background-color: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
-        <h2 style="margin: 0 0 16px 0; color: #1e293b; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Design Preview</h2>
-        <img src="${data.designImageUrl}" alt="Design Preview" style="max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />
     </div>
 
     <!-- Contact Information Card -->
@@ -361,6 +354,13 @@ export async function sendDesignEnquiryNotification(data: DesignEnquiryEmailData
       </p>
     </div>
     ` : ""}
+
+    <!-- Action Note -->
+    <div style="text-align: center; padding-top: 16px;">
+      <p style="margin: 0; color: #64748b; font-size: 13px;">
+        View the design images in the Admin Panel → Design Enquiries
+      </p>
+    </div>
   `;
 
   const resend = getResendClient();

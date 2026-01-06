@@ -286,15 +286,34 @@ export default function DesignPage() {
         fabricCanvasRef.current.renderAll();
     };
 
-    // Handle Color Change
+    // Handle Color Change - Preserve canvas designs when switching colors
     const handleColorChange = (color: CatalogueItemColor) => {
         if (!fabricCanvasRef.current) return;
+
+        // Save current canvas state before changing color
+        const json = fabricCanvasRef.current.toJSON();
+        setCanvasStates((prev) => ({ ...prev, [currentView]: json }));
+
         setSelectedColor(color);
     };
 
     const handleItemChange = (itemId: string) => {
         const item = catalogueItems.find(i => i.id === itemId);
         if (item && item.colors.length > 0) {
+            // Clear all canvas states when changing product
+            setCanvasStates({
+                front: null,
+                back: null,
+                side: null,
+            });
+
+            // Clear the actual canvas
+            if (fabricCanvasRef.current) {
+                fabricCanvasRef.current.clear();
+                fabricCanvasRef.current.backgroundColor = "transparent";
+                fabricCanvasRef.current.renderAll();
+            }
+
             setSelectedItem(item);
             setSelectedColor(item.colors[0]);
         }
@@ -498,60 +517,88 @@ export default function DesignPage() {
 
         try {
             // Save current view state first
+            let updatedCanvasStates = { ...canvasStates };
             if (fabricCanvasRef.current) {
                 const json = fabricCanvasRef.current.toJSON();
-                setCanvasStates(prev => ({ ...prev, [currentView]: json }));
+                updatedCanvasStates = { ...updatedCanvasStates, [currentView]: json };
+                setCanvasStates(updatedCanvasStates);
             }
 
-            // Generate preview image with background
-            let designImageUrl = "";
-            if (fabricCanvasRef.current && selectedColor) {
-                const currentSrc = currentView === "front" ? selectedColor.frontImageUrl :
-                    currentView === "back" ? selectedColor.backImageUrl :
-                        selectedColor.sideImageUrl;
+            const fabricModule = await import("fabric");
 
-                if (currentSrc) {
-                    try {
-                        const fabricModule = await import("fabric");
-                        await new Promise<void>((resolve) => {
-                            fabricModule.FabricImage.fromURL(currentSrc, { crossOrigin: 'anonymous' }).then((img) => {
-                                // The canvas and image container have the same aspect ratio in the UI.
-                                // We scale the image to cover the canvas.
-                                const canvas = fabricCanvasRef.current;
-                                if (!canvas) { resolve(); return; }
+            // Helper function to generate composite image for a view
+            const generateCompositeImage = async (view: "front" | "back", canvasState: any, backgroundUrl: string | undefined): Promise<string> => {
+                if (!fabricCanvasRef.current || !backgroundUrl || !canvasState) return "";
 
-                                // Scale image to cover the canvas
-                                const scaleX = canvas.width! / img.width!;
-                                const scaleY = canvas.height! / img.height!;
-                                const scale = Math.max(scaleX, scaleY);
+                const canvas = fabricCanvasRef.current;
 
-                                img.scale(scale);
+                // Load the canvas state for this view
+                await canvas.loadFromJSON(canvasState);
 
-                                // Center the image
-                                img.set({
-                                    originX: 'center',
-                                    originY: 'center',
-                                    left: canvas.width! / 2,
-                                    top: canvas.height! / 2
-                                });
+                // Add background image
+                try {
+                    await new Promise<void>((resolve) => {
+                        fabricModule.FabricImage.fromURL(backgroundUrl, { crossOrigin: 'anonymous' }).then((img) => {
+                            const scaleX = canvas.width! / img.width!;
+                            const scaleY = canvas.height! / img.height!;
+                            const scale = Math.max(scaleX, scaleY);
+                            img.scale(scale);
+                            img.set({
+                                originX: 'center',
+                                originY: 'center',
+                                left: canvas.width! / 2,
+                                top: canvas.height! / 2
+                            });
+                            canvas.backgroundImage = img;
+                            canvas.renderAll();
+                            resolve();
+                        }).catch(() => resolve());
+                    });
 
-                                canvas.backgroundImage = img;
-                                canvas.renderAll();
-                                resolve();
-                            }).catch(() => resolve());
-                        });
-                        designImageUrl = fabricCanvasRef.current.toDataURL();
+                    const dataUrl = canvas.toDataURL();
 
-                        // Clear background
-                        fabricCanvasRef.current.backgroundImage = null;
-                        fabricCanvasRef.current.renderAll();
-                    } catch (e) {
-                        console.error("Error creating composite image", e);
-                        designImageUrl = fabricCanvasRef.current.toDataURL();
-                    }
-                } else {
-                    designImageUrl = fabricCanvasRef.current.toDataURL();
+                    // Clear background
+                    canvas.backgroundImage = null;
+                    canvas.renderAll();
+
+                    return dataUrl;
+                } catch (e) {
+                    console.error(`Error creating ${view} composite image`, e);
+                    return canvas.toDataURL();
                 }
+            };
+
+            // Generate front design image
+            let designImageUrl = "";
+            if (selectedColor?.frontImageUrl && updatedCanvasStates.front) {
+                designImageUrl = await generateCompositeImage("front", updatedCanvasStates.front, selectedColor.frontImageUrl);
+            } else if (fabricCanvasRef.current && updatedCanvasStates.front) {
+                await fabricCanvasRef.current.loadFromJSON(updatedCanvasStates.front);
+                designImageUrl = fabricCanvasRef.current.toDataURL();
+            }
+
+            // Generate back design image
+            let backDesignImageUrl = "";
+            if (selectedColor?.backImageUrl && updatedCanvasStates.back) {
+                backDesignImageUrl = await generateCompositeImage("back", updatedCanvasStates.back, selectedColor.backImageUrl);
+            } else if (fabricCanvasRef.current && updatedCanvasStates.back) {
+                await fabricCanvasRef.current.loadFromJSON(updatedCanvasStates.back);
+                backDesignImageUrl = fabricCanvasRef.current.toDataURL();
+            }
+
+            // Generate side design image
+            let sideDesignImageUrl = "";
+            if (selectedColor?.sideImageUrl && updatedCanvasStates.side) {
+                sideDesignImageUrl = await generateCompositeImage("side" as any, updatedCanvasStates.side, selectedColor.sideImageUrl);
+            } else if (fabricCanvasRef.current && updatedCanvasStates.side) {
+                await fabricCanvasRef.current.loadFromJSON(updatedCanvasStates.side);
+                sideDesignImageUrl = fabricCanvasRef.current.toDataURL();
+            }
+
+            // Restore current view state
+            if (fabricCanvasRef.current && updatedCanvasStates[currentView]) {
+                await fabricCanvasRef.current.loadFromJSON(updatedCanvasStates[currentView]);
+                fabricCanvasRef.current.renderAll();
             }
 
             const response = await fetch("/api/design-enquiries", {
@@ -559,8 +606,10 @@ export default function DesignPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     designImageUrl,
+                    backDesignImageUrl: backDesignImageUrl || undefined,
+                    sideDesignImageUrl: sideDesignImageUrl || undefined,
                     originalLogoUrl: originalLogoUrl || undefined,
-                    designJson: canvasStates, // Send ALL views
+                    designJson: updatedCanvasStates, // Send ALL views
                     fabricId: formData.fabricId,
                     printType: formData.printType,
                     quantity: parseInt(formData.quantity),
