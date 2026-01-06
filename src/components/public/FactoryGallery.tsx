@@ -66,7 +66,7 @@ export function FactoryGallery({ photos, categories, categoryLabels }: FactoryGa
                     {filteredPhotos.map((photo, index) => (
                         <div
                             key={photo.id}
-                            className="group relative overflow-hidden rounded-lg cursor-pointer transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl"
+                            className="card-factory group relative overflow-hidden cursor-pointer transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl"
                             style={{
                                 animation: `fadeInUp 0.6s ease-out ${index * 100}ms forwards`,
                                 opacity: 0,
@@ -83,19 +83,22 @@ export function FactoryGallery({ photos, categories, categoryLabels }: FactoryGa
                                 />
                             </div>
 
+                            {/* Overlay with industrial border */}
+                            <div className="absolute inset-0 border-2 border-transparent group-hover:border-accent/50 transition-colors duration-300 pointer-events-none z-20" />
+
                             {/* Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                                 <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                                     {photo.category && (
-                                        <span className="inline-block bg-accent text-accent-foreground text-xs font-medium px-2 py-1 rounded mb-2">
+                                        <span className="inline-block bg-accent text-accent-foreground text-xs font-bold px-2 py-1 mb-2 uppercase tracking-wider">
                                             {categoryLabels[photo.category] || photo.category}
                                         </span>
                                     )}
-                                    <h3 className="text-white text-lg font-semibold mb-1">
+                                    <h3 className="text-white text-lg font-bold mb-1 font-serif-display tracking-wide">
                                         {photo.title}
                                     </h3>
                                     {photo.description && (
-                                        <p className="text-white/80 text-sm line-clamp-2">
+                                        <p className="text-white/80 text-sm line-clamp-2 font-mono text-xs">
                                             {photo.description}
                                         </p>
                                     )}
@@ -109,28 +112,36 @@ export function FactoryGallery({ photos, categories, categoryLabels }: FactoryGa
             {/* Lightbox Modal */}
             {selectedPhoto && (
                 <div
-                    className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 animate-fade-in"
+                    className="fixed inset-0 z-50 bg-black/95 bg-metal-mesh flex items-center justify-center p-4 animate-fade-in"
                     onClick={() => setSelectedPhoto(null)}
                 >
                     <button
-                        className="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-full transition-colors"
+                        className="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-none border border-white/20 hover:border-accent transition-colors"
                         onClick={() => setSelectedPhoto(null)}
                     >
                         <X className="h-8 w-8" />
                     </button>
                     <div
-                        className="max-w-5xl max-h-[90vh] w-full animate-scale-in"
+                        className="max-w-5xl max-h-[90vh] w-full animate-scale-in relative"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <img
-                            src={selectedPhoto.imageUrl}
-                            alt={selectedPhoto.title}
-                            className="w-full h-auto max-h-[70vh] object-contain rounded-lg"
-                        />
-                        <div className="mt-4 text-center text-white">
-                            <h3 className="text-2xl font-bold mb-2">{selectedPhoto.title}</h3>
+                        <div className="relative border-4 border-white/10 p-1 bg-black/50 backdrop-blur-sm">
+                            <img
+                                src={selectedPhoto.imageUrl}
+                                alt={selectedPhoto.title}
+                                className="w-full h-auto max-h-[70vh] object-contain"
+                            />
+
+                            {/* Quality Stamp */}
+                            <div className="absolute top-4 right-4 stamp-quality" />
+                        </div>
+
+                        <div className="mt-6 text-center text-white">
+                            <h3 className="text-3xl font-bold mb-2 font-serif-display tracking-wide text-accent">{selectedPhoto.title}</h3>
                             {selectedPhoto.description && (
-                                <p className="text-white/80">{selectedPhoto.description}</p>
+                                <p className="text-white/80 max-w-2xl mx-auto font-mono text-sm border-t border-white/10 pt-4 mt-4 inline-block px-8">
+                                    {selectedPhoto.description}
+                                </p>
                             )}
                         </div>
                     </div>

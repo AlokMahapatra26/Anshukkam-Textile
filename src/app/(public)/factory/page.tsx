@@ -35,17 +35,26 @@ export default async function FactoryPage() {
     const categories = Array.from(new Set(photos.map((p) => p.category).filter(Boolean))) as string[];
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-blueprint relative">
+            {/* Industrial Warning Stripe Top */}
+            <div className="absolute top-0 left-0 right-0 h-1 industrial-stripe opacity-20" />
+
             {/* Hero Section */}
-            <section className="relative bg-primary text-primary-foreground py-8 overflow-hidden">
+            <section className="relative bg-primary text-primary-foreground py-8 overflow-hidden border-b border-white/10">
                 {/* Fabric background pattern */}
                 <div className="absolute inset-0 bg-fabric-pattern opacity-10" />
+                <div className="absolute inset-0 bg-steel-plate opacity-5 mix-blend-overlay" />
+
                 <div className="container-industrial relative z-10">
                     <div className="max-w-3xl">
-                        <h1 className="text-2xl md:text-3xl font-medium mb-3">
+                        <div className="section-tag mb-2 text-white/80 border-white/20">
+                            <span className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+                            INFRASTRUCTURE
+                        </div>
+                        <h1 className="text-2xl md:text-3xl font-bold mb-2 font-serif-display tracking-wide">
                             Our Factory
                         </h1>
-                        <p className="text-sm text-primary-foreground/70 font-light">
+                        <p className="text-sm text-primary-foreground/70 font-light max-w-2xl leading-relaxed font-mono">
                             Take a virtual tour of our state-of-the-art manufacturing facility
                             with 50,000+ sq ft of production space.
                         </p>
@@ -54,23 +63,27 @@ export default async function FactoryPage() {
             </section>
 
             {/* Factory Stats */}
-            <section className="bg-muted py-12">
+            <section className="py-12 border-b border-border bg-background/50 backdrop-blur-sm">
                 <div className="container-industrial">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                         {[
-                            { value: "50,000+", label: "Sq Ft Facility" },
-                            { value: "200+", label: "Skilled Workers" },
-                            { value: "24/7", label: "Production" },
-                            { value: "100%", label: "Quality Checked" },
+                            { value: "50,000+", label: "Sq Ft Facility", id: "AREA" },
+                            { value: "200+", label: "Skilled Workers", id: "TEAM" },
+                            { value: "24/7", label: "Production", id: "TIME" },
+                            { value: "100%", label: "Quality Checked", id: "QC" },
                         ].map((stat) => (
                             <div
                                 key={stat.label}
-                                className="text-center p-6 bg-card border border-border rounded-lg hover:border-accent transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                                className="card-factory p-6 group hover:border-accent transition-all duration-300"
                             >
-                                <div className="text-3xl md:text-4xl font-bold text-accent mb-2">
+                                <div className="flex justify-between items-center mb-4 border-b border-border/50 pb-2">
+                                    <span className="text-[10px] font-mono text-muted-foreground">STAT-{stat.id}</span>
+                                    <div className="w-1 h-1 bg-accent rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                                <div className="text-3xl md:text-4xl font-bold text-accent mb-2 font-serif-display tracking-wide">
                                     {stat.value}
                                 </div>
-                                <div className="text-muted-foreground text-sm">
+                                <div className="text-muted-foreground text-xs font-mono uppercase tracking-wider">
                                     {stat.label}
                                 </div>
                             </div>
@@ -80,16 +93,20 @@ export default async function FactoryPage() {
             </section>
 
             {/* Photo Gallery */}
-            <section className="section-industrial">
-                <div className="container-industrial">
+            <section className="section-industrial relative">
+                <div className="container-industrial relative z-10">
                     {/* Section Header */}
                     <div className="text-center mb-12">
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                        <div className="inline-block section-tag mb-4">
+                            <span className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+                            GALLERY
+                        </div>
+                        <h2 className="text-3xl md:text-4xl font-bold mb-4 font-serif-display">
                             Inside Our Facility
                         </h2>
-                        <p className="text-muted-foreground max-w-2xl mx-auto">
+                        <p className="text-muted-foreground max-w-2xl mx-auto font-mono text-sm">
                             Explore our manufacturing facility through these photos.
-                            From cutting-edge machinery to our dedicated team, see what makes us different.
+                            From cutting-edge machinery to our dedicated team.
                         </p>
                     </div>
 
@@ -102,23 +119,7 @@ export default async function FactoryPage() {
                 </div>
             </section>
 
-            {/* CTA Section */}
-            <section className="bg-primary text-primary-foreground py-16">
-                <div className="container-industrial text-center">
-                    <h2 className="text-3xl font-bold mb-4">
-                        Want to Visit Our Factory?
-                    </h2>
-                    <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">
-                        Schedule a factory tour to see our production processes firsthand
-                        and meet our dedicated team.
-                    </p>
-                    <Link href="/contact">
-                        <Button variant="secondary" size="lg">
-                            Schedule a Tour
-                        </Button>
-                    </Link>
-                </div>
-            </section>
+
         </div>
     );
 }

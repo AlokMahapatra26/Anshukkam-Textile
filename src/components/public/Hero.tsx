@@ -1,18 +1,45 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Heart, MapPin, Scissors } from "lucide-react";
+import { ArrowRight, Heart, MapPin, Scissors, Play, Pause } from "lucide-react";
 import { FadeIn, FadeInStagger, FadeInItem } from "@/components/ui/MotionContainer";
+import { useState, useRef } from "react";
 
 export function Hero() {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [isPlaying, setIsPlaying] = useState(true);
+
+    const togglePlay = () => {
+        if (videoRef.current) {
+            if (isPlaying) {
+                videoRef.current.pause();
+            } else {
+                videoRef.current.play();
+            }
+            setIsPlaying(!isPlaying);
+        }
+    };
+
     return (
         <section className="relative overflow-hidden bg-fabric-pattern">
             <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px]" />
+            {/* Industrial stripe accent at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-1 industrial-stripe-accent opacity-60" />
             <div className="relative container-industrial">
                 <div className="py-16 md:py-24 lg:py-32">
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         {/* Left side - Content */}
                         <div>
+                            {/* Section Tag - Industrial Style */}
+                            <FadeIn delay={0.05}>
+                                <div className="section-tag mb-6">
+                                    <span className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+                                    Neemuch, M.P.
+                                </div>
+                            </FadeIn>
+
                             {/* Tagline */}
                             <FadeIn delay={0.1}>
                                 <p className="text-accent font-medium mb-4 tracking-wide">
@@ -80,22 +107,38 @@ export function Hero() {
                             </FadeInStagger>
                         </div>
 
-                        {/* Right side - Video (seamless blend) */}
-                        <div className="relative lg:mt-8">
-                            <video
-                                autoPlay
-                                loop
-                                muted
-                                playsInline
-                                className="w-full h-auto"
-                                style={{
-                                    filter: 'brightness(1.05) contrast(1.02)',
-                                    mixBlendMode: 'multiply'
-                                }}
-                            >
-                                <source src="/animated.mp4" type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
+                        {/* Right side - Video with industrial corners */}
+                        <div className="relative lg:mt-8 group">
+                            <div className="industrial-corners p-2">
+                                <video
+                                    ref={videoRef}
+                                    autoPlay
+                                    loop
+                                    muted
+                                    playsInline
+                                    className="w-full h-auto"
+                                    style={{
+                                        filter: 'brightness(1.05) contrast(1.02)',
+                                        mixBlendMode: 'multiply'
+                                    }}
+                                >
+                                    <source src="/animated.mp4" type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                </video>
+
+                                {/* Play/Pause Button */}
+                                <button
+                                    onClick={togglePlay}
+                                    className="absolute bottom-6 right-6 p-3 bg-black/20 hover:bg-black/40 backdrop-blur-sm border border-white/20 rounded-full text-white transition-all duration-300 hover:scale-110 group-hover:opacity-100 opacity-0"
+                                    aria-label={isPlaying ? "Pause video" : "Play video"}
+                                >
+                                    {isPlaying ? (
+                                        <Pause className="h-4 w-4 fill-current" />
+                                    ) : (
+                                        <Play className="h-4 w-4 fill-current ml-0.5" />
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -24,14 +24,18 @@ export async function CatalogueGrid() {
     }
 
     return (
-        <section className="section-industrial">
-            <div className="container-industrial">
+        <section className="section-industrial bg-blueprint relative">
+            {/* Industrial Warning Stripe Top */}
+            <div className="absolute top-0 left-0 right-0 h-1 industrial-stripe opacity-20" />
+
+            <div className="container-industrial relative z-10">
                 {/* Section Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
                     <div>
-                        <span className="text-sm font-medium text-accent uppercase tracking-wider mb-2 block">
-                            Product Categories
-                        </span>
+                        <div className="section-tag mb-4">
+                            <span className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+                            CATALOGUE
+                        </div>
                         <h2 className="text-3xl md:text-4xl font-bold mb-4">
                             Product Categories
                         </h2>
@@ -48,20 +52,26 @@ export async function CatalogueGrid() {
                 </div>
 
                 {/* Industrial Grid */}
-                <FadeInStagger className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {types.map((item) => (
+                <FadeInStagger className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {types.map((item, index) => (
                         <FadeInItem key={item.id}>
                             <Link
                                 href={`/catalogue/${item.slug}`}
-                                className="group relative bg-card overflow-hidden rounded-lg block h-full border border-border hover:shadow-lg hover:border-accent transition-all duration-300"
+                                className="card-factory group block h-full hover:border-accent transition-all duration-300"
                             >
-                                <div className="aspect-[3/2] bg-muted relative overflow-hidden">
+                                {/* Technical Header */}
+                                <div className="flex justify-between items-center p-2 border-b border-border bg-muted/30 text-[10px] font-mono text-muted-foreground">
+                                    <span>CAT-{(index + 1).toString().padStart(2, '0')}</span>
+                                    <span>{item.name.toUpperCase()}</span>
+                                </div>
+
+                                <div className="aspect-[3/4] bg-muted relative overflow-hidden">
                                     {item.imageUrl ? (
                                         <Image
                                             src={item.imageUrl}
                                             alt={item.name}
                                             fill
-                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-muted/50">
@@ -69,21 +79,29 @@ export async function CatalogueGrid() {
                                         </div>
                                     )}
 
+                                    {/* Industrial Overlay */}
+                                    <div className="absolute inset-0 border-2 border-transparent group-hover:border-accent/30 transition-colors z-20 pointer-events-none" />
+
                                     {/* Gradient Overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 transition-opacity" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
 
                                     {/* Content Overlay */}
-                                    <div className="absolute bottom-0 left-0 w-full p-6 text-white">
-                                        <h3 className="text-xl font-bold mb-2 group-hover:text-accent transition-colors">
+                                    <div className="absolute bottom-0 left-0 w-full p-6 text-white z-10">
+                                        <div className="w-8 h-1 bg-accent mb-4 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+
+                                        <h3 className="text-2xl font-bold mb-2 font-serif-display tracking-wide group-hover:text-accent transition-colors">
                                             {item.name}
                                         </h3>
                                         {item.description && (
-                                            <p className="text-sm text-white/80 line-clamp-2 leading-relaxed">
+                                            <p className="text-sm text-white/70 line-clamp-2 leading-relaxed font-mono text-xs mb-4">
                                                 {item.description}
                                             </p>
                                         )}
-                                        <div className="mt-4 flex items-center text-xs font-medium text-accent opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                                            View Products <span className="ml-1">→</span>
+
+                                        {/* Specs Grid */}
+                                        <div className="grid grid-cols-2 gap-2 text-[10px] font-mono text-white/60 border-t border-white/10 pt-3 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
+                                            <div>MOQ: {item.minOrderQuantity || 'Flexible'}</div>
+                                            <div>LEAD: {item.leadTime || '2-4 Weeks'}</div>
                                         </div>
                                     </div>
                                 </div>

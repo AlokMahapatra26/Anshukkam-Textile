@@ -646,16 +646,21 @@ export default function DesignPage() {
     // Render Logic
     if (isSubmitted) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-muted/30">
-                <div className="text-center max-w-md mx-auto p-8 bg-background rounded-xl shadow-lg border">
-                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <Check className="h-10 w-10 text-green-600" />
+            <div className="min-h-screen flex items-center justify-center bg-blueprint relative">
+                <div className="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none" />
+                <div className="text-center max-w-md mx-auto p-8 bg-background/95 backdrop-blur rounded-sm shadow-2xl border border-white/10 relative z-10 card-factory">
+                    <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-accent/20">
+                        <Check className="h-10 w-10 text-accent" />
                     </div>
-                    <h2 className="text-3xl font-bold mb-4">Enquiry Sent!</h2>
-                    <p className="text-muted-foreground mb-8">
-                        We have received your design. Our team will review it and send you a quote shortly.
+                    <div className="section-tag mb-4 justify-center">
+                        <span className="w-1.5 h-1.5 bg-accent rounded-full" />
+                        SUBMISSION_CONFIRMED
+                    </div>
+                    <h2 className="text-3xl font-bold mb-4 font-serif-display">Enquiry Sent!</h2>
+                    <p className="text-muted-foreground mb-8 font-mono text-sm leading-relaxed">
+                        We have received your design specifications. Our technical team will review the data and transmit a quote shortly.
                     </p>
-                    <Button onClick={() => window.location.reload()} className="w-full">
+                    <Button onClick={() => window.location.reload()} className="w-full btn-industrial">
                         Create Another Design
                     </Button>
                 </div>
@@ -665,8 +670,11 @@ export default function DesignPage() {
 
     if (isLoadingData) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin" />
+            <div className="min-h-screen flex items-center justify-center bg-blueprint">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-accent" />
+                    <p className="font-mono text-xs text-accent animate-pulse">INITIALIZING_SYSTEM...</p>
+                </div>
             </div>
         );
     }
@@ -674,46 +682,55 @@ export default function DesignPage() {
     // Fallback if no items
     if (catalogueItems.length === 0) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-                <Shirt className="h-16 w-16 text-muted-foreground mb-4" />
-                <h1 className="text-2xl font-bold mb-2">Design Tool Unavailable</h1>
-                <p className="text-muted-foreground max-w-md">
-                    No design templates are currently available. Please contact the administrator to add T-shirt templates.
-                </p>
-                <Button variant="outline" className="mt-6" onClick={() => router.push("/")}>
-                    Return Home
-                </Button>
+            <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center bg-blueprint relative">
+                <div className="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none" />
+                <div className="card-factory p-12 max-w-lg bg-background/95 backdrop-blur">
+                    <Shirt className="h-16 w-16 text-muted-foreground mb-6 mx-auto opacity-50" />
+                    <h1 className="text-2xl font-bold mb-2 font-serif-display">Design Tool Unavailable</h1>
+                    <p className="text-muted-foreground max-w-md font-mono text-sm mb-8">
+                        No design templates are currently available in the system. Please contact the administrator to add T-shirt templates.
+                    </p>
+                    <Button variant="outline" className="btn-industrial-outline" onClick={() => router.push("/")}>
+                        Return Home
+                    </Button>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className={`min-h-screen bg-muted/10 flex flex-col ${roboto.variable} ${oswald.variable} ${pacifico.variable} ${anton.variable} ${lobster.variable}`}>
+        <div className={`min-h-screen bg-blueprint flex flex-col relative ${roboto.variable} ${oswald.variable} ${pacifico.variable} ${anton.variable} ${lobster.variable}`}>
+            {/* Industrial Warning Stripe Top */}
+            <div className="absolute top-0 left-0 right-0 h-1 industrial-stripe opacity-20 z-50" />
+
             {/* Header */}
-            <header className="bg-background border-b sticky top-0 z-30 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+            <header className="bg-background/95 backdrop-blur border-b border-white/10 sticky top-0 z-40 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-2 sm:gap-4">
-                    <Link href="/" className="p-2 hover:bg-muted rounded-full transition-colors">
+                    <Link href="/" className="p-2 hover:bg-accent/10 rounded-full transition-colors text-muted-foreground hover:text-accent">
                         <ArrowLeft className="h-5 w-5" />
                     </Link>
                     <div>
-                        <h1 className="font-bold text-base sm:text-lg">Design Studio</h1>
-                        <p className="text-xs text-muted-foreground hidden sm:block">
-                            {step === 1 ? "Customize your design" : "Finalize enquiry details"}
+                        <div className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse hidden sm:block" />
+                            <h1 className="font-bold text-lg sm:text-xl font-serif-display tracking-wide">Design Studio</h1>
+                        </div>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground font-mono uppercase tracking-wider hidden sm:block">
+                            {step === 1 ? "WS-01 • CUSTOMIZATION_MODE" : "WS-02 • ENQUIRY_DETAILS"}
                         </p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-2 sm:gap-3">
                     {step === 1 ? (
-                        <Button onClick={() => setStep(2)} className="gap-1 sm:gap-2" size="sm">
+                        <Button onClick={() => setStep(2)} className="btn-industrial gap-1 sm:gap-2 h-9" size="sm">
                             <span className="hidden sm:inline">Next Step</span>
                             <span className="sm:hidden">Next</span>
                             <ChevronRight className="h-4 w-4" />
                         </Button>
                     ) : (
                         <>
-                            <Button variant="ghost" onClick={() => setStep(1)} size="sm">Back</Button>
-                            <Button onClick={handleSubmit} disabled={isSubmitting} className="gap-1 sm:gap-2" size="sm">
+                            <Button variant="ghost" onClick={() => setStep(1)} size="sm" className="hover:text-accent hover:bg-accent/5">Back</Button>
+                            <Button onClick={handleSubmit} disabled={isSubmitting} className="btn-industrial gap-1 sm:gap-2 h-9" size="sm">
                                 {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : <Check className="h-4 w-4" />}
                                 <span className="hidden sm:inline">Submit Enquiry</span>
                                 <span className="sm:hidden">Submit</span>
@@ -723,20 +740,20 @@ export default function DesignPage() {
                 </div>
             </header>
 
-            <main className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
-                {/* Left Sidebar - Tools (Only in Step 1) - On mobile, shows below canvas */}
+            <main className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden relative z-10">
+                {/* Left Sidebar - Tools (Only in Step 1) */}
                 {step === 1 && (
-                    <aside className="order-2 lg:order-1 w-full lg:w-80 bg-background border-t lg:border-t-0 lg:border-r flex flex-col lg:overflow-y-auto shrink-0">
+                    <aside className="order-2 lg:order-1 w-full lg:w-80 bg-background/95 backdrop-blur border-t lg:border-t-0 lg:border-r border-white/10 flex flex-col lg:overflow-y-auto shrink-0 shadow-xl">
                         <div className="p-3 sm:p-4 space-y-4 sm:space-y-6">
                             {/* Product & Color Selection */}
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label>Select Product</Label>
+                                    <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Select Product</Label>
                                     <Select
                                         value={selectedItem?.id}
                                         onValueChange={handleItemChange}
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger className="border-white/10 bg-muted/20 focus:ring-accent/20">
                                             <SelectValue placeholder="Select a product" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -750,40 +767,46 @@ export default function DesignPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label className="flex items-center gap-2">
-                                        <Palette className="h-4 w-4" /> Product Color
+                                    <Label className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted-foreground">
+                                        <Palette className="h-3 w-3" /> Product Color
                                     </Label>
-                                    <div className="grid grid-cols-5 gap-2">
+                                    <div className="grid grid-cols-5 gap-2 p-2 bg-muted/20 rounded-md border border-white/5">
                                         {selectedItem?.colors.map((color) => (
                                             <button
                                                 key={color.id}
                                                 onClick={() => handleColorChange(color)}
-                                                className={`w-10 h-10 rounded-full border-2 transition-all ${selectedColor?.id === color.id
-                                                    ? "border-primary ring-2 ring-primary/20 scale-110"
+                                                className={`w-8 h-8 rounded-full border-2 transition-all relative group ${selectedColor?.id === color.id
+                                                    ? "border-accent ring-2 ring-accent/20 scale-110"
                                                     : "border-transparent hover:scale-105"
                                                     }`}
                                                 style={{ backgroundColor: color.hex }}
                                                 title={color.name}
-                                            />
+                                            >
+                                                {selectedColor?.id === color.id && (
+                                                    <span className="absolute inset-0 flex items-center justify-center">
+                                                        <Check className={`h-3 w-3 ${['#FFFFFF', '#fff', '#ffffff'].includes(color.hex.toLowerCase()) ? 'text-black' : 'text-white'}`} />
+                                                    </span>
+                                                )}
+                                            </button>
                                         ))}
                                     </div>
-                                    <p className="text-xs text-muted-foreground text-center">
-                                        {selectedColor?.name}
+                                    <p className="text-[10px] text-center font-mono text-accent">
+                                        {selectedColor?.name.toUpperCase()}
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="h-px bg-border" />
+                            <div className="h-px bg-border/50" />
 
                             {/* Add Elements */}
                             <div className="space-y-3">
-                                <Label className="flex items-center gap-2">
-                                    <Layers className="h-4 w-4" /> Add Elements
+                                <Label className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted-foreground">
+                                    <Layers className="h-3 w-3" /> Add Elements
                                 </Label>
                                 <div className="grid grid-cols-2 gap-2">
-                                    <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="h-20 flex flex-col gap-2">
-                                        <Upload className="h-6 w-6" />
-                                        <span className="text-xs">Upload Logo</span>
+                                    <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="card-factory h-20 flex flex-col gap-2 hover:border-accent hover:bg-accent/5 transition-all">
+                                        <Upload className="h-5 w-5 text-accent" />
+                                        <span className="text-[10px] font-mono uppercase">Upload Logo</span>
                                     </Button>
                                     <input
                                         type="file"
@@ -793,21 +816,21 @@ export default function DesignPage() {
                                         onChange={handleImageUpload}
                                     />
 
-                                    <Button variant="outline" onClick={addText} className="h-20 flex flex-col gap-2">
-                                        <Type className="h-6 w-6" />
-                                        <span className="text-xs">Add Text</span>
+                                    <Button variant="outline" onClick={addText} className="card-factory h-20 flex flex-col gap-2 hover:border-accent hover:bg-accent/5 transition-all">
+                                        <Type className="h-5 w-5 text-accent" />
+                                        <span className="text-[10px] font-mono uppercase">Add Text</span>
                                     </Button>
 
                                     <Dialog open={isClipartOpen} onOpenChange={setIsClipartOpen}>
                                         <DialogTrigger asChild>
-                                            <Button variant="outline" className="h-20 flex flex-col gap-2 col-span-2">
-                                                <ImageIcon className="h-6 w-6" />
-                                                <span className="text-xs">Add Clipart</span>
+                                            <Button variant="outline" className="card-factory h-20 flex flex-col gap-2 col-span-2 hover:border-accent hover:bg-accent/5 transition-all">
+                                                <ImageIcon className="h-5 w-5 text-accent" />
+                                                <span className="text-[10px] font-mono uppercase">Add Clipart Library</span>
                                             </Button>
                                         </DialogTrigger>
-                                        <DialogContent className="sm:max-w-[600px] h-[80vh] flex flex-col">
+                                        <DialogContent className="sm:max-w-[600px] h-[80vh] flex flex-col bg-background/95 backdrop-blur border-white/10">
                                             <DialogHeader>
-                                                <DialogTitle>Search Clipart Library</DialogTitle>
+                                                <DialogTitle className="font-serif-display text-xl">Search Clipart Library</DialogTitle>
                                             </DialogHeader>
                                             <div className="flex gap-2 my-4">
                                                 <Input
@@ -815,21 +838,21 @@ export default function DesignPage() {
                                                     value={clipartQuery}
                                                     onChange={(e) => setClipartQuery(e.target.value)}
                                                     onKeyDown={(e) => e.key === 'Enter' && searchClipart()}
+                                                    className="bg-muted/30 border-white/10"
                                                 />
-                                                <Button onClick={searchClipart} disabled={isSearchingClipart}>
+                                                <Button onClick={searchClipart} disabled={isSearchingClipart} className="btn-industrial">
                                                     {isSearchingClipart ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                                                 </Button>
                                             </div>
 
-                                            <div className="flex-1 overflow-y-auto grid grid-cols-5 sm:grid-cols-6 gap-4 p-2 border rounded-md">
+                                            <div className="flex-1 overflow-y-auto grid grid-cols-5 sm:grid-cols-6 gap-4 p-2 border border-white/10 rounded-md bg-muted/10">
                                                 {clipartResults.map((icon) => (
                                                     <button
                                                         key={icon}
                                                         onClick={() => addClipartToCanvas(icon)}
-                                                        className="aspect-square flex items-center justify-center p-2 border rounded hover:bg-muted hover:border-primary transition-colors"
+                                                        className="aspect-square flex items-center justify-center p-2 border border-transparent rounded hover:bg-accent/10 hover:border-accent transition-colors"
                                                         title={icon}
                                                     >
-                                                        {/* We can use an img tag for preview */}
                                                         <img
                                                             src={`https://api.iconify.design/${icon.split(":")[0]}/${icon.split(":")[1]}.svg`}
                                                             alt={icon}
@@ -841,55 +864,50 @@ export default function DesignPage() {
                                                 {clipartResults.length === 0 && !isSearchingClipart && (
                                                     <div className="col-span-full flex flex-col items-center justify-center text-muted-foreground h-40">
                                                         <Search className="h-8 w-8 mb-2 opacity-20" />
-                                                        <p>Search for something...</p>
+                                                        <p className="font-mono text-xs">NO_RESULTS_FOUND</p>
                                                     </div>
                                                 )}
                                             </div>
                                         </DialogContent>
                                     </Dialog>
                                 </div>
-                                <div className="flex flex-wrap gap-2">
-                                    <Button variant="outline" size="icon" onClick={() => addShape("rect")} title="Rectangle">
-                                        <Square className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="outline" size="icon" onClick={() => addShape("circle")} title="Circle">
-                                        <CircleIcon className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="outline" size="icon" onClick={() => addShape("triangle")} title="Triangle">
-                                        <Triangle className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="outline" size="icon" onClick={() => addShape("star")} title="Star">
-                                        <Star className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="outline" size="icon" onClick={() => addShape("heart")} title="Heart">
-                                        <Heart className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="outline" size="icon" onClick={() => addShape("hexagon")} title="Hexagon">
-                                        <Hexagon className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="outline" size="icon" onClick={() => addShape("diamond")} title="Diamond">
-                                        <Diamond className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="outline" size="icon" onClick={() => addShape("arrow")} title="Arrow">
-                                        <ArrowRight className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="outline" size="icon" onClick={() => addShape("zap")} title="Lightning">
-                                        <Zap className="h-4 w-4" />
-                                    </Button>
-
+                                <div className="flex flex-wrap gap-2 p-2 bg-muted/20 rounded-md border border-white/5">
+                                    {[
+                                        { icon: Square, type: "rect", label: "Rectangle" },
+                                        { icon: CircleIcon, type: "circle", label: "Circle" },
+                                        { icon: Triangle, type: "triangle", label: "Triangle" },
+                                        { icon: Star, type: "star", label: "Star" },
+                                        { icon: Heart, type: "heart", label: "Heart" },
+                                        { icon: Hexagon, type: "hexagon", label: "Hexagon" },
+                                        { icon: Diamond, type: "diamond", label: "Diamond" },
+                                        { icon: ArrowRight, type: "arrow", label: "Arrow" },
+                                        { icon: Zap, type: "zap", label: "Lightning" },
+                                    ].map((shape) => (
+                                        <Button
+                                            key={shape.type}
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => addShape(shape.type as any)}
+                                            title={shape.label}
+                                            className="hover:bg-accent/10 hover:text-accent"
+                                        >
+                                            <shape.icon className="h-4 w-4" />
+                                        </Button>
+                                    ))}
                                 </div>
                             </div>
 
                             {/* Element Properties */}
                             {selectedObject && (
-                                <div className="p-4 bg-muted/50 rounded-lg space-y-3 animate-in fade-in slide-in-from-left-4">
-                                    <Label>Element Color</Label>
+                                <div className="p-4 bg-muted/30 border border-accent/20 rounded-lg space-y-3 animate-in fade-in slide-in-from-left-4 relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-accent/50" />
+                                    <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Element Color</Label>
                                     <div className="flex flex-wrap gap-2">
                                         {["#000000", "#FFFFFF", "#FF0000", "#00FF00", "#0000FF", "#FFFF00"].map(c => (
                                             <button
                                                 key={c}
                                                 onClick={() => updateColor(c)}
-                                                className="w-6 h-6 rounded-full border shadow-sm"
+                                                className="w-6 h-6 rounded-full border border-white/10 shadow-sm"
                                                 style={{ backgroundColor: c }}
                                             />
                                         ))}
@@ -897,15 +915,15 @@ export default function DesignPage() {
                                             type="color"
                                             value={fillColor}
                                             onChange={(e) => updateColor(e.target.value)}
-                                            className="w-6 h-6 p-0 border-0 rounded-full overflow-hidden"
+                                            className="w-6 h-6 p-0 border-0 rounded-full overflow-hidden cursor-pointer"
                                         />
                                     </div>
 
                                     {(selectedObject.type === "i-text" || selectedObject.type === "text") && (
                                         <div className="space-y-2">
-                                            <Label>Font Family</Label>
+                                            <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Typography</Label>
                                             <Select onValueChange={updateFont} defaultValue={selectedObject.fontFamily}>
-                                                <SelectTrigger>
+                                                <SelectTrigger className="h-8 text-xs">
                                                     <SelectValue placeholder="Select Font" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -919,8 +937,8 @@ export default function DesignPage() {
                                         </div>
                                     )}
 
-                                    <Button variant="destructive" size="sm" onClick={deleteSelected} className="w-full">
-                                        <Trash2 className="h-4 w-4 mr-2" /> Remove Element
+                                    <Button variant="destructive" size="sm" onClick={deleteSelected} className="w-full h-8 text-xs uppercase tracking-wider">
+                                        <Trash2 className="h-3 w-3 mr-2" /> Remove Element
                                     </Button>
                                 </div>
                             )}
@@ -929,31 +947,47 @@ export default function DesignPage() {
                 )}
 
                 {/* Center - Canvas Area */}
-                <div className={`order-1 lg:order-2 flex-1 relative bg-muted/20 flex flex-col min-h-[50vh] lg:min-h-0 shrink-0 lg:shrink ${step === 2 ? "hidden lg:flex" : ""}`}>
+                <div className={`order-1 lg:order-2 flex-1 relative bg-muted/5 flex flex-col min-h-[50vh] lg:min-h-0 shrink-0 lg:shrink ${step === 2 ? "hidden lg:flex" : ""}`}>
+                    {/* Grid Background */}
+                    <div className="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none" />
+
                     {/* View Controls */}
-                    <div className="absolute top-2 sm:top-4 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur border rounded-full p-1 shadow-sm flex gap-0.5 sm:gap-1">
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-background/90 backdrop-blur border border-white/10 rounded-full p-1 shadow-lg flex gap-1">
                         {(["front", "back", "side"] as const).map((view) => (
                             <button
                                 key={view}
                                 onClick={() => handleViewChange(view)}
-                                className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors ${currentView === view
-                                    ? "bg-primary text-primary-foreground"
-                                    : "hover:bg-muted text-muted-foreground"
+                                className={`px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider transition-all ${currentView === view
+                                    ? "bg-accent text-accent-foreground shadow-sm"
+                                    : "hover:bg-muted text-muted-foreground hover:text-foreground"
                                     }`}
                             >
-                                <span className="hidden sm:inline">{view.charAt(0).toUpperCase() + view.slice(1)} View</span>
-                                <span className="sm:hidden">{view.charAt(0).toUpperCase() + view.slice(1)}</span>
+                                <span className="hidden sm:inline">{view} View</span>
+                                <span className="sm:hidden">{view}</span>
                             </button>
                         ))}
                     </div>
 
                     {/* Canvas Container */}
-                    <div className="flex-1 flex items-center justify-center p-4 sm:p-8 overflow-hidden">
+                    <div className="flex-1 flex items-center justify-center p-4 sm:p-8 overflow-hidden relative">
+                        {/* Technical Markers */}
+                        <div className="absolute top-4 left-4 text-[10px] font-mono text-muted-foreground opacity-50 hidden sm:block">
+                            COORD: {currentView === 'front' ? '001' : currentView === 'back' ? '002' : '003'}
+                        </div>
+                        <div className="absolute bottom-4 right-4 text-[10px] font-mono text-muted-foreground opacity-50 hidden sm:block">
+                            SCALE: 1:1
+                        </div>
+
                         <div
                             ref={containerRef}
-                            className="relative w-full max-w-[350px] sm:max-w-[500px] lg:max-w-[600px] aspect-[3/4] bg-white shadow-2xl rounded-lg overflow-hidden"
+                            className="relative w-full max-w-[350px] sm:max-w-[500px] lg:max-w-[600px] aspect-[3/4] bg-white shadow-2xl rounded-sm overflow-hidden border-2 border-white/10"
                         >
-                            {/* Background Image (T-Shirt) */}
+                            {/* Technical Corner Overlays */}
+                            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-accent/50 z-30 m-2 pointer-events-none" />
+                            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-accent/50 z-30 m-2 pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-accent/50 z-30 m-2 pointer-events-none" />
+                            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-accent/50 z-30 m-2 pointer-events-none" />
+
                             {/* Background Image (T-Shirt) */}
                             {selectedColor && (() => {
                                 const currentSrc = currentView === "front" ? selectedColor.frontImageUrl :
@@ -975,8 +1009,6 @@ export default function DesignPage() {
                                 );
                             })()}
 
-
-
                             {/* Fabric Canvas */}
                             <canvas ref={canvasRef} className="absolute inset-0 z-20" />
                         </div>
@@ -985,18 +1017,26 @@ export default function DesignPage() {
 
                 {/* Right Sidebar - Enquiry Form (Only in Step 2) */}
                 {step === 2 && (
-                    <aside className="w-full lg:w-[500px] bg-background border-l overflow-y-auto p-4 sm:p-6 animate-in slide-in-from-right-8">
-                        <div className="space-y-4 sm:space-y-6 max-w-lg mx-auto lg:max-w-none">
-                            <div>
-                                <h2 className="text-lg sm:text-xl font-bold">Order Details</h2>
-                                <p className="text-muted-foreground text-sm">Tell us about your requirements</p>
+                    <aside className="w-full lg:w-[500px] bg-background/95 backdrop-blur border-l border-white/10 overflow-y-auto p-4 sm:p-6 animate-in slide-in-from-right-8 shadow-xl relative z-20">
+                        <div className="space-y-6 max-w-lg mx-auto lg:max-w-none">
+                            <div className="border-b border-white/10 pb-4">
+                                <div className="section-tag mb-2">
+                                    <span className="w-1.5 h-1.5 bg-accent rounded-full" />
+                                    FINALIZATION
+                                </div>
+                                <h2 className="text-2xl font-bold font-serif-display">Order Details</h2>
+                                <p className="text-muted-foreground text-sm font-mono mt-1">
+                                    Complete the technical specifications for your order
+                                </p>
                             </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-5">
                                 <div className="space-y-2">
-                                    <Label>Fabric Type <span className="text-destructive">*</span></Label>
+                                    <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Fabric Type <span className="text-destructive">*</span></Label>
                                     <Select value={formData.fabricId} onValueChange={(v) => setFormData({ ...formData, fabricId: v })}>
-                                        <SelectTrigger><SelectValue placeholder="Select fabric" /></SelectTrigger>
+                                        <SelectTrigger className="border-white/10 bg-muted/20 focus:ring-accent/20 h-11">
+                                            <SelectValue placeholder="Select fabric material" />
+                                        </SelectTrigger>
                                         <SelectContent>
                                             {fabrics
                                                 .filter(f => !selectedItem?.availableFabrics || selectedItem.availableFabrics.length === 0 || selectedItem.availableFabrics.includes(f.id))
@@ -1007,9 +1047,11 @@ export default function DesignPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Print Method <span className="text-destructive">*</span></Label>
+                                    <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Print Method <span className="text-destructive">*</span></Label>
                                     <Select value={formData.printType} onValueChange={(v) => setFormData({ ...formData, printType: v })}>
-                                        <SelectTrigger><SelectValue placeholder="Select method" /></SelectTrigger>
+                                        <SelectTrigger className="border-white/10 bg-muted/20 focus:ring-accent/20 h-11">
+                                            <SelectValue placeholder="Select application method" />
+                                        </SelectTrigger>
                                         <SelectContent>
                                             {printTypes.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                                         </SelectContent>
@@ -1018,18 +1060,21 @@ export default function DesignPage() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Quantity <span className="text-destructive">*</span></Label>
+                                        <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Quantity <span className="text-destructive">*</span></Label>
                                         <Input
                                             type="number"
                                             value={formData.quantity}
                                             onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                                             placeholder="e.g. 50"
+                                            className="border-white/10 bg-muted/20 focus:ring-accent/20 h-11"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Size Range <span className="text-destructive">*</span></Label>
+                                        <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Size Range <span className="text-destructive">*</span></Label>
                                         <Select value={formData.sizeRange} onValueChange={(v) => setFormData({ ...formData, sizeRange: v })}>
-                                            <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                                            <SelectTrigger className="border-white/10 bg-muted/20 focus:ring-accent/20 h-11">
+                                                <SelectValue placeholder="Select range" />
+                                            </SelectTrigger>
                                             <SelectContent>
                                                 {sizeRanges.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                                             </SelectContent>
@@ -1037,31 +1082,38 @@ export default function DesignPage() {
                                     </div>
                                 </div>
 
-                                <div className="h-px bg-border my-4" />
+                                <div className="h-px bg-border/50 my-6 border-dashed border-t border-white/20" />
 
-                                <div className="space-y-2">
-                                    <Label>Phone Number <span className="text-destructive">*</span></Label>
-                                    <Input
-                                        value={formData.phoneNumber}
-                                        onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                                        placeholder="+91..."
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Email (Optional)</Label>
-                                    <Input
-                                        value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        placeholder="email@example.com"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Additional Notes</Label>
-                                    <Textarea
-                                        value={formData.notes}
-                                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                        placeholder="Any specific instructions..."
-                                    />
+                                <div className="space-y-4">
+                                    <h3 className="text-sm font-bold font-serif-display uppercase tracking-wide text-accent">Contact Information</h3>
+
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Phone Number <span className="text-destructive">*</span></Label>
+                                        <Input
+                                            value={formData.phoneNumber}
+                                            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                                            placeholder="+91..."
+                                            className="border-white/10 bg-muted/20 focus:ring-accent/20 h-11"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Email (Optional)</Label>
+                                        <Input
+                                            value={formData.email}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            placeholder="email@example.com"
+                                            className="border-white/10 bg-muted/20 focus:ring-accent/20 h-11"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Additional Notes</Label>
+                                        <Textarea
+                                            value={formData.notes}
+                                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                            placeholder="Any specific instructions..."
+                                            className="border-white/10 bg-muted/20 focus:ring-accent/20 min-h-[100px]"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
