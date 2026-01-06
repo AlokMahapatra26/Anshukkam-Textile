@@ -7,6 +7,7 @@ import {
     deleteAllDesignEnquiries,
 } from "@/lib/services/design-enquiries";
 import { getFabricById } from "@/lib/services/catalogue";
+import { sendDesignEnquiryNotification } from "@/lib/services/email";
 
 const createDesignEnquirySchema = z.object({
     designImageUrl: z.string(), // Can be data URL
@@ -67,6 +68,26 @@ export async function POST(request: NextRequest) {
             fabricName: fabric.name,
             status: "pending",
         });
+
+        // Send email notification
+        try {
+            await sendDesignEnquiryNotification({
+                clothingType: "Custom Design",
+                fabric: fabric.name,
+                quantity: validatedData.quantity,
+                sizeRange: validatedData.sizeRange,
+                phoneNumber: validatedData.phoneNumber,
+                email: validatedData.email || undefined,
+                companyName: validatedData.companyName,
+                contactPerson: validatedData.contactPerson,
+                notes: validatedData.notes,
+                designImageUrl: validatedData.designImageUrl,
+                printType: validatedData.printType,
+            });
+        } catch (emailError) {
+            console.error("Failed to send email notification:", emailError);
+            // Don't fail the request if email fails
+        }
 
         return NextResponse.json({ success: true, data: result }, { status: 201 });
     } catch (error) {

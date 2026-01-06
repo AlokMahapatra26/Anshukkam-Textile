@@ -12,6 +12,8 @@ import {
     NewCatalogueItem,
     CatalogueImage,
     NewCatalogueImage,
+    catalogueItemColors,
+    NewCatalogueItemColor,
 } from "@/lib/db/schema";
 import { eq, asc, desc } from "drizzle-orm";
 
@@ -120,14 +122,22 @@ export async function deleteFabric(id: string) {
 
 // ==================== CATALOGUE ITEMS ====================
 
-export async function getCatalogueItems(activeOnly = true) {
+export async function getCatalogueItems(activeOnly = true, isCustomizable?: boolean) {
     const result = await db.query.catalogueItems.findMany({
-        where: activeOnly ? eq(catalogueItems.isActive, true) : undefined,
+        where: (item, { and, eq }) => {
+            const conditions = [];
+            if (activeOnly) conditions.push(eq(item.isActive, true));
+            if (isCustomizable !== undefined) conditions.push(eq(item.isCustomizable, isCustomizable));
+            return and(...conditions);
+        },
         orderBy: [asc(catalogueItems.displayOrder)],
         with: {
             clothingType: true,
             images: {
                 orderBy: [desc(catalogueImages.isPrimary), asc(catalogueImages.displayOrder)],
+            },
+            colors: {
+                orderBy: [asc(catalogueItemColors.displayOrder)],
             },
         },
     });
@@ -136,21 +146,24 @@ export async function getCatalogueItems(activeOnly = true) {
 
 export async function getCatalogueItemsByType(
     clothingTypeId: string,
-    activeOnly = true
+    activeOnly = true,
+    isCustomizable?: boolean
 ) {
     const result = await db.query.catalogueItems.findMany({
-        where: activeOnly
-            ? (item, { and }) =>
-                and(
-                    eq(item.clothingTypeId, clothingTypeId),
-                    eq(item.isActive, true)
-                )
-            : eq(catalogueItems.clothingTypeId, clothingTypeId),
+        where: (item, { and, eq }) => {
+            const conditions = [eq(item.clothingTypeId, clothingTypeId)];
+            if (activeOnly) conditions.push(eq(item.isActive, true));
+            if (isCustomizable !== undefined) conditions.push(eq(item.isCustomizable, isCustomizable));
+            return and(...conditions);
+        },
         orderBy: [asc(catalogueItems.displayOrder)],
         with: {
             clothingType: true,
             images: {
                 orderBy: [desc(catalogueImages.isPrimary), asc(catalogueImages.displayOrder)],
+            },
+            colors: {
+                orderBy: [asc(catalogueItemColors.displayOrder)],
             },
         },
     });
@@ -165,6 +178,9 @@ export async function getCatalogueItemById(id: string) {
             images: {
                 orderBy: [desc(catalogueImages.isPrimary), asc(catalogueImages.displayOrder)],
             },
+            colors: {
+                orderBy: [asc(catalogueItemColors.displayOrder)],
+            },
         },
     });
     return result || null;
@@ -177,6 +193,9 @@ export async function getCatalogueItemBySlug(slug: string) {
             clothingType: true,
             images: {
                 orderBy: [desc(catalogueImages.isPrimary), asc(catalogueImages.displayOrder)],
+            },
+            colors: {
+                orderBy: [asc(catalogueItemColors.displayOrder)],
             },
         },
     });
@@ -192,6 +211,9 @@ export async function getFeaturedCatalogueItems() {
             clothingType: true,
             images: {
                 orderBy: [desc(catalogueImages.isPrimary), asc(catalogueImages.displayOrder)],
+            },
+            colors: {
+                orderBy: [asc(catalogueItemColors.displayOrder)],
             },
         },
     });
@@ -285,5 +307,25 @@ export async function updateCatalogueItemImages(
             isPrimary: index === 0,
         }));
         await db.insert(catalogueImages).values(newImages);
+    }
+}
+
+export async function updateCatalogueItemColors(
+    itemId: string,
+    colors: NewCatalogueItemColor[]
+) {
+    // Delete existing colors
+    await db
+        .delete(catalogueItemColors)
+        .where(eq(catalogueItemColors.catalogueItemId, itemId));
+
+    // Insert new colors
+    if (colors.length > 0) {
+        const newColors = colors.map((color, index) => ({
+            ...color,
+            catalogueItemId: itemId,
+            displayOrder: index,
+        }));
+        await db.insert(catalogueItemColors).values(newColors);
     }
 }

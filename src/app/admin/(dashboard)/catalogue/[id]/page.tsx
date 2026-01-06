@@ -58,6 +58,17 @@ interface CatalogueItem {
     isActive: boolean | null;
     availableFabrics?: string[];
     images?: CatalogueImage[];
+    isCustomizable?: boolean;
+    colors?: CatalogueItemColor[];
+}
+
+interface CatalogueItemColor {
+    id?: string;
+    name: string;
+    hex: string;
+    frontImageUrl: string;
+    backImageUrl: string;
+    sideImageUrl: string;
 }
 
 export default function CategoryProductsPage() {
@@ -82,7 +93,9 @@ export default function CategoryProductsPage() {
         sizeRange: "XS-5XL",
         displayOrder: 0,
         isActive: true,
+        isCustomizable: false,
         availableFabrics: [] as string[],
+        colors: [] as CatalogueItemColor[],
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -166,7 +179,9 @@ export default function CategoryProductsPage() {
             sizeRange: "XS-5XL",
             displayOrder: items.length,
             isActive: true,
+            isCustomizable: false,
             availableFabrics: [],
+            colors: [],
         });
         setIsDialogOpen(true);
     };
@@ -189,7 +204,9 @@ export default function CategoryProductsPage() {
             sizeRange: item.sizeRange || "XS-5XL",
             displayOrder: item.displayOrder || 0,
             isActive: item.isActive ?? true,
+            isCustomizable: item.isCustomizable ?? false,
             availableFabrics: item.availableFabrics || [],
+            colors: item.colors || [],
         });
         setIsDialogOpen(true);
     };
@@ -289,7 +306,7 @@ export default function CategoryProductsPage() {
                             Add Product
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+                    <DialogContent className="sm:max-w-[95vw] w-[95vw] max-h-[95vh] overflow-y-auto p-0 gap-0">
                         <DialogHeader className="bg-primary px-6 py-4 border-b border-border flex flex-row items-center justify-between space-y-0">
                             <DialogTitle className="text-white uppercase tracking-wider text-base">
                                 {editingItem ? "Edit Product" : "Add New Product"}
@@ -511,6 +528,157 @@ export default function CategoryProductsPage() {
                                             <p className="text-[10px] text-muted-foreground mt-2">
                                                 Select fabrics available for this product. If none selected, all fabrics may be considered available.
                                             </p>
+                                        </div>
+
+                                        {/* Customization Section */}
+                                        <div>
+                                            <h4 className="text-xs font-bold uppercase text-primary border-b border-border pb-2 mb-4">Customization & Variants</h4>
+
+                                            <div className="flex items-center space-x-2 mb-6 p-3 bg-muted/20 rounded border border-border">
+                                                <input
+                                                    type="checkbox"
+                                                    id="isCustomizable"
+                                                    checked={formData.isCustomizable}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, isCustomizable: e.target.checked }))}
+                                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                />
+                                                <div className="space-y-0.5">
+                                                    <Label htmlFor="isCustomizable" className="text-sm font-medium cursor-pointer block">
+                                                        Enable Design Tool Customization
+                                                    </Label>
+                                                    <p className="text-[10px] text-muted-foreground">
+                                                        If enabled, this product will appear in the public Design Studio.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-4 bg-muted/10 p-4 border border-border rounded">
+                                                <div className="flex items-center justify-between">
+                                                    <Label className="text-xs uppercase text-muted-foreground">Product Colors & Views</Label>
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => {
+                                                            const newColor: CatalogueItemColor = {
+                                                                name: "New Color",
+                                                                hex: "#000000",
+                                                                frontImageUrl: "",
+                                                                backImageUrl: "",
+                                                                sideImageUrl: ""
+                                                            };
+                                                            setFormData(prev => ({ ...prev, colors: [...prev.colors, newColor] }));
+                                                        }}
+                                                    >
+                                                        <Plus className="h-3 w-3 mr-1" /> Add Color
+                                                    </Button>
+                                                </div>
+
+                                                <div className="space-y-4">
+                                                    {formData.colors.map((color, index) => (
+                                                        <div key={index} className="bg-background p-3 rounded border border-border space-y-3">
+                                                            <div className="flex gap-3">
+                                                                <div className="flex-1 space-y-1">
+                                                                    <Label className="text-[10px] uppercase">Color Name</Label>
+                                                                    <Input
+                                                                        value={color.name}
+                                                                        onChange={(e) => {
+                                                                            const newColors = [...formData.colors];
+                                                                            newColors[index].name = e.target.value;
+                                                                            setFormData(prev => ({ ...prev, colors: newColors }));
+                                                                        }}
+                                                                        className="h-8 text-xs"
+                                                                        placeholder="e.g. Navy Blue"
+                                                                    />
+                                                                </div>
+                                                                <div className="w-24 space-y-1">
+                                                                    <Label className="text-[10px] uppercase">Hex Code</Label>
+                                                                    <div className="flex gap-1">
+                                                                        <Input
+                                                                            type="color"
+                                                                            value={color.hex}
+                                                                            onChange={(e) => {
+                                                                                const newColors = [...formData.colors];
+                                                                                newColors[index].hex = e.target.value;
+                                                                                setFormData(prev => ({ ...prev, colors: newColors }));
+                                                                            }}
+                                                                            className="h-8 w-8 p-0 border-0"
+                                                                        />
+                                                                        <Input
+                                                                            value={color.hex}
+                                                                            onChange={(e) => {
+                                                                                const newColors = [...formData.colors];
+                                                                                newColors[index].hex = e.target.value;
+                                                                                setFormData(prev => ({ ...prev, colors: newColors }));
+                                                                            }}
+                                                                            className="h-8 text-xs flex-1"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 text-destructive mt-6"
+                                                                    onClick={() => {
+                                                                        const newColors = formData.colors.filter((_, i) => i !== index);
+                                                                        setFormData(prev => ({ ...prev, colors: newColors }));
+                                                                    }}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-3 gap-3">
+                                                                <div className="space-y-1">
+                                                                    <Label className="text-[10px] uppercase">Front View</Label>
+                                                                    <ImageUpload
+                                                                        currentImages={color.frontImageUrl ? [color.frontImageUrl] : []}
+                                                                        onImagesChange={(urls) => {
+                                                                            const newColors = [...formData.colors];
+                                                                            newColors[index].frontImageUrl = urls[0] || "";
+                                                                            setFormData(prev => ({ ...prev, colors: newColors }));
+                                                                        }}
+                                                                        multiple={false}
+                                                                        maxFiles={1}
+                                                                    />
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <Label className="text-[10px] uppercase">Back View</Label>
+                                                                    <ImageUpload
+                                                                        currentImages={color.backImageUrl ? [color.backImageUrl] : []}
+                                                                        onImagesChange={(urls) => {
+                                                                            const newColors = [...formData.colors];
+                                                                            newColors[index].backImageUrl = urls[0] || "";
+                                                                            setFormData(prev => ({ ...prev, colors: newColors }));
+                                                                        }}
+                                                                        multiple={false}
+                                                                        maxFiles={1}
+                                                                    />
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <Label className="text-[10px] uppercase">Side View</Label>
+                                                                    <ImageUpload
+                                                                        currentImages={color.sideImageUrl ? [color.sideImageUrl] : []}
+                                                                        onImagesChange={(urls) => {
+                                                                            const newColors = [...formData.colors];
+                                                                            newColors[index].sideImageUrl = urls[0] || "";
+                                                                            setFormData(prev => ({ ...prev, colors: newColors }));
+                                                                        }}
+                                                                        multiple={false}
+                                                                        maxFiles={1}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                    {formData.colors.length === 0 && (
+                                                        <div className="text-center py-4 text-muted-foreground text-xs italic">
+                                                            No colors added yet. Add colors to enable customization for this product.
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

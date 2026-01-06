@@ -323,7 +323,7 @@ export default function DesignEnquiriesPage() {
 
             {/* Detail Dialog */}
             <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-[90vw] w-full max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Design Enquiry Details</DialogTitle>
                     </DialogHeader>
@@ -384,8 +384,8 @@ export default function DesignEnquiriesPage() {
                                         </div>
                                         {selectedEnquiry.email && (
                                             <div className="flex items-center gap-2">
-                                                <Mail className="h-3 w-3 text-muted-foreground" />
-                                                <span>{selectedEnquiry.email}</span>
+                                                <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
+                                                <span className="break-all">{selectedEnquiry.email}</span>
                                             </div>
                                         )}
                                         {selectedEnquiry.companyName && (

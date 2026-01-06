@@ -27,7 +27,6 @@ const navigation = [
     { name: "Factory Photos", href: "/admin/factory", icon: Image },
     { name: "Enquiries", href: "/admin/enquiries", icon: MessageSquare },
     { name: "Design Enquiries", href: "/admin/design-enquiries", icon: MessageSquare },
-    { name: "Design Templates", href: "/admin/design-templates", icon: Palette },
     { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

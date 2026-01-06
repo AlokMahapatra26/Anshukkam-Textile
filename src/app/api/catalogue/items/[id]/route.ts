@@ -6,6 +6,7 @@ import {
     updateCatalogueItem,
     deleteCatalogueItem,
     updateCatalogueItemImages,
+    updateCatalogueItemColors,
 } from "@/lib/services/catalogue";
 
 const updateCatalogueItemSchema = z.object({
@@ -24,6 +25,14 @@ const updateCatalogueItemSchema = z.object({
     isActive: z.boolean().optional(),
     isFeatured: z.boolean().optional(),
     images: z.array(z.string()).optional(),
+    isCustomizable: z.boolean().optional(),
+    colors: z.array(z.object({
+        name: z.string(),
+        hex: z.string(),
+        frontImageUrl: z.string(),
+        backImageUrl: z.string(),
+        sideImageUrl: z.string(),
+    })).optional(),
 });
 
 export async function GET(
@@ -60,7 +69,7 @@ export async function PUT(
         const body = await request.json();
         const validatedData = updateCatalogueItemSchema.parse(body);
 
-        const { images, ...itemData } = validatedData;
+        const { images, colors, ...itemData } = validatedData;
 
         const result = await updateCatalogueItem(id, itemData);
 
@@ -73,6 +82,10 @@ export async function PUT(
 
         if (images) {
             await updateCatalogueItemImages(id, images);
+        }
+
+        if (colors) {
+            await updateCatalogueItemColors(id, colors);
         }
 
         // Invalidate cache so public pages show updated item immediately

@@ -70,14 +70,20 @@ const fontOptions = [
 ];
 
 // Define types for our templates
-interface DesignTemplate {
+interface CatalogueItemColor {
     id: string;
     name: string;
-    colorName: string;
-    colorHex: string;
+    hex: string;
     frontImageUrl: string;
     backImageUrl: string;
     sideImageUrl: string;
+}
+
+interface CatalogueItem {
+    id: string;
+    name: string;
+    colors: CatalogueItemColor[];
+    availableFabrics?: string[];
 }
 
 interface FabricItem {
@@ -86,10 +92,8 @@ interface FabricItem {
 }
 
 const printTypes = [
-    { value: "screen_printed", label: "Screen Printed" },
-    { value: "embroidered", label: "Embroidered" },
-    { value: "dtg", label: "DTG (Direct to Garment)" },
-    { value: "heat_transfer", label: "Heat Transfer" },
+    { value: "embroidery", label: "Embroidery" },
+    { value: "printing", label: "Printing" },
 ];
 
 const sizeRanges = [
@@ -118,14 +122,15 @@ export default function DesignPage() {
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Data State
-    const [templates, setTemplates] = useState<DesignTemplate[]>([]);
+    const [catalogueItems, setCatalogueItems] = useState<CatalogueItem[]>([]);
     const [fabrics, setFabrics] = useState<FabricItem[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(true);
 
     // UI State
     const [step, setStep] = useState<1 | 2>(1); // 1: Design, 2: Details
     const [currentView, setCurrentView] = useState<"front" | "back" | "side">("front");
-    const [selectedTemplate, setSelectedTemplate] = useState<DesignTemplate | null>(null);
+    const [selectedItem, setSelectedItem] = useState<CatalogueItem | null>(null);
+    const [selectedColor, setSelectedColor] = useState<CatalogueItemColor | null>(null);
     const [isCanvasReady, setIsCanvasReady] = useState(false);
 
     // Design State
@@ -165,18 +170,23 @@ export default function DesignPage() {
     useEffect(() => {
         async function fetchData() {
             try {
-                const [fabricsRes, templatesRes] = await Promise.all([
-                    fetch("/api/catalogue/fabrics"),
-                    fetch("/api/design-templates"),
+                const [fabricsRes, itemsRes] = await Promise.all([
+                    fetch("/api/catalogue/fabrics", { cache: "no-store" }),
+                    fetch("/api/catalogue/items?isCustomizable=true", { cache: "no-store" }),
                 ]);
 
                 const fabricsData = await fabricsRes.json();
-                const templatesData = await templatesRes.json();
+                const itemsData = await itemsRes.json();
 
                 if (fabricsData.success) setFabrics(fabricsData.data);
-                if (templatesData.success && templatesData.data.length > 0) {
-                    setTemplates(templatesData.data);
-                    setSelectedTemplate(templatesData.data[0]);
+                if (itemsData.success && itemsData.data.length > 0) {
+                    // Filter items that have colors
+                    const validItems = itemsData.data.filter((item: any) => item.colors && item.colors.length > 0);
+                    setCatalogueItems(validItems);
+                    if (validItems.length > 0) {
+                        setSelectedItem(validItems[0]);
+                        setSelectedColor(validItems[0].colors[0]);
+                    }
                 }
             } catch (error) {
                 console.error("Failed to load data:", error);
@@ -193,7 +203,7 @@ export default function DesignPage() {
         let fabricInstance: any;
 
         const initCanvas = async () => {
-            if (!canvasRef.current || !containerRef.current || !selectedTemplate) return;
+            if (!canvasRef.current || !containerRef.current || !selectedColor) return;
 
             // Dynamically import fabric to avoid SSR issues
             const fabricModule = await import("fabric");
@@ -235,16 +245,27 @@ export default function DesignPage() {
             fabricInstance.renderAll();
         };
 
-        if (!isLoadingData && selectedTemplate) {
+        if (!isLoadingData && selectedColor) {
             // Small delay to ensure DOM is ready
             const timer = setTimeout(initCanvas, 100);
             return () => clearTimeout(timer);
         }
-    }, [isLoadingData, selectedTemplate, currentView]); // Re-init when view changes? No, handle view change separately
+    }, [isLoadingData, selectedColor, currentView]); // Re-init when view changes? No, handle view change separately
 
     // Handle View Change
     const handleViewChange = async (newView: "front" | "back" | "side") => {
-        if (!fabricCanvasRef.current) return;
+        if (!fabricCanvasRef.current || !selectedColor) return;
+
+        // Check if image exists for the new view
+        let newImage = "";
+        if (newView === "front") newImage = selectedColor.frontImageUrl;
+        if (newView === "back") newImage = selectedColor.backImageUrl;
+        if (newView === "side") newImage = selectedColor.sideImageUrl;
+
+        if (!newImage) {
+            toast.error(`${newView.charAt(0).toUpperCase() + newView.slice(1)} view is not available for this color.`);
+            return;
+        }
 
         // Save current state
         const json = fabricCanvasRef.current.toJSON();
@@ -265,13 +286,18 @@ export default function DesignPage() {
         fabricCanvasRef.current.renderAll();
     };
 
-    // Handle Template (Color) Change
-    const handleTemplateChange = (template: DesignTemplate) => {
+    // Handle Color Change
+    const handleColorChange = (color: CatalogueItemColor) => {
         if (!fabricCanvasRef.current) return;
-        // Save current state before switching? 
-        // If switching color, we usually want to KEEP the design but change the background.
-        // So we don't clear the canvas.
-        setSelectedTemplate(template);
+        setSelectedColor(color);
+    };
+
+    const handleItemChange = (itemId: string) => {
+        const item = catalogueItems.find(i => i.id === itemId);
+        if (item && item.colors.length > 0) {
+            setSelectedItem(item);
+            setSelectedColor(item.colors[0]);
+        }
     };
 
     // Tools
@@ -477,15 +503,56 @@ export default function DesignPage() {
                 setCanvasStates(prev => ({ ...prev, [currentView]: json }));
             }
 
-            // Generate preview image (screenshot of the container?)
-            // Since we have layers (img + canvas), we can't just toDataURL the canvas.
-            // We'll just send the canvas dataURL for now, or we'd need html2canvas.
-            // For simplicity, we'll send the canvas dataURL of the FRONT view as the preview.
-            // Ideally, we should composite it on the server or use html2canvas.
+            // Generate preview image with background
+            let designImageUrl = "";
+            if (fabricCanvasRef.current && selectedColor) {
+                const currentSrc = currentView === "front" ? selectedColor.frontImageUrl :
+                    currentView === "back" ? selectedColor.backImageUrl :
+                        selectedColor.sideImageUrl;
 
-            // Let's try to grab the canvas dataURL. It will have transparent background.
-            // The admin will see the design on transparent.
-            const designImageUrl = fabricCanvasRef.current ? fabricCanvasRef.current.toDataURL() : "";
+                if (currentSrc) {
+                    try {
+                        const fabricModule = await import("fabric");
+                        await new Promise<void>((resolve) => {
+                            fabricModule.FabricImage.fromURL(currentSrc, { crossOrigin: 'anonymous' }).then((img) => {
+                                // The canvas and image container have the same aspect ratio in the UI.
+                                // We scale the image to cover the canvas.
+                                const canvas = fabricCanvasRef.current;
+                                if (!canvas) { resolve(); return; }
+
+                                // Scale image to cover the canvas
+                                const scaleX = canvas.width! / img.width!;
+                                const scaleY = canvas.height! / img.height!;
+                                const scale = Math.max(scaleX, scaleY);
+
+                                img.scale(scale);
+
+                                // Center the image
+                                img.set({
+                                    originX: 'center',
+                                    originY: 'center',
+                                    left: canvas.width! / 2,
+                                    top: canvas.height! / 2
+                                });
+
+                                canvas.backgroundImage = img;
+                                canvas.renderAll();
+                                resolve();
+                            }).catch(() => resolve());
+                        });
+                        designImageUrl = fabricCanvasRef.current.toDataURL();
+
+                        // Clear background
+                        fabricCanvasRef.current.backgroundImage = null;
+                        fabricCanvasRef.current.renderAll();
+                    } catch (e) {
+                        console.error("Error creating composite image", e);
+                        designImageUrl = fabricCanvasRef.current.toDataURL();
+                    }
+                } else {
+                    designImageUrl = fabricCanvasRef.current.toDataURL();
+                }
+            }
 
             const response = await fetch("/api/design-enquiries", {
                 method: "POST",
@@ -555,8 +622,8 @@ export default function DesignPage() {
         );
     }
 
-    // Fallback if no templates
-    if (templates.length === 0) {
+    // Fallback if no items
+    if (catalogueItems.length === 0) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
                 <Shirt className="h-16 w-16 text-muted-foreground mb-4" />
@@ -609,28 +676,49 @@ export default function DesignPage() {
                 {step === 1 && (
                     <aside className="w-80 bg-background border-r flex flex-col overflow-y-auto z-10">
                         <div className="p-4 space-y-6">
-                            {/* Color Selection */}
-                            <div className="space-y-3">
-                                <Label className="flex items-center gap-2">
-                                    <Palette className="h-4 w-4" /> Product Color
-                                </Label>
-                                <div className="grid grid-cols-5 gap-2">
-                                    {templates.map((t) => (
-                                        <button
-                                            key={t.id}
-                                            onClick={() => handleTemplateChange(t)}
-                                            className={`w-10 h-10 rounded-full border-2 transition-all ${selectedTemplate?.id === t.id
-                                                ? "border-primary ring-2 ring-primary/20 scale-110"
-                                                : "border-transparent hover:scale-105"
-                                                }`}
-                                            style={{ backgroundColor: t.colorHex }}
-                                            title={t.colorName}
-                                        />
-                                    ))}
+                            {/* Product & Color Selection */}
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label>Select Product</Label>
+                                    <Select
+                                        value={selectedItem?.id}
+                                        onValueChange={handleItemChange}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a product" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {catalogueItems.map(item => (
+                                                <SelectItem key={item.id} value={item.id}>
+                                                    {item.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
-                                <p className="text-xs text-muted-foreground text-center">
-                                    {selectedTemplate?.colorName}
-                                </p>
+
+                                <div className="space-y-2">
+                                    <Label className="flex items-center gap-2">
+                                        <Palette className="h-4 w-4" /> Product Color
+                                    </Label>
+                                    <div className="grid grid-cols-5 gap-2">
+                                        {selectedItem?.colors.map((color) => (
+                                            <button
+                                                key={color.id}
+                                                onClick={() => handleColorChange(color)}
+                                                className={`w-10 h-10 rounded-full border-2 transition-all ${selectedColor?.id === color.id
+                                                    ? "border-primary ring-2 ring-primary/20 scale-110"
+                                                    : "border-transparent hover:scale-105"
+                                                    }`}
+                                                style={{ backgroundColor: color.hex }}
+                                                title={color.name}
+                                            />
+                                        ))}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground text-center">
+                                        {selectedColor?.name}
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="h-px bg-border" />
@@ -813,26 +901,28 @@ export default function DesignPage() {
                             className="relative w-full max-w-[600px] aspect-[3/4] bg-white shadow-2xl rounded-lg overflow-hidden"
                         >
                             {/* Background Image (T-Shirt) */}
-                            {selectedTemplate && (
-                                <div className="absolute inset-0 z-0">
-                                    <Image
-                                        src={
-                                            currentView === "front" ? selectedTemplate.frontImageUrl :
-                                                currentView === "back" ? selectedTemplate.backImageUrl :
-                                                    selectedTemplate.sideImageUrl
-                                        }
-                                        alt="T-Shirt Template"
-                                        fill
-                                        className="object-cover"
-                                        priority
-                                    />
-                                </div>
-                            )}
+                            {/* Background Image (T-Shirt) */}
+                            {selectedColor && (() => {
+                                const currentSrc = currentView === "front" ? selectedColor.frontImageUrl :
+                                    currentView === "back" ? selectedColor.backImageUrl :
+                                        selectedColor.sideImageUrl;
 
-                            {/* Printable Area Overlay (Visual Guide) */}
-                            <div className="absolute inset-0 pointer-events-none z-10 border-2 border-dashed border-primary/20 m-[15%] rounded-lg opacity-50">
-                                <span className="absolute top-2 left-2 text-[10px] text-primary/50 font-mono">PRINTABLE AREA</span>
-                            </div>
+                                if (!currentSrc) return null;
+
+                                return (
+                                    <div className="absolute inset-0 z-0">
+                                        <Image
+                                            src={currentSrc}
+                                            alt="Product Template"
+                                            fill
+                                            className="object-cover"
+                                            priority
+                                        />
+                                    </div>
+                                );
+                            })()}
+
+
 
                             {/* Fabric Canvas */}
                             <canvas ref={canvasRef} className="absolute inset-0 z-20" />
@@ -855,7 +945,10 @@ export default function DesignPage() {
                                     <Select value={formData.fabricId} onValueChange={(v) => setFormData({ ...formData, fabricId: v })}>
                                         <SelectTrigger><SelectValue placeholder="Select fabric" /></SelectTrigger>
                                         <SelectContent>
-                                            {fabrics.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
+                                            {fabrics
+                                                .filter(f => !selectedItem?.availableFabrics || selectedItem.availableFabrics.length === 0 || selectedItem.availableFabrics.includes(f.id))
+                                                .map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)
+                                            }
                                         </SelectContent>
                                     </Select>
                                 </div>

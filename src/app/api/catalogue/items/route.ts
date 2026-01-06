@@ -6,6 +6,7 @@ import {
     getCatalogueItemsByType,
     createCatalogueItem,
     updateCatalogueItemImages,
+    updateCatalogueItemColors,
 } from "@/lib/services/catalogue";
 
 const createCatalogueItemSchema = z.object({
@@ -24,6 +25,14 @@ const createCatalogueItemSchema = z.object({
     isActive: z.boolean().optional(),
     isFeatured: z.boolean().optional(),
     images: z.array(z.string()).optional(),
+    isCustomizable: z.boolean().optional(),
+    colors: z.array(z.object({
+        name: z.string(),
+        hex: z.string(),
+        frontImageUrl: z.string(),
+        backImageUrl: z.string(),
+        sideImageUrl: z.string(),
+    })).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -31,12 +40,14 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const includeInactive = searchParams.get("includeInactive") === "true";
         const clothingTypeId = searchParams.get("clothingTypeId");
+        const isCustomizableParam = searchParams.get("isCustomizable");
+        const isCustomizable = isCustomizableParam === "true" ? true : isCustomizableParam === "false" ? false : undefined;
 
         let items;
         if (clothingTypeId) {
-            items = await getCatalogueItemsByType(clothingTypeId, !includeInactive);
+            items = await getCatalogueItemsByType(clothingTypeId, !includeInactive, isCustomizable);
         } else {
-            items = await getCatalogueItems(!includeInactive);
+            items = await getCatalogueItems(!includeInactive, isCustomizable);
         }
 
         return NextResponse.json({ success: true, data: items });
@@ -54,14 +65,19 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const validatedData = createCatalogueItemSchema.parse(body);
 
-        // Extract images from data as it's not part of the catalogueItems table
-        const { images, ...itemData } = validatedData;
+        // Extract images and colors from data as it's not part of the catalogueItems table
+        const { images, colors, ...itemData } = validatedData;
 
         const result = await createCatalogueItem(itemData);
 
         // Handle images if provided
         if (images && images.length > 0) {
             await updateCatalogueItemImages(result.id, images);
+        }
+
+        // Handle colors if provided
+        if (colors && colors.length > 0) {
+            await updateCatalogueItemColors(result.id, colors);
         }
 
         // Invalidate cache so public pages show new item immediately

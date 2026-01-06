@@ -8,6 +8,7 @@ import {
     CheckCircle2, Mail, Share2
 } from "lucide-react";
 import { getCachedCatalogueItemBySlug, getCachedClothingTypeBySlug, getCachedNavigationData } from "@/lib/services/cached-data";
+import { ProductImageGallery } from "@/components/catalogue/ProductImageGallery";
 import { Metadata } from "next";
 
 // Generate metadata
@@ -88,37 +89,7 @@ export default async function ProductPage({
             <div className="container-industrial py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                     {/* Left Column - Images */}
-                    <div className="space-y-4">
-                        <div className="aspect-[4/5] bg-muted relative rounded-lg overflow-hidden border border-border">
-                            {images.length > 0 ? (
-                                <Image
-                                    src={images[0]}
-                                    alt={product.name}
-                                    fill
-                                    className="object-cover"
-                                    priority
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                                    No image available
-                                </div>
-                            )}
-                        </div>
-                        {images.length > 1 && (
-                            <div className="grid grid-cols-4 gap-4">
-                                {images.slice(1).map((img, idx) => (
-                                    <div key={idx} className="aspect-square bg-muted relative rounded-md overflow-hidden border border-border cursor-pointer hover:border-accent transition-colors">
-                                        <Image
-                                            src={img}
-                                            alt={`${product.name} view ${idx + 2}`}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    <ProductImageGallery images={images} productName={product.name} />
 
                     {/* Right Column - Details */}
                     <div className="space-y-8">

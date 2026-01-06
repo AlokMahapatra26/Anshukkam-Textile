@@ -63,8 +63,24 @@ export const catalogueItems = pgTable("catalogue_items", {
     displayOrder: integer("display_order").default(0),
     isActive: boolean("is_active").default(true),
     isFeatured: boolean("is_featured").default(false),
+
+    isCustomizable: boolean("is_customizable").default(false),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const catalogueItemColors = pgTable("catalogue_item_colors", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    catalogueItemId: uuid("catalogue_item_id")
+        .notNull()
+        .references(() => catalogueItems.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 100 }).notNull(),
+    hex: varchar("hex", { length: 50 }).notNull(),
+    frontImageUrl: text("front_image_url").notNull(),
+    backImageUrl: text("back_image_url").notNull(),
+    sideImageUrl: text("side_image_url").notNull(),
+    displayOrder: integer("display_order").default(0),
+    createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const catalogueImages = pgTable("catalogue_images", {
@@ -110,18 +126,7 @@ export const enquiries = pgTable("enquiries", {
 
 // ==================== DESIGN ENQUIRIES TABLE ====================
 
-export const designTemplates = pgTable("design_templates", {
-    id: uuid("id").primaryKey().defaultRandom(),
-    name: varchar("name", { length: 255 }).notNull(),
-    colorName: varchar("color_name", { length: 100 }).notNull(),
-    colorHex: varchar("color_hex", { length: 50 }).notNull(),
-    frontImageUrl: text("front_image_url").notNull(),
-    backImageUrl: text("back_image_url").notNull(),
-    sideImageUrl: text("side_image_url").notNull(),
-    isActive: boolean("is_active").default(true),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-});
+
 
 export const designEnquiries = pgTable("design_enquiries", {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -205,6 +210,17 @@ export const catalogueItemsRelations = relations(
             references: [clothingTypes.id],
         }),
         images: many(catalogueImages),
+        colors: many(catalogueItemColors),
+    })
+);
+
+export const catalogueItemColorsRelations = relations(
+    catalogueItemColors,
+    ({ one }) => ({
+        catalogueItem: one(catalogueItems, {
+            fields: [catalogueItemColors.catalogueItemId],
+            references: [catalogueItems.id],
+        }),
     })
 );
 
@@ -265,5 +281,5 @@ export type NewFactoryPhoto = typeof factoryPhotos.$inferInsert;
 export type DesignEnquiry = typeof designEnquiries.$inferSelect;
 export type NewDesignEnquiry = typeof designEnquiries.$inferInsert;
 
-export type DesignTemplate = typeof designTemplates.$inferSelect;
-export type NewDesignTemplate = typeof designTemplates.$inferInsert;
+export type CatalogueItemColor = typeof catalogueItemColors.$inferSelect;
+export type NewCatalogueItemColor = typeof catalogueItemColors.$inferInsert;

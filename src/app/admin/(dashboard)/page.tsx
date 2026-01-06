@@ -25,10 +25,12 @@ interface Stats {
 interface Enquiry {
     id: string;
     companyName: string | null;
-    clothingTypeName: string | null;
+    clothingTypeName?: string | null; // For standard enquiries
+    fabricName?: string | null; // For design enquiries
     quantity: number;
     status: string | null;
     createdAt: string;
+    type: "standard" | "design";
 }
 
 export default function AdminDashboard() {
@@ -43,28 +45,36 @@ export default function AdminDashboard() {
     useEffect(() => {
         async function fetchData() {
             try {
-                const [typesRes, fabricsRes, enquiriesRes] = await Promise.all([
+                const [typesRes, fabricsRes, enquiriesRes, designEnquiriesRes] = await Promise.all([
                     fetch("/api/catalogue/types?includeInactive=true"),
                     fetch("/api/catalogue/fabrics?includeInactive=true"),
                     fetch("/api/enquiries"),
+                    fetch("/api/design-enquiries"),
                 ]);
 
                 const typesData = await typesRes.json();
                 const fabricsData = await fabricsRes.json();
                 const enquiriesData = await enquiriesRes.json();
+                const designEnquiriesData = await designEnquiriesRes.json();
 
-                const enquiries = enquiriesData.success ? enquiriesData.data : [];
-                const pendingCount = enquiries.filter((e: Enquiry) => e.status === "pending").length;
+                const standardEnquiries = enquiriesData.success ? enquiriesData.data.map((e: any) => ({ ...e, type: "standard" })) : [];
+                const designEnquiries = designEnquiriesData.success ? designEnquiriesData.data.map((e: any) => ({ ...e, type: "design" })) : [];
+
+                const allEnquiries = [...standardEnquiries, ...designEnquiries].sort((a, b) =>
+                    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                );
+
+                const pendingCount = allEnquiries.filter((e: Enquiry) => e.status === "pending").length;
 
                 setStats({
-                    totalEnquiries: enquiries.length,
+                    totalEnquiries: allEnquiries.length,
                     pendingEnquiries: pendingCount,
                     catalogueItems: typesData.success ? typesData.data.length : 0,
                     fabrics: fabricsData.success ? fabricsData.data.length : 0,
                 });
 
                 // Get recent 5 enquiries
-                setRecentEnquiries(enquiries.slice(0, 5));
+                setRecentEnquiries(allEnquiries.slice(0, 5));
             } catch (error) {
                 console.error("Failed to fetch dashboard data:", error);
             } finally {
@@ -146,12 +156,19 @@ export default function AdminDashboard() {
                         <div>
                             <CardTitle className="text-base">Recent Enquiries</CardTitle>
                         </div>
-                        <Link href="/admin/enquiries">
-                            <Button variant="outline" size="sm" className="h-7 text-xs">
-                                View All
-                                <ArrowRight className="ml-2 h-3 w-3" />
-                            </Button>
-                        </Link>
+                        <div className="flex gap-2">
+                            <Link href="/admin/enquiries">
+                                <Button variant="outline" size="sm" className="h-7 text-xs">
+                                    Enquiries
+                                </Button>
+                            </Link>
+                            <Link href="/admin/design-enquiries">
+                                <Button variant="outline" size="sm" className="h-7 text-xs">
+                                    Designs
+                                    <ArrowRight className="ml-2 h-3 w-3" />
+                                </Button>
+                            </Link>
+                        </div>
                     </CardHeader>
                     <CardContent className="flex-1 overflow-auto p-0">
                         {recentEnquiries.length === 0 ? (
@@ -169,9 +186,10 @@ export default function AdminDashboard() {
                                         <div>
                                             <p className="font-medium text-sm">
                                                 {enquiry.companyName || "Unknown Company"}
+                                                {enquiry.type === "design" && <Badge variant="outline" className="ml-2 text-[10px] h-4">Design</Badge>}
                                             </p>
                                             <p className="text-xs text-muted-foreground">
-                                                {enquiry.clothingTypeName || "Product"} · {enquiry.quantity.toLocaleString()} units
+                                                {enquiry.type === "design" ? (enquiry.fabricName || "Custom Design") : (enquiry.clothingTypeName || "Product")} · {enquiry.quantity.toLocaleString()} units
                                             </p>
                                         </div>
                                         <div className="text-right">
