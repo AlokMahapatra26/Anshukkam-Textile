@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { EnquiryForm } from "@/components/public";
 
 export const metadata = {
@@ -32,7 +33,9 @@ export default function EnquiryPage() {
             {/* Enquiry Form */}
             <section className="section-industrial">
                 <div className="container-industrial">
-                    <EnquiryForm />
+                    <Suspense fallback={<div className="flex justify-center py-12">Loading form...</div>}>
+                        <EnquiryForm />
+                    </Suspense>
                 </div>
             </section>
         </div>

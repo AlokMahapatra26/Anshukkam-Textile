@@ -312,7 +312,7 @@ export async function updateCatalogueItemImages(
 
 export async function updateCatalogueItemColors(
     itemId: string,
-    colors: NewCatalogueItemColor[]
+    colors: Omit<NewCatalogueItemColor, "catalogueItemId">[]
 ) {
     // Delete existing colors
     await db

@@ -156,6 +156,19 @@ export const designEnquiries = pgTable("design_enquiries", {
     updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const designTemplates = pgTable("design_templates", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: varchar("name", { length: 255 }).notNull(),
+    colorName: varchar("color_name", { length: 100 }).notNull(),
+    colorHex: varchar("color_hex", { length: 50 }).notNull(),
+    frontImageUrl: text("front_image_url").notNull(),
+    backImageUrl: text("back_image_url").notNull(),
+    sideImageUrl: text("side_image_url").notNull(),
+    isActive: boolean("is_active").default(true),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // ==================== SITE SETTINGS TABLES ====================
 
 export const siteSettings = pgTable("site_settings", {
@@ -283,3 +296,6 @@ export type NewDesignEnquiry = typeof designEnquiries.$inferInsert;
 
 export type CatalogueItemColor = typeof catalogueItemColors.$inferSelect;
 export type NewCatalogueItemColor = typeof catalogueItemColors.$inferInsert;
+
+export type DesignTemplate = typeof designTemplates.$inferSelect;
+export type NewDesignTemplate = typeof designTemplates.$inferInsert;
