@@ -93,7 +93,7 @@ export function Hero() {
                                     mixBlendMode: 'multiply'
                                 }}
                             >
-                                <source src="/animated.webm" type="video/webm" />
+                                <source src="/animated.mp4" type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>
                         </div>
