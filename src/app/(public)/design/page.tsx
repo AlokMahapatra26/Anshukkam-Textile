@@ -690,41 +690,44 @@ export default function DesignPage() {
     return (
         <div className={`min-h-screen bg-muted/10 flex flex-col ${roboto.variable} ${oswald.variable} ${pacifico.variable} ${anton.variable} ${lobster.variable}`}>
             {/* Header */}
-            <header className="bg-background border-b sticky top-0 z-20 px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
+            <header className="bg-background border-b sticky top-0 z-30 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <Link href="/" className="p-2 hover:bg-muted rounded-full transition-colors">
                         <ArrowLeft className="h-5 w-5" />
                     </Link>
                     <div>
-                        <h1 className="font-bold text-lg">Design Studio</h1>
-                        <p className="text-xs text-muted-foreground">
+                        <h1 className="font-bold text-base sm:text-lg">Design Studio</h1>
+                        <p className="text-xs text-muted-foreground hidden sm:block">
                             {step === 1 ? "Customize your design" : "Finalize enquiry details"}
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                     {step === 1 ? (
-                        <Button onClick={() => setStep(2)} className="gap-2">
-                            Next Step <ChevronRight className="h-4 w-4" />
+                        <Button onClick={() => setStep(2)} className="gap-1 sm:gap-2" size="sm">
+                            <span className="hidden sm:inline">Next Step</span>
+                            <span className="sm:hidden">Next</span>
+                            <ChevronRight className="h-4 w-4" />
                         </Button>
                     ) : (
                         <>
-                            <Button variant="ghost" onClick={() => setStep(1)}>Back</Button>
-                            <Button onClick={handleSubmit} disabled={isSubmitting} className="gap-2">
+                            <Button variant="ghost" onClick={() => setStep(1)} size="sm">Back</Button>
+                            <Button onClick={handleSubmit} disabled={isSubmitting} className="gap-1 sm:gap-2" size="sm">
                                 {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : <Check className="h-4 w-4" />}
-                                Submit Enquiry
+                                <span className="hidden sm:inline">Submit Enquiry</span>
+                                <span className="sm:hidden">Submit</span>
                             </Button>
                         </>
                     )}
                 </div>
             </header>
 
-            <main className="flex-1 flex overflow-hidden h-[calc(100vh-73px)]">
-                {/* Left Sidebar - Tools (Only in Step 1) */}
+            <main className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
+                {/* Left Sidebar - Tools (Only in Step 1) - On mobile, shows below canvas */}
                 {step === 1 && (
-                    <aside className="w-80 bg-background border-r flex flex-col overflow-y-auto z-10">
-                        <div className="p-4 space-y-6">
+                    <aside className="order-2 lg:order-1 w-full lg:w-80 bg-background border-t lg:border-t-0 lg:border-r flex flex-col lg:overflow-y-auto shrink-0">
+                        <div className="p-3 sm:p-4 space-y-4 sm:space-y-6">
                             {/* Product & Color Selection */}
                             <div className="space-y-4">
                                 <div className="space-y-2">
@@ -926,28 +929,29 @@ export default function DesignPage() {
                 )}
 
                 {/* Center - Canvas Area */}
-                <div className={`flex-1 relative bg-muted/20 flex flex-col ${step === 2 ? "hidden lg:flex" : ""}`}>
+                <div className={`order-1 lg:order-2 flex-1 relative bg-muted/20 flex flex-col min-h-[50vh] lg:min-h-0 shrink-0 lg:shrink ${step === 2 ? "hidden lg:flex" : ""}`}>
                     {/* View Controls */}
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur border rounded-full p-1 shadow-sm flex gap-1">
+                    <div className="absolute top-2 sm:top-4 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur border rounded-full p-1 shadow-sm flex gap-0.5 sm:gap-1">
                         {(["front", "back", "side"] as const).map((view) => (
                             <button
                                 key={view}
                                 onClick={() => handleViewChange(view)}
-                                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${currentView === view
+                                className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors ${currentView === view
                                     ? "bg-primary text-primary-foreground"
                                     : "hover:bg-muted text-muted-foreground"
                                     }`}
                             >
-                                {view.charAt(0).toUpperCase() + view.slice(1)} View
+                                <span className="hidden sm:inline">{view.charAt(0).toUpperCase() + view.slice(1)} View</span>
+                                <span className="sm:hidden">{view.charAt(0).toUpperCase() + view.slice(1)}</span>
                             </button>
                         ))}
                     </div>
 
                     {/* Canvas Container */}
-                    <div className="flex-1 flex items-center justify-center p-8 overflow-hidden">
+                    <div className="flex-1 flex items-center justify-center p-4 sm:p-8 overflow-hidden">
                         <div
                             ref={containerRef}
-                            className="relative w-full max-w-[600px] aspect-[3/4] bg-white shadow-2xl rounded-lg overflow-hidden"
+                            className="relative w-full max-w-[350px] sm:max-w-[500px] lg:max-w-[600px] aspect-[3/4] bg-white shadow-2xl rounded-lg overflow-hidden"
                         >
                             {/* Background Image (T-Shirt) */}
                             {/* Background Image (T-Shirt) */}
@@ -981,10 +985,10 @@ export default function DesignPage() {
 
                 {/* Right Sidebar - Enquiry Form (Only in Step 2) */}
                 {step === 2 && (
-                    <aside className="w-full lg:w-[500px] bg-background border-l overflow-y-auto p-6 animate-in slide-in-from-right-8">
-                        <div className="space-y-6">
+                    <aside className="w-full lg:w-[500px] bg-background border-l overflow-y-auto p-4 sm:p-6 animate-in slide-in-from-right-8">
+                        <div className="space-y-4 sm:space-y-6 max-w-lg mx-auto lg:max-w-none">
                             <div>
-                                <h2 className="text-xl font-bold">Order Details</h2>
+                                <h2 className="text-lg sm:text-xl font-bold">Order Details</h2>
                                 <p className="text-muted-foreground text-sm">Tell us about your requirements</p>
                             </div>
 
