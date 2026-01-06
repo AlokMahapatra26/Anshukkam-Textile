@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Heart, Mail, Phone, MapPin, Youtube, Instagram, Facebook } from "lucide-react";
+import Image from "next/image";
 
 export function Footer() {
     return (
@@ -8,11 +9,13 @@ export function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
                     {/* Company Info */}
                     <div className="space-y-4">
-                        <div className="flex flex-col">
-                            <span className="font-bold text-xl">Anshuukam Textile</span>
-                            <span className="text-xs opacity-70 uppercase tracking-wider">
-                                Private Limited
-                            </span>
+                        <div className="relative h-16 w-48 mb-4">
+                            <Image
+                                src="/logo.png"
+                                alt="Anshuukam Textile"
+                                fill
+                                className="object-contain object-left brightness-0 invert"
+                            />
                         </div>
                         <p className="text-sm opacity-80 leading-relaxed">
                             Where fabric meets emotion, and quality meets trust.

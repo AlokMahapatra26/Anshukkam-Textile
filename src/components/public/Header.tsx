@@ -45,13 +45,16 @@ export function Header({ navigationData }: HeaderProps) {
             <div className="container-industrial">
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
+                    {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
-                        <Factory className="h-8 w-8 text-accent" />
-                        <div className="flex flex-col">
-                            <span className="font-bold text-lg leading-tight">Anshukkam Textile</span>
-                            <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                                Manufacturing Co.
-                            </span>
+                        <div className="relative h-12 w-40">
+                            <Image
+                                src="/logo.png"
+                                alt="Anshuukam Textile"
+                                fill
+                                className="object-contain object-left"
+                                priority
+                            />
                         </div>
                     </Link>
 

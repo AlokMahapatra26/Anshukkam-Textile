@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Factory, Loader2, AlertCircle } from "lucide-react";
 
+import Image from "next/image";
+
 export default function AdminLoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState("");
@@ -46,14 +48,17 @@ export default function AdminLoginPage() {
             <div className="w-full max-w-md p-8">
                 <div className="bg-card border border-border p-8 shadow-lg">
                     {/* Logo */}
-                    <div className="flex items-center justify-center gap-2 mb-8">
-                        <Factory className="h-10 w-10 text-accent" />
-                        <div className="text-center">
-                            <h1 className="font-bold text-xl">Premium Textiles</h1>
-                            <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                                Admin Panel
-                            </p>
+                    <div className="flex flex-col items-center justify-center gap-2 mb-8">
+                        <div className="relative h-16 w-48">
+                            <Image
+                                src="/logo.png"
+                                alt="Anshuukam Textile"
+                                fill
+                                className="object-contain"
+                                priority
+                            />
                         </div>
+
                     </div>
 
                     {/* Login Form */}

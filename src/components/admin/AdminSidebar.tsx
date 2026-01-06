@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import NextImage from "next/image";
 import {
     Factory,
     LayoutDashboard,
@@ -13,7 +14,7 @@ import {
     LogOut,
     Menu,
     X,
-    Image,
+    Image as ImageIcon,
     Palette,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ const navigation = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Catalogue", href: "/admin/catalogue", icon: Package },
     { name: "Fabrics", href: "/admin/fabrics", icon: Layers },
-    { name: "Factory Photos", href: "/admin/factory", icon: Image },
+    { name: "Factory Photos", href: "/admin/factory", icon: ImageIcon },
     { name: "Enquiries", href: "/admin/enquiries", icon: MessageSquare },
     { name: "Design Enquiries", href: "/admin/design-enquiries", icon: MessageSquare },
     { name: "Settings", href: "/admin/settings", icon: Settings },
@@ -55,14 +56,14 @@ export function AdminSidebar() {
             {/* Logo */}
             <div className={`border-b border-border ${theme === "enterprise" ? "p-3 bg-primary" : "p-6"}`}>
                 <Link href="/admin" className="flex items-center gap-2">
-                    <Factory className={`h-8 w-8 ${theme === "enterprise" ? "text-white" : "text-accent"}`} />
-                    <div>
-                        <span className={`font-bold ${theme === "enterprise" ? "text-white text-sm uppercase tracking-wide" : ""}`}>
-                            Admin Panel
-                        </span>
-                        <p className={`text-xs ${theme === "enterprise" ? "text-white/70" : "text-muted-foreground"}`}>
-                            Anshukkam Textile
-                        </p>
+                    <div className="relative h-10 w-32">
+                        <NextImage
+                            src="/logo.png"
+                            alt="Admin Panel"
+                            fill
+                            className={`object-contain object-left ${theme === "enterprise" ? "brightness-0 invert" : ""}`}
+                            priority
+                        />
                     </div>
                 </Link>
             </div>

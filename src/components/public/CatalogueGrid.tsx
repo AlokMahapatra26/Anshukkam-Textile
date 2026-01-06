@@ -30,7 +30,7 @@ export async function CatalogueGrid() {
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
                     <div>
                         <span className="text-sm font-medium text-accent uppercase tracking-wider mb-2 block">
-                            Manufacturing Capabilities
+                            Product Categories
                         </span>
                         <h2 className="text-3xl md:text-4xl font-bold mb-4">
                             Product Categories
