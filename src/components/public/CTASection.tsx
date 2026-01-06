@@ -8,8 +8,10 @@ export async function CTASection() {
     const contactPhone = await getSettingValue<string>("contact_phone", "+1 234 567 890");
 
     return (
-        <section className="section-industrial bg-primary text-primary-foreground">
-            <div className="container-industrial">
+        <section className="section-industrial bg-primary text-primary-foreground relative overflow-hidden">
+            {/* Fabric pattern overlay */}
+            <div className="absolute inset-0 bg-fabric-pattern opacity-[0.03]" />
+            <div className="container-industrial relative z-10">
                 <div className="max-w-3xl mx-auto text-center">
                     <h2 className="text-3xl md:text-4xl font-bold mb-6">
                         Ready to Start Your Order?
