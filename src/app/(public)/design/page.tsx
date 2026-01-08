@@ -197,7 +197,7 @@ export default function DesignPage() {
         back: null,
         side: null,
     });
-    const [originalLogoUrl, setOriginalLogoUrl] = useState<string | null>(null);
+    const [originalLogoUrls, setOriginalLogoUrls] = useState<string[]>([]);
     const [selectedObject, setSelectedObject] = useState<any>(null);
     const [fillColor, setFillColor] = useState("#000000");
 
@@ -477,7 +477,8 @@ export default function DesignPage() {
         const reader = new FileReader();
         reader.onload = async (event) => {
             const dataUrl = event.target?.result as string;
-            setOriginalLogoUrl(dataUrl); // Save high-res original
+            // Add to array of original logos
+            setOriginalLogoUrls(prev => [...prev, dataUrl]);
 
             const { FabricImage } = await import("fabric");
             const imgElement = new window.Image();
@@ -690,7 +691,7 @@ export default function DesignPage() {
                     designImageUrl,
                     backDesignImageUrl: backDesignImageUrl || undefined,
                     sideDesignImageUrl: sideDesignImageUrl || undefined,
-                    originalLogoUrl: originalLogoUrl || undefined,
+                    originalLogoUrl: originalLogoUrls.length > 0 ? JSON.stringify(originalLogoUrls) : undefined,
                     designJson: updatedCanvasStates, // Send ALL views
                     fabricId: formData.fabricId,
                     printType: formData.printType,
@@ -1243,30 +1244,54 @@ export default function DesignPage() {
                                 <div className="space-y-4">
                                     <h3 className="text-sm font-bold font-serif-display uppercase tracking-wide text-accent">Contact Information</h3>
 
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Phone Number <span className="text-destructive">*</span></Label>
-                                        <Input
-                                            value={formData.phoneNumber}
-                                            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                                            placeholder="+91..."
-                                            className="border-white/10 bg-muted/20 focus:ring-accent/20 h-11"
-                                        />
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-2">
+                                            <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Company Name</Label>
+                                            <Input
+                                                value={formData.companyName}
+                                                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                                                placeholder="Your company"
+                                                className="border-white/10 bg-muted/20 focus:ring-accent/20 h-11"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Contact Person</Label>
+                                            <Input
+                                                value={formData.contactPerson}
+                                                onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+                                                placeholder="Your name"
+                                                className="border-white/10 bg-muted/20 focus:ring-accent/20 h-11"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Email (Optional)</Label>
-                                        <Input
-                                            value={formData.email}
-                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                            placeholder="email@example.com"
-                                            className="border-white/10 bg-muted/20 focus:ring-accent/20 h-11"
-                                        />
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-2">
+                                            <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Phone Number <span className="text-destructive">*</span></Label>
+                                            <Input
+                                                value={formData.phoneNumber}
+                                                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                                                placeholder="+91..."
+                                                className="border-white/10 bg-muted/20 focus:ring-accent/20 h-11"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Email</Label>
+                                            <Input
+                                                value={formData.email}
+                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                placeholder="email@example.com"
+                                                className="border-white/10 bg-muted/20 focus:ring-accent/20 h-11"
+                                            />
+                                        </div>
                                     </div>
+
                                     <div className="space-y-2">
                                         <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Additional Notes</Label>
                                         <Textarea
                                             value={formData.notes}
                                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                            placeholder="Any specific instructions..."
+                                            placeholder="Any specific instructions, requirements, or questions..."
                                             className="border-white/10 bg-muted/20 focus:ring-accent/20 min-h-[100px]"
                                         />
                                     </div>

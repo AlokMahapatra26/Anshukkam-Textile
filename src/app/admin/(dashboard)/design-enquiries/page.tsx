@@ -557,16 +557,63 @@ export default function DesignEnquiriesPage() {
                                     </div>
                                 )}
 
-                                {/* Original Logo */}
-                                {selectedEnquiry.originalLogoUrl && (
-                                    <Button
-                                        className="w-full"
-                                        onClick={() => downloadDesignImage(selectedEnquiry.originalLogoUrl!, `${selectedEnquiry.id}-logo`)}
-                                    >
-                                        <ImageIcon className="mr-2 h-4 w-4" />
-                                        Download Original Logo
-                                    </Button>
-                                )}
+                                {/* Original Logos/Images */}
+                                {selectedEnquiry.originalLogoUrl && (() => {
+                                    // Try to parse as JSON array, fallback to single URL
+                                    let logoUrls: string[] = [];
+                                    try {
+                                        const parsed = JSON.parse(selectedEnquiry.originalLogoUrl);
+                                        logoUrls = Array.isArray(parsed) ? parsed : [selectedEnquiry.originalLogoUrl];
+                                    } catch {
+                                        logoUrls = [selectedEnquiry.originalLogoUrl];
+                                    }
+
+                                    return logoUrls.length > 0 && (
+                                        <div className="space-y-2">
+                                            <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
+                                                Uploaded Logos ({logoUrls.length})
+                                            </p>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {logoUrls.map((url, index) => (
+                                                    <div key={index} className="relative group">
+                                                        <div className="aspect-square relative rounded-lg overflow-hidden border border-border bg-muted">
+                                                            <Image
+                                                                src={url}
+                                                                alt={`Logo ${index + 1}`}
+                                                                fill
+                                                                className="object-contain"
+                                                            />
+                                                        </div>
+                                                        <Button
+                                                            variant="secondary"
+                                                            size="sm"
+                                                            className="w-full mt-1 h-7 text-xs"
+                                                            onClick={() => downloadDesignImage(url, `${selectedEnquiry.id}-logo-${index + 1}`)}
+                                                        >
+                                                            <Download className="mr-1 h-3 w-3" />
+                                                            Logo {index + 1}
+                                                        </Button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {logoUrls.length > 1 && (
+                                                <Button
+                                                    className="w-full"
+                                                    onClick={() => {
+                                                        logoUrls.forEach((url, index) => {
+                                                            setTimeout(() => {
+                                                                downloadDesignImage(url, `${selectedEnquiry.id}-logo-${index + 1}`);
+                                                            }, index * 200);
+                                                        });
+                                                    }}
+                                                >
+                                                    <ImageIcon className="mr-2 h-4 w-4" />
+                                                    Download All Logos ({logoUrls.length})
+                                                </Button>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
                             </div>
 
                             {/* Right Column - Details */}
