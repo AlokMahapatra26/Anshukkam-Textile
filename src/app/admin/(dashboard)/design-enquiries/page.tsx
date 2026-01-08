@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -38,6 +39,8 @@ import {
     Palette,
     Download,
     Image as ImageIcon,
+    FileDown,
+    Calendar,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -85,6 +88,10 @@ export default function DesignEnquiriesPage() {
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [adminNotes, setAdminNotes] = useState("");
     const [isUpdating, setIsUpdating] = useState(false);
+
+    // Date filter states for export
+    const [exportStartDate, setExportStartDate] = useState("");
+    const [exportEndDate, setExportEndDate] = useState("");
 
     const fetchEnquiries = async () => {
         try {
@@ -208,10 +215,100 @@ export default function DesignEnquiriesPage() {
         document.body.removeChild(link);
     };
 
+    const exportToCSV = () => {
+        // Filter enquiries by date range if specified
+        let filteredEnquiries = [...enquiries];
+
+        if (exportStartDate) {
+            const startDate = new Date(exportStartDate);
+            startDate.setHours(0, 0, 0, 0);
+            filteredEnquiries = filteredEnquiries.filter(e =>
+                e.createdAt && new Date(e.createdAt) >= startDate
+            );
+        }
+
+        if (exportEndDate) {
+            const endDate = new Date(exportEndDate);
+            endDate.setHours(23, 59, 59, 999);
+            filteredEnquiries = filteredEnquiries.filter(e =>
+                e.createdAt && new Date(e.createdAt) <= endDate
+            );
+        }
+
+        if (filteredEnquiries.length === 0) {
+            toast.error("No enquiries found for the selected date range");
+            return;
+        }
+
+        // Define CSV headers (no URLs)
+        const headers = [
+            "ID",
+            "Date",
+            "Phone Number",
+            "Email",
+            "Company Name",
+            "Contact Person",
+            "Fabric",
+            "Print Type",
+            "Quantity",
+            "Size Range",
+            "Status",
+            "Customer Notes",
+            "Admin Notes",
+        ];
+
+        // Convert enquiries to CSV rows (no URLs)
+        const rows = filteredEnquiries.map((enquiry) => [
+            enquiry.id,
+            enquiry.createdAt ? new Date(enquiry.createdAt).toLocaleDateString("en-IN") : "",
+            enquiry.phoneNumber || "",
+            enquiry.email || "",
+            enquiry.companyName || "",
+            enquiry.contactPerson || "",
+            enquiry.fabricName || "",
+            enquiry.printType || "",
+            enquiry.quantity?.toString() || "",
+            enquiry.sizeRange || "",
+            enquiry.status || "pending",
+            enquiry.notes || "",
+            enquiry.adminNotes || "",
+        ]);
+
+        // Escape CSV values
+        const escapeCSV = (value: string) => {
+            if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+                return `"${value.replace(/"/g, '""')}"`;
+            }
+            return value;
+        };
+
+        // Build CSV content
+        const csvContent = [
+            headers.join(","),
+            ...rows.map((row) => row.map(escapeCSV).join(",")),
+        ].join("\n");
+
+        // Create and download file
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        const dateRange = exportStartDate || exportEndDate
+            ? `-${exportStartDate || "start"}-to-${exportEndDate || "end"}`
+            : `-${new Date().toISOString().split("T")[0]}`;
+        link.download = `design-enquiries${dateRange}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast.success(`Exported ${filteredEnquiries.length} enquiries to CSV`);
+    };
+
     return (
         <div className="space-y-6">
             {/* Page Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold">Design Enquiries</h1>
                     <p className="text-muted-foreground">
@@ -227,6 +324,66 @@ export default function DesignEnquiriesPage() {
                     Delete All
                 </Button>
             </div>
+
+            {/* Export Controls - Grouped separately */}
+            <Card className="bg-muted/30">
+                <CardContent className="pt-6">
+                    <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
+                        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground shrink-0">
+                            <Calendar className="h-4 w-4" />
+                            <span>Export Data</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+                            <div className="space-y-1.5">
+                                <label className="text-xs text-muted-foreground block">From Date</label>
+                                <Input
+                                    type="date"
+                                    value={exportStartDate}
+                                    onChange={(e) => setExportStartDate(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs text-muted-foreground block">To Date</label>
+                                <Input
+                                    type="date"
+                                    value={exportEndDate}
+                                    onChange={(e) => setExportEndDate(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-2 w-full md:w-auto">
+                            {(exportStartDate || exportEndDate) && (
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => { setExportStartDate(""); setExportEndDate(""); }}
+                                    className="shrink-0"
+                                >
+                                    Clear
+                                </Button>
+                            )}
+                            <Button
+                                variant="outline"
+                                onClick={exportToCSV}
+                                disabled={enquiries.length === 0}
+                                className="flex-1 md:flex-none"
+                            >
+                                <FileDown className="mr-2 h-4 w-4" />
+                                Export CSV
+                            </Button>
+                        </div>
+                    </div>
+                    {(exportStartDate || exportEndDate) && (
+                        <p className="text-xs text-muted-foreground mt-3 pl-6">
+                            {exportStartDate && exportEndDate
+                                ? `Will export data from ${new Date(exportStartDate).toLocaleDateString()} to ${new Date(exportEndDate).toLocaleDateString()}`
+                                : exportStartDate
+                                    ? `Will export data from ${new Date(exportStartDate).toLocaleDateString()} onwards`
+                                    : `Will export data up to ${new Date(exportEndDate).toLocaleDateString()}`
+                            }
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
 
             {/* Enquiries Table */}
             <Card>

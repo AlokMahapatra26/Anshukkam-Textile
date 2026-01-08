@@ -27,7 +27,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
     Eye,
@@ -291,55 +290,60 @@ export default function EnquiriesPage() {
     return (
         <div className="space-y-6">
             {/* Page Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold">Enquiries</h1>
                     <p className="text-muted-foreground">
                         Manage customer enquiries and quote requests
                     </p>
                 </div>
+                <Button
+                    variant="destructive"
+                    onClick={handleBulkDelete}
+                    disabled={enquiries.length === 0}
+                >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete All
+                </Button>
             </div>
 
-            {/* Date Filter & Export */}
-            <Card>
+            {/* Export Controls - Grouped separately */}
+            <Card className="bg-muted/30">
                 <CardContent className="pt-6">
-                    <div className="flex flex-col md:flex-row gap-4 items-end">
-                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="startDate" className="flex items-center gap-2">
-                                    <Calendar className="h-4 w-4" />
-                                    From Date
-                                </Label>
+                    <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
+                        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground shrink-0">
+                            <Calendar className="h-4 w-4" />
+                            <span>Export Data</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+                            <div className="space-y-1.5">
+                                <label className="text-xs text-muted-foreground block">From Date</label>
                                 <Input
-                                    id="startDate"
                                     type="date"
                                     value={startDate}
                                     onChange={(e) => setStartDate(e.target.value)}
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="endDate" className="flex items-center gap-2">
-                                    <Calendar className="h-4 w-4" />
-                                    To Date
-                                </Label>
+                            <div className="space-y-1.5">
+                                <label className="text-xs text-muted-foreground block">To Date</label>
                                 <Input
-                                    id="endDate"
                                     type="date"
                                     value={endDate}
                                     onChange={(e) => setEndDate(e.target.value)}
                                 />
                             </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 w-full md:w-auto">
                             {(startDate || endDate) && (
-                                <Button variant="outline" onClick={clearFilters}>
+                                <Button variant="ghost" onClick={clearFilters} className="shrink-0">
                                     Clear
                                 </Button>
                             )}
                             <Button
                                 onClick={exportToCSV}
                                 disabled={isExporting || filteredEnquiries.length === 0}
-                                className="btn-industrial"
+                                variant="outline"
+                                className="flex-1 md:flex-none"
                             >
                                 {isExporting ? (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -348,16 +352,18 @@ export default function EnquiriesPage() {
                                 )}
                                 Export CSV ({filteredEnquiries.length})
                             </Button>
-                            <Button
-                                variant="destructive"
-                                onClick={handleBulkDelete}
-                                disabled={enquiries.length === 0}
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete All
-                            </Button>
                         </div>
                     </div>
+                    {(startDate || endDate) && (
+                        <p className="text-xs text-muted-foreground mt-3 pl-6">
+                            {startDate && endDate
+                                ? `Will export data from ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`
+                                : startDate
+                                    ? `Will export data from ${new Date(startDate).toLocaleDateString()} onwards`
+                                    : `Will export data up to ${new Date(endDate).toLocaleDateString()}`
+                            }
+                        </p>
+                    )}
                 </CardContent>
             </Card>
 

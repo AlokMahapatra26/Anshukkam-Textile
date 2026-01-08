@@ -31,7 +31,7 @@ const crimsonPro = Crimson_Pro({
 export const metadata: Metadata = {
   title: {
     default: "Anshuukam Textile Pvt Ltd — Where Quality Meets Passion",
-    template: "%s | Anshuukam Textile",
+    template: "%s | Anshuukam Tex",
   },
   description:
     "Every stitch crafted with care. Premium garment manufacturing from Neemuch, M.P. T-shirts, hoodies, jackets, workwear and more.",
