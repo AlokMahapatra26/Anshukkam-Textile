@@ -42,6 +42,9 @@ import {
     Zap,
     Search,
     Image as ImageIcon,
+    Pentagon,
+    Octagon,
+    Cloud,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -60,13 +63,68 @@ const pacifico = Pacifico({ subsets: ['latin'], weight: ['400'], variable: '--fo
 const anton = Anton({ subsets: ['latin'], weight: ['400'], variable: '--font-anton' });
 const lobster = Lobster({ subsets: ['latin'], weight: ['400'], variable: '--font-lobster' });
 
+// Additional font imports for more variety
+import {
+    Dancing_Script,
+    Playfair_Display,
+    Bebas_Neue,
+    Permanent_Marker,
+    Satisfy,
+    Righteous,
+    Bangers,
+    Caveat,
+    Teko,
+    Abril_Fatface,
+    Press_Start_2P,
+    Russo_One,
+    Orbitron,
+    Monoton,
+    Bungee
+} from 'next/font/google';
+
+const dancingScript = Dancing_Script({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-dancing' });
+const playfairDisplay = Playfair_Display({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-playfair' });
+const bebasNeue = Bebas_Neue({ subsets: ['latin'], weight: ['400'], variable: '--font-bebas' });
+const permanentMarker = Permanent_Marker({ subsets: ['latin'], weight: ['400'], variable: '--font-marker' });
+const satisfy = Satisfy({ subsets: ['latin'], weight: ['400'], variable: '--font-satisfy' });
+const righteous = Righteous({ subsets: ['latin'], weight: ['400'], variable: '--font-righteous' });
+const bangers = Bangers({ subsets: ['latin'], weight: ['400'], variable: '--font-bangers' });
+const caveat = Caveat({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-caveat' });
+const teko = Teko({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-teko' });
+const abrilFatface = Abril_Fatface({ subsets: ['latin'], weight: ['400'], variable: '--font-abril' });
+const pressStart = Press_Start_2P({ subsets: ['latin'], weight: ['400'], variable: '--font-press' });
+const russoOne = Russo_One({ subsets: ['latin'], weight: ['400'], variable: '--font-russo' });
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-orbitron' });
+const monoton = Monoton({ subsets: ['latin'], weight: ['400'], variable: '--font-monoton' });
+const bungee = Bungee({ subsets: ['latin'], weight: ['400'], variable: '--font-bungee' });
+
 const fontOptions = [
+    // Sans-Serif
     { name: "Arial", value: "Arial" },
     { name: "Roboto", value: roboto.style.fontFamily },
     { name: "Oswald", value: oswald.style.fontFamily },
-    { name: "Pacifico", value: pacifico.style.fontFamily },
+    { name: "Bebas Neue", value: bebasNeue.style.fontFamily },
+    { name: "Teko", value: teko.style.fontFamily },
+    { name: "Righteous", value: righteous.style.fontFamily },
+    { name: "Russo One", value: russoOne.style.fontFamily },
+    // Display & Bold
     { name: "Anton", value: anton.style.fontFamily },
+    { name: "Bangers", value: bangers.style.fontFamily },
+    { name: "Abril Fatface", value: abrilFatface.style.fontFamily },
+    { name: "Bungee", value: bungee.style.fontFamily },
+    // Script & Handwriting
     { name: "Lobster", value: lobster.style.fontFamily },
+    { name: "Pacifico", value: pacifico.style.fontFamily },
+    { name: "Dancing Script", value: dancingScript.style.fontFamily },
+    { name: "Satisfy", value: satisfy.style.fontFamily },
+    { name: "Caveat", value: caveat.style.fontFamily },
+    { name: "Permanent Marker", value: permanentMarker.style.fontFamily },
+    // Elegant & Serif
+    { name: "Playfair Display", value: playfairDisplay.style.fontFamily },
+    // Futuristic & Techy
+    { name: "Orbitron", value: orbitron.style.fontFamily },
+    { name: "Press Start 2P", value: pressStart.style.fontFamily },
+    { name: "Monoton", value: monoton.style.fontFamily },
 ];
 
 // Define types for our templates
@@ -148,6 +206,9 @@ export default function DesignPage() {
     const [clipartQuery, setClipartQuery] = useState("");
     const [clipartResults, setClipartResults] = useState<string[]>([]);
     const [isSearchingClipart, setIsSearchingClipart] = useState(false);
+
+    // Product Picker Dialog State
+    const [isProductPickerOpen, setIsProductPickerOpen] = useState(false);
 
 
 
@@ -335,7 +396,7 @@ export default function DesignPage() {
         fabricCanvasRef.current.renderAll();
     };
 
-    const addShape = async (type: "rect" | "circle" | "triangle" | "star" | "heart" | "hexagon" | "diamond" | "arrow" | "zap") => {
+    const addShape = async (type: "rect" | "circle" | "triangle" | "star" | "heart" | "hexagon" | "diamond" | "arrow" | "zap" | "pentagon" | "octagon" | "cloud") => {
         if (!fabricCanvasRef.current) return;
         const fabricModule = await import("fabric");
         let shape;
@@ -362,6 +423,22 @@ export default function DesignPage() {
             shape = new fabricModule.Polygon(points, { ...commonProps, scaleX: 1, scaleY: 1 });
         }
 
+        if (type === "pentagon") {
+            const points = [
+                { x: 50, y: 0 }, { x: 100, y: 38 }, { x: 81, y: 100 },
+                { x: 19, y: 100 }, { x: 0, y: 38 }
+            ];
+            shape = new fabricModule.Polygon(points, { ...commonProps, scaleX: 1, scaleY: 1 });
+        }
+
+        if (type === "octagon") {
+            const points = [
+                { x: 30, y: 0 }, { x: 70, y: 0 }, { x: 100, y: 30 }, { x: 100, y: 70 },
+                { x: 70, y: 100 }, { x: 30, y: 100 }, { x: 0, y: 70 }, { x: 0, y: 30 }
+            ];
+            shape = new fabricModule.Polygon(points, { ...commonProps, scaleX: 1, scaleY: 1 });
+        }
+
         if (type === "diamond") {
             shape = new fabricModule.Rect({ ...commonProps, angle: 45 });
         }
@@ -379,6 +456,11 @@ export default function DesignPage() {
         if (type === "zap") {
             const path = "M 55 0 L 0 60 L 40 60 L 25 100 L 80 40 L 40 40 z";
             shape = new fabricModule.Path(path, { ...commonProps, scaleX: 0.8, scaleY: 0.8 });
+        }
+
+        if (type === "cloud") {
+            const path = "M 25 60 Q 0 60 0 45 Q 0 30 20 30 Q 20 10 45 10 Q 70 10 75 30 Q 100 30 100 50 Q 100 70 75 70 L 25 70 Q 0 70 0 55 z";
+            shape = new fabricModule.Path(path, { ...commonProps, scaleX: 1, scaleY: 1 });
         }
 
         if (shape) {
@@ -714,9 +796,6 @@ export default function DesignPage() {
                             <span className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse hidden sm:block" />
                             <h1 className="font-bold text-lg sm:text-xl font-serif-display tracking-wide">Design Studio</h1>
                         </div>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground font-mono uppercase tracking-wider hidden sm:block">
-                            {step === 1 ? "WS-01 • CUSTOMIZATION_MODE" : "WS-02 • ENQUIRY_DETAILS"}
-                        </p>
                     </div>
                 </div>
 
@@ -749,22 +828,83 @@ export default function DesignPage() {
                             <div className="space-y-4">
                                 <div className="space-y-2">
                                     <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Select Product</Label>
-                                    <Select
-                                        value={selectedItem?.id}
-                                        onValueChange={handleItemChange}
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setIsProductPickerOpen(true)}
+                                        className="w-full justify-between border-white/10 bg-muted/20 hover:bg-muted/30 h-10"
                                     >
-                                        <SelectTrigger className="border-white/10 bg-muted/20 focus:ring-accent/20">
-                                            <SelectValue placeholder="Select a product" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {catalogueItems.map(item => (
-                                                <SelectItem key={item.id} value={item.id}>
-                                                    {item.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                        <span className="flex items-center gap-2">
+                                            {selectedItem ? (
+                                                <>
+                                                    {selectedColor?.frontImageUrl && (
+                                                        <div className="w-6 h-6 rounded overflow-hidden border border-white/10">
+                                                            <Image
+                                                                src={selectedColor.frontImageUrl}
+                                                                alt={selectedItem.name}
+                                                                width={24}
+                                                                height={24}
+                                                                className="object-cover w-full h-full"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    <span>{selectedItem.name}</span>
+                                                </>
+                                            ) : (
+                                                <span className="text-muted-foreground">Choose a product...</span>
+                                            )}
+                                        </span>
+                                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                    </Button>
                                 </div>
+
+                                {/* Product Picker Dialog */}
+                                <Dialog open={isProductPickerOpen} onOpenChange={setIsProductPickerOpen}>
+                                    <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto bg-background/95 backdrop-blur border-white/10">
+                                        <DialogHeader>
+                                            <DialogTitle className="font-serif-display text-xl">Select Product</DialogTitle>
+                                            <p className="text-sm text-muted-foreground">Choose a product to customize</p>
+                                        </DialogHeader>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
+                                            {catalogueItems.map(item => {
+                                                const firstColor = item.colors[0];
+                                                const isSelected = selectedItem?.id === item.id;
+                                                return (
+                                                    <button
+                                                        key={item.id}
+                                                        onClick={() => {
+                                                            handleItemChange(item.id);
+                                                            setIsProductPickerOpen(false);
+                                                        }}
+                                                        className={`group relative aspect-square rounded-lg overflow-hidden border-2 transition-all hover:scale-[1.02] ${isSelected ? 'border-accent ring-2 ring-accent/20' : 'border-white/10 hover:border-white/20'}`}
+                                                    >
+                                                        {firstColor?.frontImageUrl ? (
+                                                            <Image
+                                                                src={firstColor.frontImageUrl}
+                                                                alt={item.name}
+                                                                fill
+                                                                className="object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full bg-muted flex items-center justify-center">
+                                                                <Shirt className="h-12 w-12 text-muted-foreground/50" />
+                                                            </div>
+                                                        )}
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                                                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                                                            <p className="text-white font-medium text-sm truncate">{item.name}</p>
+                                                            <p className="text-white/60 text-xs">{item.colors.length} colors</p>
+                                                        </div>
+                                                        {isSelected && (
+                                                            <div className="absolute top-2 right-2 bg-accent text-accent-foreground rounded-full p-1">
+                                                                <Check className="h-3 w-3" />
+                                                            </div>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
 
                                 <div className="space-y-2">
                                     <Label className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted-foreground">
@@ -878,10 +1018,13 @@ export default function DesignPage() {
                                         { icon: Triangle, type: "triangle", label: "Triangle" },
                                         { icon: Star, type: "star", label: "Star" },
                                         { icon: Heart, type: "heart", label: "Heart" },
+                                        { icon: Pentagon, type: "pentagon", label: "Pentagon" },
                                         { icon: Hexagon, type: "hexagon", label: "Hexagon" },
+                                        { icon: Octagon, type: "octagon", label: "Octagon" },
                                         { icon: Diamond, type: "diamond", label: "Diamond" },
                                         { icon: ArrowRight, type: "arrow", label: "Arrow" },
                                         { icon: Zap, type: "zap", label: "Lightning" },
+                                        { icon: Cloud, type: "cloud", label: "Cloud" },
                                     ].map((shape) => (
                                         <Button
                                             key={shape.type}
@@ -897,17 +1040,20 @@ export default function DesignPage() {
                                 </div>
                             </div>
 
-                            {/* Element Properties */}
-                            {selectedObject && (
-                                <div className="p-4 bg-muted/30 border border-accent/20 rounded-lg space-y-3 animate-in fade-in slide-in-from-left-4 relative overflow-hidden">
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-accent/50" />
+                            {/* Element Properties - Always visible, disabled when no element selected */}
+                            <div className={`p-4 bg-muted/30 border rounded-lg space-y-3 relative overflow-hidden transition-opacity ${selectedObject ? 'border-accent/20' : 'border-white/5 opacity-60'}`}>
+                                <div className={`absolute top-0 left-0 w-1 h-full transition-colors ${selectedObject ? 'bg-accent/50' : 'bg-muted-foreground/20'}`} />
+
+                                {/* Element Color */}
+                                <div>
                                     <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Element Color</Label>
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className={`flex flex-wrap gap-2 mt-2 ${!selectedObject ? 'pointer-events-none' : ''}`}>
                                         {["#000000", "#FFFFFF", "#FF0000", "#00FF00", "#0000FF", "#FFFF00"].map(c => (
                                             <button
                                                 key={c}
                                                 onClick={() => updateColor(c)}
-                                                className="w-6 h-6 rounded-full border border-white/10 shadow-sm"
+                                                disabled={!selectedObject}
+                                                className={`w-6 h-6 rounded-full border border-white/10 shadow-sm transition-transform ${selectedObject ? 'hover:scale-110' : 'opacity-50 cursor-not-allowed'}`}
                                                 style={{ backgroundColor: c }}
                                             />
                                         ))}
@@ -915,33 +1061,50 @@ export default function DesignPage() {
                                             type="color"
                                             value={fillColor}
                                             onChange={(e) => updateColor(e.target.value)}
-                                            className="w-6 h-6 p-0 border-0 rounded-full overflow-hidden cursor-pointer"
+                                            disabled={!selectedObject}
+                                            className={`w-6 h-6 p-0 border-0 rounded-full overflow-hidden ${selectedObject ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
                                         />
                                     </div>
-
-                                    {(selectedObject.type === "i-text" || selectedObject.type === "text") && (
-                                        <div className="space-y-2">
-                                            <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Typography</Label>
-                                            <Select onValueChange={updateFont} defaultValue={selectedObject.fontFamily}>
-                                                <SelectTrigger className="h-8 text-xs">
-                                                    <SelectValue placeholder="Select Font" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {fontOptions.map(f => (
-                                                        <SelectItem key={f.name} value={f.value} style={{ fontFamily: f.value }}>
-                                                            {f.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    )}
-
-                                    <Button variant="destructive" size="sm" onClick={deleteSelected} className="w-full h-8 text-xs uppercase tracking-wider">
-                                        <Trash2 className="h-3 w-3 mr-2" /> Remove Element
-                                    </Button>
                                 </div>
-                            )}
+
+                                {/* Typography - Always shown but disabled when not text */}
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Typography</Label>
+                                    <Select
+                                        onValueChange={updateFont}
+                                        value={selectedObject?.fontFamily || ""}
+                                        disabled={!selectedObject || (selectedObject?.type !== "i-text" && selectedObject?.type !== "text")}
+                                    >
+                                        <SelectTrigger className={`h-8 text-xs ${(!selectedObject || (selectedObject?.type !== "i-text" && selectedObject?.type !== "text")) ? 'opacity-50' : ''}`}>
+                                            <SelectValue placeholder="Select text to change font" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {fontOptions.map(f => (
+                                                <SelectItem key={f.name} value={f.value} style={{ fontFamily: f.value }}>
+                                                    {f.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Remove Element */}
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={deleteSelected}
+                                    disabled={!selectedObject}
+                                    className="w-full h-8 text-xs uppercase tracking-wider"
+                                >
+                                    <Trash2 className="h-3 w-3 mr-2" /> Remove Element
+                                </Button>
+
+                                {!selectedObject && (
+                                    <p className="text-[10px] text-center text-muted-foreground">
+                                        Select an element on canvas to edit
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </aside>
                 )}
@@ -970,13 +1133,6 @@ export default function DesignPage() {
 
                     {/* Canvas Container */}
                     <div className="flex-1 flex items-center justify-center p-4 sm:p-8 overflow-hidden relative">
-                        {/* Technical Markers */}
-                        <div className="absolute top-4 left-4 text-[10px] font-mono text-muted-foreground opacity-50 hidden sm:block">
-                            COORD: {currentView === 'front' ? '001' : currentView === 'back' ? '002' : '003'}
-                        </div>
-                        <div className="absolute bottom-4 right-4 text-[10px] font-mono text-muted-foreground opacity-50 hidden sm:block">
-                            SCALE: 1:1
-                        </div>
 
                         <div
                             ref={containerRef}
