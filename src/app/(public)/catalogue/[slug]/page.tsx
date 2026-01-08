@@ -2,9 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-    ArrowLeft, ArrowRight, Scissors, PenTool
-} from "lucide-react";
+import { Scissors, PenTool } from "lucide-react";
 import { getCachedClothingTypes, getCachedClothingTypeBySlug, getCachedCatalogueItems } from "@/lib/services/cached-data";
 import { Metadata } from "next";
 
@@ -63,7 +61,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                         </Link>
                         <span className="text-muted-foreground">/</span>
                         <Link href="/catalogue" className="text-muted-foreground hover:text-foreground transition-colors">
-                            Categories
+                            Catalogue
                         </Link>
                         <span className="text-muted-foreground">/</span>
                         <span className="font-medium">{category.name}</span>
@@ -99,49 +97,65 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                             </Link>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {products.map((product) => (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {products.map((product, index) => (
                                 <Link
                                     key={product.id}
                                     href={`/catalogue/${slug}/${product.slug}`}
-                                    className="group relative bg-card border border-border overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-accent"
+                                    className="card-factory group block h-full hover:border-accent transition-all duration-300"
                                 >
-                                    <div className="p-6">
-                                        {/* Image */}
-                                        <div className="aspect-[4/3] bg-muted mb-6 relative overflow-hidden rounded-sm border border-border group-hover:border-accent/30 transition-colors">
-                                            {product.imageUrl ? (
-                                                <Image
-                                                    src={product.imageUrl}
-                                                    alt={product.name}
-                                                    fill
-                                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-muted/50">
-                                                    <Scissors className="h-12 w-12 text-muted-foreground/20" />
-                                                </div>
-                                            )}
+                                    {/* Technical Header */}
+                                    <div className="flex justify-between items-center p-2 border-b border-border bg-muted/30 text-[10px] font-mono text-muted-foreground">
+                                        <span>PROD-{(index + 1).toString().padStart(2, '0')}</span>
+                                        <span>{product.name.toUpperCase().slice(0, 20)}</span>
+                                    </div>
 
-                                            {/* Overlay Tag */}
-                                            <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 text-xs font-medium text-primary border border-primary/10 shadow-sm">
-                                                {product.minOrderQuantity || category.minOrderQuantity || 100}+ MOQ
+                                    <div className="aspect-[3/4] bg-muted relative overflow-hidden">
+                                        {product.imageUrl ? (
+                                            <Image
+                                                src={product.imageUrl}
+                                                alt={product.name}
+                                                fill
+                                                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-muted/50">
+                                                <Scissors className="h-12 w-12 text-muted-foreground/20" />
                                             </div>
-                                        </div>
+                                        )}
 
-                                        {/* Content */}
-                                        <div className="space-y-3">
-                                            <div className="flex items-start justify-between">
-                                                <h3 className="text-xl font-bold group-hover:text-accent transition-colors">
-                                                    {product.name}
-                                                </h3>
-                                                <ArrowRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-accent transition-colors -translate-x-2 group-hover:translate-x-0 opacity-0 group-hover:opacity-100" />
+                                        {/* Industrial Overlay */}
+                                        <div className="absolute inset-0 border-2 border-transparent group-hover:border-accent/30 transition-colors z-20 pointer-events-none" />
+
+                                        {/* Gradient Overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
+
+                                        {/* Customizable Badge */}
+                                        {product.isCustomizable && (
+                                            <div className="absolute top-3 right-3 bg-accent text-accent-foreground px-2 py-1 text-[10px] font-mono font-bold z-10 flex items-center gap-1">
+                                                <PenTool className="h-3 w-3" />
+                                                CUSTOMIZABLE
                                             </div>
+                                        )}
 
+                                        {/* Content Overlay */}
+                                        <div className="absolute bottom-0 left-0 w-full p-6 text-white z-10">
+                                            <div className="w-8 h-1 bg-accent mb-4 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+
+                                            <h3 className="text-xl font-bold mb-2 font-serif-display tracking-wide group-hover:text-accent transition-colors">
+                                                {product.name}
+                                            </h3>
                                             {product.description && (
-                                                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                                                <p className="text-xs text-white/70 line-clamp-2 leading-relaxed font-mono">
                                                     {product.description}
                                                 </p>
                                             )}
+
+                                            {/* Specs Grid */}
+                                            <div className="grid grid-cols-2 gap-2 text-[10px] font-mono text-white/60 border-t border-white/10 pt-3 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
+                                                <div>MOQ: {product.minOrderQuantity || category.minOrderQuantity || 100}+</div>
+                                                <div>LEAD: {product.leadTime || category.leadTime || '2-4 Weeks'}</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </Link>

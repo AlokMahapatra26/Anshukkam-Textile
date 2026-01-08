@@ -664,3 +664,34 @@ html {
 section[id] {
   scroll-margin-top: 5rem;
 }
+
+/* Stitching Animation Keyframes */
+@keyframes needle-move {
+
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+
+  50% {
+    transform: translate(-50%, 15px);
+  }
+}
+
+@keyframes stitch-line {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-needle-move {
+  animation: needle-move 0.6s ease-in-out infinite;
+}
+
+.animate-stitch-line {
+  animation: stitch-line 1.5s linear infinite;
+}

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    ArrowLeft, Layers, Scale, CheckCircle, ArrowRight
+    ArrowLeft, Layers, Scale, CheckCircle, Mail
 } from "lucide-react";
 import { getCachedFabrics, getCachedFabricBySlug } from "@/lib/services/cached-data";
 import { Metadata } from "next";
@@ -75,7 +75,10 @@ export default async function FabricDetailPage({ params }: { params: Promise<{ s
             : [];
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-blueprint relative">
+            {/* Industrial Warning Stripe */}
+            <div className="absolute top-0 left-0 right-0 h-1 industrial-stripe opacity-20" />
+
             {/* Breadcrumb */}
             <div className="bg-muted border-b border-border">
                 <div className="container-industrial py-4">
@@ -93,83 +96,89 @@ export default async function FabricDetailPage({ params }: { params: Promise<{ s
                 </div>
             </div>
 
-            {/* Fabric Details */}
-            <section className="section-industrial">
-                <div className="container-industrial">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                        {/* Image Gallery */}
+            <div className="container-industrial py-12 relative z-10">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+                    {/* Left Column - Images */}
+                    <div>
                         <FabricImageGallery
                             images={galleryImages}
                             fabricName={fabric.name}
                         />
+                    </div>
 
-                        {/* Fabric Info */}
-                        <div className="space-y-8">
-                            <div>
-                                <Badge variant="outline" className="mb-4 text-accent border-accent/20 bg-accent/5">
-                                    Premium Fabric
+                    {/* Right Column - Details */}
+                    <div className="space-y-8">
+                        {/* Header */}
+                        <div>
+                            <div className="flex items-center gap-3 mb-4">
+                                <Badge variant="outline" className="text-accent border-accent/30 bg-accent/5 font-mono text-[10px] tracking-wider">
+                                    PREMIUM FABRIC
                                 </Badge>
-                                <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-                                    {fabric.name}
-                                </h1>
-                                {fabric.description && (
-                                    <p className="text-lg text-muted-foreground leading-relaxed">
-                                        {fabric.description}
-                                    </p>
-                                )}
                             </div>
-
-                            {/* Specifications */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-muted/50 p-5 rounded-lg border border-border">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <Layers className="h-5 w-5 text-accent" />
-                                        <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Composition</span>
-                                    </div>
-                                    <div className="font-semibold text-xl">
-                                        {fabric.composition || "100% Cotton"}
-                                    </div>
-                                </div>
-                                <div className="bg-muted/50 p-5 rounded-lg border border-border">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <Scale className="h-5 w-5 text-accent" />
-                                        <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Weight</span>
-                                    </div>
-                                    <div className="font-semibold text-xl">
-                                        {fabric.weight || "180 GSM"}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Properties */}
-                            {activeProperties.length > 0 && (
-                                <div className="space-y-4">
-                                    <h3 className="font-semibold text-lg">Fabric Properties</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {activeProperties.map(([key]) => (
-                                            <Badge
-                                                key={key}
-                                                variant="secondary"
-                                                className="px-4 py-2 text-sm border border-border"
-                                            >
-                                                <CheckCircle className="h-4 w-4 mr-2 text-accent" />
-                                                {propertyLabels[key] || key.replace(/_/g, " ")}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                </div>
+                            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground font-serif-display tracking-tight">
+                                {fabric.name}
+                            </h1>
+                            {fabric.description && (
+                                <p className="text-lg text-muted-foreground leading-relaxed">
+                                    {fabric.description}
+                                </p>
                             )}
+                        </div>
 
-                            {/* CTA */}
-                            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-border">
-                                <Link href="/enquiry" className="flex-1">
-                                    <Button className="btn-industrial w-full h-12 text-lg" size="lg">
-                                        Request Sample
-                                        <ArrowRight className="ml-2 h-5 w-5" />
-                                    </Button>
-                                </Link>
-                                <Link href="/contact">
-                                    <Button variant="outline" size="lg" className="h-12 text-lg px-8">
+                        {/* Specifications - Industrial Card */}
+                        <div className="card-factory">
+                            <div className="flex justify-between items-center p-2 border-b border-border bg-muted/30 text-[10px] font-mono text-muted-foreground">
+                                <span>SPEC-SHEET</span>
+                                <span>MAT-{fabric.id.slice(0, 8).toUpperCase()}</span>
+                            </div>
+                            <div className="p-6">
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono uppercase tracking-wider">
+                                            <Layers className="h-4 w-4 text-accent" />
+                                            Composition
+                                        </div>
+                                        <p className="font-bold text-xl text-foreground">{fabric.composition || "100% Cotton"}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono uppercase tracking-wider">
+                                            <Scale className="h-4 w-4 text-accent" />
+                                            Weight
+                                        </div>
+                                        <p className="font-bold text-xl text-foreground">{fabric.weight || "180 GSM"}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Properties */}
+                        {activeProperties.length > 0 && (
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-bold uppercase text-muted-foreground font-mono tracking-wider flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-accent rounded-full" />
+                                    Fabric Properties
+                                </h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {activeProperties.map(([key]) => (
+                                        <Badge
+                                            key={key}
+                                            variant="secondary"
+                                            className="px-4 py-2 text-sm font-medium border border-white/10"
+                                        >
+                                            <CheckCircle className="h-4 w-4 mr-2 text-accent" />
+                                            {propertyLabels[key] || key.replace(/_/g, " ")}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* CTA Buttons */}
+                        <div className="pt-6 border-t border-white/10">
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <Link href="/contact" className="flex-1">
+                                    <Button className="w-full btn-industrial h-14 text-lg">
+                                        <Mail className="mr-2 h-5 w-5" />
                                         Contact Us
                                     </Button>
                                 </Link>
@@ -177,13 +186,13 @@ export default async function FabricDetailPage({ params }: { params: Promise<{ s
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
             {/* Back to Fabrics */}
-            <section className="bg-muted py-8 border-t border-border">
+            <section className="bg-muted/30 py-8 border-t border-white/10 relative z-10">
                 <div className="container-industrial">
                     <Link href="/fabrics">
-                        <Button variant="ghost" className="group hover:bg-transparent pl-0 hover:pl-2 transition-all">
+                        <Button variant="ghost" className="group hover:bg-transparent pl-0 hover:pl-2 transition-all text-muted-foreground hover:text-accent">
                             <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                             Back to Fabrics
                         </Button>

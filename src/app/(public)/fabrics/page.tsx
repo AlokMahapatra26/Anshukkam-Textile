@@ -25,14 +25,25 @@ export default async function FabricsPage() {
 
     return (
         <div className="min-h-screen bg-[#fafafa]">
+            {/* Breadcrumb */}
+            <div className="bg-muted border-b border-border">
+                <div className="container-industrial py-4">
+                    <div className="flex items-center gap-2 text-sm">
+                        <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">
+                            Home
+                        </Link>
+                        <span className="text-muted-foreground">/</span>
+                        <span className="font-medium">Fabrics</span>
+                    </div>
+                </div>
+            </div>
+
             {/* Page Header */}
-            <section className="relative bg-primary text-primary-foreground py-8 overflow-hidden">
-                {/* Fabric background pattern */}
-                <div className="absolute inset-0 bg-fabric-pattern opacity-10" />
+            <section className="relative bg-card border-b border-border py-12">
                 <div className="container-industrial relative z-10">
                     <div className="max-w-3xl">
-                        <h1 className="text-2xl md:text-3xl font-medium mb-3">Fabric Options</h1>
-                        <p className="text-sm text-primary-foreground/70 font-light">
+                        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground font-serif-display">Fabric Options</h1>
+                        <p className="text-lg text-muted-foreground">
                             Quality-tested materials from certified suppliers. All fabrics
                             available in bulk quantities.
                         </p>

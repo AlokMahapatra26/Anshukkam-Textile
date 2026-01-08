@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -174,6 +174,7 @@ const fallbackColors = [
 
 export default function DesignPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const fabricCanvasRef = useRef<any>(null); // Fabric canvas instance
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -244,9 +245,21 @@ export default function DesignPage() {
                     // Filter items that have colors
                     const validItems = itemsData.data.filter((item: any) => item.colors && item.colors.length > 0);
                     setCatalogueItems(validItems);
-                    if (validItems.length > 0) {
-                        setSelectedItem(validItems[0]);
-                        setSelectedColor(validItems[0].colors[0]);
+
+                    // Check if product ID is in URL params
+                    const productId = searchParams.get('product');
+                    let selectedProduct = validItems[0]; // Default to first
+
+                    if (productId) {
+                        const matchedProduct = validItems.find((item: any) => item.id === productId);
+                        if (matchedProduct) {
+                            selectedProduct = matchedProduct;
+                        }
+                    }
+
+                    if (selectedProduct) {
+                        setSelectedItem(selectedProduct);
+                        setSelectedColor(selectedProduct.colors[0]);
                     }
                 }
             } catch (error) {
@@ -257,7 +270,7 @@ export default function DesignPage() {
             }
         }
         fetchData();
-    }, []);
+    }, [searchParams]);
 
     // Initialize Fabric.js
     useEffect(() => {

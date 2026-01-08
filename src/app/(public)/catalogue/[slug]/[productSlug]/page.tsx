@@ -4,8 +4,7 @@ import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    ArrowLeft, Package, Clock, Ruler,
-    CheckCircle2, Mail, Share2
+    Package, Clock, Ruler, CheckCircle2, Mail, PenTool, ArrowRight
 } from "lucide-react";
 import { getCachedCatalogueItemBySlug, getCachedClothingTypeBySlug, getCachedNavigationData } from "@/lib/services/cached-data";
 import { ProductImageGallery } from "@/components/catalogue/ProductImageGallery";
@@ -48,12 +47,6 @@ export default async function ProductPage({
         notFound();
     }
 
-    // Ensure product belongs to category (optional check, but good for consistency)
-    if (product.clothingTypeId !== category.id) {
-        // If product exists but wrong category in URL, maybe redirect or 404.
-        // For now, we'll just proceed as the product slug is unique anyway.
-    }
-
     const images = product.images && product.images.length > 0
         ? product.images
         : product.imageUrl ? [product.imageUrl] : [];
@@ -64,7 +57,10 @@ export default async function ProductPage({
         : fabrics;
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-blueprint relative">
+            {/* Industrial Warning Stripe */}
+            <div className="absolute top-0 left-0 right-0 h-1 industrial-stripe opacity-20" />
+
             {/* Breadcrumb */}
             <div className="bg-muted border-b border-border">
                 <div className="container-industrial py-4">
@@ -86,18 +82,31 @@ export default async function ProductPage({
                 </div>
             </div>
 
-            <div className="container-industrial py-12">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="container-industrial py-12 relative z-10">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
                     {/* Left Column - Images */}
-                    <ProductImageGallery images={images} productName={product.name} />
+                    <div>
+                        <ProductImageGallery images={images} productName={product.name} />
+                    </div>
 
                     {/* Right Column - Details */}
                     <div className="space-y-8">
+                        {/* Header */}
                         <div>
-                            <Badge variant="outline" className="mb-4 text-accent border-accent/20 bg-accent/5">
-                                {category.name}
-                            </Badge>
-                            <h1 className="text-4xl font-bold mb-4 text-foreground">{product.name}</h1>
+                            <div className="flex items-center gap-3 mb-4">
+                                <Badge variant="outline" className="text-accent border-accent/20 bg-accent/5">
+                                    {category.name}
+                                </Badge>
+                                {product.isCustomizable && (
+                                    <Badge className="bg-accent text-accent-foreground font-mono text-[10px] tracking-wider flex items-center gap-1">
+                                        <PenTool className="h-3 w-3" />
+                                        CUSTOMIZABLE
+                                    </Badge>
+                                )}
+                            </div>
+                            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground font-serif-display tracking-tight">
+                                {product.name}
+                            </h1>
                             {product.description && (
                                 <p className="text-lg text-muted-foreground leading-relaxed">
                                     {product.description}
@@ -106,81 +115,84 @@ export default async function ProductPage({
                         </div>
 
                         {/* Key Specs */}
-                        <div className="grid grid-cols-2 gap-4 p-6 bg-muted/30 rounded-lg border border-border">
-                            <div className="space-y-1">
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Package className="h-4 w-4 text-accent" />
-                                    <span>Minimum Order</span>
-                                </div>
-                                <p className="font-semibold text-foreground">{product.minOrderQuantity || 100} Pieces</p>
-                            </div>
-                            <div className="space-y-1">
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Clock className="h-4 w-4 text-accent" />
-                                    <span>Lead Time</span>
-                                </div>
-                                <p className="font-semibold text-foreground">{product.leadTime || "3-4 Weeks"}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Ruler className="h-4 w-4 text-accent" />
-                                    <span>Size Range</span>
-                                </div>
-                                <p className="font-semibold text-foreground">{product.sizeRange || "XS-5XL"}</p>
-                            </div>
-                            {product.productionCapacity && (
+                        <div className="p-6 bg-muted/30 rounded-lg border border-border">
+                            <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-1">
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <CheckCircle2 className="h-4 w-4 text-accent" />
-                                        <span>Capacity</span>
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono uppercase tracking-wider">
+                                        <Package className="h-4 w-4 text-accent" />
+                                        Minimum Order
                                     </div>
-                                    <p className="font-semibold text-foreground">{product.productionCapacity}</p>
+                                    <p className="font-bold text-xl text-foreground">{product.minOrderQuantity || 100}+ pcs</p>
                                 </div>
-                            )}
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono uppercase tracking-wider">
+                                        <Clock className="h-4 w-4 text-accent" />
+                                        Lead Time
+                                    </div>
+                                    <p className="font-bold text-xl text-foreground">{product.leadTime || "3-4 Weeks"}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono uppercase tracking-wider">
+                                        <Ruler className="h-4 w-4 text-accent" />
+                                        Size Range
+                                    </div>
+                                    <p className="font-bold text-xl text-foreground">{product.sizeRange || "XS-5XL"}</p>
+                                </div>
+                                {product.productionCapacity && (
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono uppercase tracking-wider">
+                                            <CheckCircle2 className="h-4 w-4 text-accent" />
+                                            Capacity
+                                        </div>
+                                        <p className="font-bold text-xl text-foreground">{product.productionCapacity}</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Available Fabrics */}
-                        <div>
-                            <h3 className="text-sm font-bold uppercase text-muted-foreground mb-3">Available Fabrics</h3>
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-bold uppercase text-muted-foreground font-mono tracking-wider flex items-center gap-2">
+                                <div className="w-2 h-2 bg-accent rounded-full" />
+                                Available Fabrics
+                            </h3>
                             <div className="flex flex-wrap gap-2">
                                 {availableFabrics.map(fabric => (
                                     <Link key={fabric.id} href={`/fabrics/${fabric.slug}`}>
-                                        <Badge variant="secondary" className="hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer px-3 py-1">
+                                        <Badge
+                                            variant="secondary"
+                                            className="hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer px-4 py-2 text-sm font-medium border border-white/10"
+                                        >
                                             {fabric.name}
+                                            <ArrowRight className="ml-2 h-3 w-3 opacity-50" />
                                         </Badge>
                                     </Link>
                                 ))}
                             </div>
                         </div>
 
-                        {/* CTA */}
-                        <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-border">
-                            <Link href={`/enquiry?category=${category.id}&product=${product.id}`} className="flex-1">
-                                <Button className="w-full btn-industrial h-12 text-lg">
-                                    <Mail className="mr-2 h-5 w-5" />
-                                    Enquire About This Product
-                                </Button>
-                            </Link>
-                            {/* <Button variant="outline" className="h-12 px-6">
-                                <Share2 className="mr-2 h-5 w-5" />
-                                Share
-                            </Button> */}
-                        </div>
-
-                        {/* Additional Info */}
-                        <div className="prose prose-sm text-muted-foreground">
-                            <h3 className="text-foreground font-semibold mb-2">Customization Options</h3>
-                            <ul className="list-disc pl-4 space-y-1">
-                                <li>Custom fabric selection (Cotton, Polyester, Blends, etc.)</li>
-                                <li>Private labeling and branding</li>
-                                <li>Custom sizing charts</li>
-                                <li>Printing and embroidery services</li>
-                                <li>Custom packaging options</li>
-                            </ul>
+                        {/* CTA Buttons */}
+                        <div className="pt-6 border-t border-white/10">
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <Link href={`/enquiry?category=${category.id}&product=${product.id}`} className="flex-1">
+                                    <Button className="w-full btn-industrial h-14 text-lg">
+                                        <Mail className="mr-2 h-5 w-5" />
+                                        Request Quote
+                                    </Button>
+                                </Link>
+                                {product.isCustomizable && (
+                                    <Link href={`/design?product=${product.id}`} className="flex-1">
+                                        <Button variant="outline" className="w-full h-14 text-lg border-accent text-accent hover:bg-accent hover:text-accent-foreground group">
+                                            <PenTool className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                                            Customize Design
+                                        </Button>
+                                    </Link>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
