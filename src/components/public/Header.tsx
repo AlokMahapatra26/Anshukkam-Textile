@@ -47,7 +47,7 @@ export function Header({ navigationData }: HeaderProps) {
                     {/* Logo */}
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
-                        <div className="relative h-12 w-40">
+                        <div className="relative h-12 w-48">
                             <Image
                                 src="/logo.png"
                                 alt="Anshuukam Textile"
