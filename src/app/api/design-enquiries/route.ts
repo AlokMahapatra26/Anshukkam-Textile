@@ -29,6 +29,10 @@ export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const status = searchParams.get("status") || undefined;
+        const priority = searchParams.get("priority") || undefined;
+        const search = searchParams.get("search") || undefined;
+        const page = parseInt(searchParams.get("page") || "1");
+        const limit = parseInt(searchParams.get("limit") || "10");
         const statsOnly = searchParams.get("stats") === "true";
 
         if (statsOnly) {
@@ -36,9 +40,19 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ success: true, data: stats });
         }
 
-        const enquiriesList = await getDesignEnquiries(status);
+        const result = await getDesignEnquiries({
+            status,
+            priority,
+            search,
+            page,
+            limit
+        });
 
-        return NextResponse.json({ success: true, data: enquiriesList });
+        return NextResponse.json({
+            success: true,
+            data: result.data,
+            pagination: result.pagination
+        });
     } catch (error) {
         console.error("Failed to fetch design enquiries:", error);
         return NextResponse.json(
@@ -101,6 +115,31 @@ export async function POST(request: NextRequest) {
         console.error("Failed to create design enquiry:", error);
         return NextResponse.json(
             { success: false, error: "Failed to submit design enquiry" },
+            { status: 500 }
+        );
+    }
+}
+
+export async function PUT(request: NextRequest) {
+    try {
+        const body = await request.json();
+        const { id, ...updateData } = body;
+
+        if (!id) {
+            return NextResponse.json(
+                { success: false, error: "Design Enquiry ID is required" },
+                { status: 400 }
+            );
+        }
+
+        const { updateDesignEnquiry } = await import("@/lib/services/design-enquiries");
+        const result = await updateDesignEnquiry(id, updateData);
+
+        return NextResponse.json({ success: true, data: result });
+    } catch (error) {
+        console.error("Failed to update design enquiry:", error);
+        return NextResponse.json(
+            { success: false, error: "Failed to update design enquiry" },
             { status: 500 }
         );
     }

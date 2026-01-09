@@ -1,16 +1,70 @@
 import { db } from "@/lib/db";
 import { designEnquiries, DesignEnquiry, NewDesignEnquiry } from "@/lib/db/schema";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, or, and } from "drizzle-orm";
 
-export async function getDesignEnquiries(status?: string) {
-    const result = await db.query.designEnquiries.findMany({
-        where: status ? eq(designEnquiries.status, status) : undefined,
+export interface DesignEnquiryFilters {
+    status?: string;
+    priority?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+}
+
+export async function getDesignEnquiries(filters: DesignEnquiryFilters = {}) {
+    const { status, priority, search, page = 1, limit = 10 } = filters;
+    const offset = (page - 1) * limit;
+
+    const conditions = [];
+
+    if (status && status !== "all") {
+        conditions.push(eq(designEnquiries.status, status));
+    }
+
+    if (priority && priority !== "all") {
+        conditions.push(eq(designEnquiries.priority, priority));
+    }
+
+    if (search) {
+        const searchLower = `%${search.toLowerCase()}%`;
+        conditions.push(
+            or(
+                sql`lower(${designEnquiries.companyName}) like ${searchLower}`,
+                sql`lower(${designEnquiries.contactPerson}) like ${searchLower}`,
+                sql`lower(${designEnquiries.email}) like ${searchLower}`,
+                sql`lower(${designEnquiries.phoneNumber}) like ${searchLower}`
+            )
+        );
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const data = await db.query.designEnquiries.findMany({
+        where: whereClause,
         orderBy: [desc(designEnquiries.createdAt)],
+        limit: limit,
+        offset: offset,
         with: {
             fabric: true,
         },
     });
-    return result;
+
+    // Get total count for pagination
+    const totalResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(designEnquiries)
+        .where(whereClause);
+
+    const total = Number(totalResult[0]?.count || 0);
+
+    return {
+        data,
+        pagination: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        },
+    };
 }
 
 export async function getDesignEnquiryById(id: string) {

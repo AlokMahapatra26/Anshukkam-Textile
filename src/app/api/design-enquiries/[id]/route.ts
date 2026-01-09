@@ -7,7 +7,9 @@ import {
 } from "@/lib/services/design-enquiries";
 
 const updateStatusSchema = z.object({
-    status: z.string().min(1),
+    status: z.string().min(1).optional(),
+    priority: z.enum(["low", "medium", "high"]).optional(),
+    deadline: z.string().nullable().optional(),
     adminNotes: z.string().optional(),
 });
 
@@ -43,9 +45,34 @@ export async function PATCH(
     try {
         const { id } = await params;
         const body = await request.json();
-        const { status, adminNotes } = updateStatusSchema.parse(body);
+        const validatedData = updateStatusSchema.parse(body);
 
-        const result = await updateDesignEnquiryStatus(id, status, adminNotes);
+        // Prepare update data
+        const updateData: any = { ...validatedData };
+
+        // Handle deadline and priority
+        if (validatedData.deadline) {
+            const deadlineDate = new Date(validatedData.deadline);
+            updateData.deadline = deadlineDate;
+
+            // Calculate priority based on deadline
+            const now = new Date();
+            const diffTime = deadlineDate.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays <= 2) {
+                updateData.priority = "high";
+            } else if (diffDays <= 7) {
+                updateData.priority = "medium";
+            } else {
+                updateData.priority = "low";
+            }
+        } else if (validatedData.deadline === null) {
+            updateData.priority = "medium";
+        }
+
+        const { updateDesignEnquiry } = await import("@/lib/services/design-enquiries");
+        const result = await updateDesignEnquiry(id, updateData);
 
         if (!result) {
             return NextResponse.json(

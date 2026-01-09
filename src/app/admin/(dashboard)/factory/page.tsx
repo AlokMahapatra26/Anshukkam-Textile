@@ -22,7 +22,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Plus, Pencil, Trash2, ImageIcon, Upload, X } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, ImageIcon } from "lucide-react";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 interface FactoryPhoto {
     id: string;
@@ -52,7 +53,6 @@ export default function FactoryPhotosPage() {
     const [editingPhoto, setEditingPhoto] = useState<FactoryPhoto | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [formData, setFormData] = useState({
         title: "",
@@ -101,52 +101,7 @@ export default function FactoryPhotosPage() {
         setIsDialogOpen(true);
     };
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
 
-        // Validate file type
-        const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-        if (!validTypes.includes(file.type)) {
-            toast.error("Invalid file type. Please upload JPEG, PNG, WebP, or GIF.");
-            return;
-        }
-
-        // Validate file size (5MB max)
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error("File too large. Maximum size is 5MB.");
-            return;
-        }
-
-        setIsUploading(true);
-        try {
-            const formDataUpload = new FormData();
-            formDataUpload.append("file", file);
-            formDataUpload.append("bucket", "factory-photos");
-
-            const response = await fetch("/api/upload", {
-                method: "POST",
-                body: formDataUpload,
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                setFormData((prev) => ({ ...prev, imageUrl: result.data.url }));
-                toast.success("Image uploaded successfully!");
-            } else {
-                toast.error(result.error || "Upload failed");
-            }
-        } catch (error) {
-            toast.error("Failed to upload image");
-        } finally {
-            setIsUploading(false);
-            // Reset file input
-            if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
-        }
-    };
 
     const handleSave = async () => {
         if (!formData.title || !formData.imageUrl) {
@@ -295,49 +250,11 @@ export default function FactoryPhotosPage() {
                             {/* Image Upload */}
                             <div className="space-y-2">
                                 <Label>Image *</Label>
-                                {formData.imageUrl ? (
-                                    <div className="relative">
-                                        <img
-                                            src={formData.imageUrl}
-                                            alt="Preview"
-                                            className="w-full h-48 object-cover rounded-lg border border-border"
-                                        />
-                                        <Button
-                                            variant="destructive"
-                                            size="icon"
-                                            className="absolute top-2 right-2 h-8 w-8"
-                                            onClick={() => setFormData((prev) => ({ ...prev, imageUrl: "" }))}
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div
-                                        className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-accent transition-colors"
-                                        onClick={() => fileInputRef.current?.click()}
-                                    >
-                                        {isUploading ? (
-                                            <div className="flex flex-col items-center">
-                                                <Loader2 className="h-10 w-10 animate-spin text-accent mb-2" />
-                                                <p className="text-sm text-muted-foreground">Uploading...</p>
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col items-center">
-                                                <Upload className="h-10 w-10 text-muted-foreground mb-2" />
-                                                <p className="text-sm font-medium">Click to upload image</p>
-                                                <p className="text-xs text-muted-foreground mt-1">
-                                                    JPEG, PNG, WebP, GIF (max 5MB)
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp,image/gif"
-                                    onChange={handleFileUpload}
-                                    className="hidden"
+                                <ImageUpload
+                                    currentImage={formData.imageUrl}
+                                    onImageUploaded={(url) => setFormData(prev => ({ ...prev, imageUrl: url }))}
+                                    onImageRemoved={() => setFormData(prev => ({ ...prev, imageUrl: "" }))}
+                                    maxFiles={1}
                                 />
                             </div>
 

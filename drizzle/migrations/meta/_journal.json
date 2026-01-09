@@ -43,6 +43,13 @@
       "when": 1767730977753,
       "tag": "0005_add_back_design_image",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1767989460314,
+      "tag": "0006_pretty_talkback",
+      "breakpoints": true
     }
   ]
 }

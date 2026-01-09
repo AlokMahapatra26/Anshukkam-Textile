@@ -2,16 +2,63 @@ import { db } from "@/lib/db";
 import { enquiries, Enquiry, NewEnquiry } from "@/lib/db/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
 
-export async function getEnquiries(status?: string) {
-    const result = await db.query.enquiries.findMany({
-        where: status ? eq(enquiries.status, status) : undefined,
-        orderBy: [desc(enquiries.createdAt)],
-        with: {
-            clothingType: true,
-            fabric: true,
+import { like, or } from "drizzle-orm";
+
+export type EnquiryFilters = {
+    status?: string;
+    priority?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+};
+
+export async function getEnquiries(filters: EnquiryFilters = {}) {
+    const { status, priority, search, page = 1, limit = 10 } = filters;
+    const offset = (page - 1) * limit;
+
+    const conditions = [];
+    if (status && status !== "all") conditions.push(eq(enquiries.status, status));
+    if (priority && priority !== "all") conditions.push(eq(enquiries.priority, priority));
+    if (search) {
+        conditions.push(
+            or(
+                like(enquiries.companyName, `%${search}%`),
+                like(enquiries.contactPerson, `%${search}%`),
+                like(enquiries.email, `%${search}%`),
+                like(enquiries.phoneNumber, `%${search}%`)
+            )
+        );
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const [data, totalCount] = await Promise.all([
+        db.query.enquiries.findMany({
+            where: whereClause,
+            orderBy: [desc(enquiries.createdAt)],
+            limit,
+            offset,
+            with: {
+                clothingType: true,
+                fabric: true,
+            },
+        }),
+        db
+            .select({ count: sql<number>`count(*)::int` })
+            .from(enquiries)
+            .where(whereClause)
+            .then((res) => res[0].count),
+    ]);
+
+    return {
+        data,
+        pagination: {
+            total: totalCount,
+            page,
+            limit,
+            totalPages: Math.ceil(totalCount / limit),
         },
-    });
-    return result;
+    };
 }
 
 export async function getEnquiryById(id: string) {

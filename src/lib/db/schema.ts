@@ -118,6 +118,8 @@ export const enquiries = pgTable("enquiries", {
     notes: text("notes"),
     // Status
     status: varchar("status", { length: 50 }).default("pending"), // pending, contacted, quoted, closed
+    priority: varchar("priority", { length: 20 }).default("medium"), // low, medium, high
+    deadline: timestamp("deadline"),
     adminNotes: text("admin_notes"),
     // Timestamps
     createdAt: timestamp("created_at").defaultNow(),
@@ -152,6 +154,8 @@ export const designEnquiries = pgTable("design_enquiries", {
     notes: text("notes"),
     // Status
     status: varchar("status", { length: 50 }).default("pending"),
+    priority: varchar("priority", { length: 20 }).default("medium"), // low, medium, high
+    deadline: timestamp("deadline"),
     adminNotes: text("admin_notes"),
     // Timestamps
     createdAt: timestamp("created_at").defaultNow(),

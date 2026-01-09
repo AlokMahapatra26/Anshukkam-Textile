@@ -500,7 +500,7 @@ export function EnquiryForm() {
                             <Input
                                 id="phoneNumber"
                                 type="tel"
-                                placeholder="+1 234 567 890"
+                                placeholder="+91 234 567 890"
                                 value={formData.phoneNumber}
                                 onChange={(e) => updateField("phoneNumber", e.target.value)}
                             />

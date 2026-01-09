@@ -9,6 +9,8 @@ import {
 
 const updateEnquirySchema = z.object({
     status: z.enum(["pending", "contacted", "quoted", "closed"]).optional(),
+    priority: z.enum(["low", "medium", "high"]).optional(),
+    deadline: z.string().nullable().optional(), // ISO date string
     adminNotes: z.string().optional(),
     phoneNumber: z.string().min(1).optional(),
     email: z.string().email().optional().nullable(),
@@ -50,7 +52,32 @@ export async function PUT(
         const body = await request.json();
         const validatedData = updateEnquirySchema.parse(body);
 
-        const result = await updateEnquiry(id, validatedData);
+        // Prepare update data
+        const updateData: any = { ...validatedData };
+
+        // Handle deadline and priority
+        if (validatedData.deadline) {
+            const deadlineDate = new Date(validatedData.deadline);
+            updateData.deadline = deadlineDate;
+
+            // Calculate priority based on deadline
+            const now = new Date();
+            const diffTime = deadlineDate.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays <= 2) {
+                updateData.priority = "high";
+            } else if (diffDays <= 7) {
+                updateData.priority = "medium";
+            } else {
+                updateData.priority = "low";
+            }
+        } else if (validatedData.deadline === null) {
+            // If deadline is removed, reset priority to medium (default)
+            updateData.priority = "medium";
+        }
+
+        const result = await updateEnquiry(id, updateData);
 
         if (!result) {
             return NextResponse.json(

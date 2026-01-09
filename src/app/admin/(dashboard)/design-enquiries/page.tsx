@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import {
+    useReactTable,
+    getCoreRowModel,
+    flexRender,
+    ColumnDef,
+    PaginationState,
+} from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,6 +48,11 @@ import {
     Image as ImageIcon,
     FileDown,
     Calendar,
+    Search,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -63,9 +75,15 @@ interface DesignEnquiry {
     status: string | null;
     adminNotes: string | null;
     createdAt: string | null;
+    priority: "low" | "medium" | "high" | null;
+    deadline: string | null;
 }
 
-
+const priorityOptions = [
+    { value: "low", label: "Low", color: "bg-green-100 text-green-800 border-green-200" },
+    { value: "medium", label: "Medium", color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
+    { value: "high", label: "High", color: "bg-red-100 text-red-800 border-red-200" },
+];
 
 const statusOptions = [
     { value: "pending", label: "Pending", color: "default" },
@@ -82,23 +100,62 @@ const printTypeLabels: Record<string, string> = {
 };
 
 export default function DesignEnquiriesPage() {
-    const [enquiries, setEnquiries] = useState<DesignEnquiry[]>([]);
+    const [data, setData] = useState<DesignEnquiry[]>([]);
+    const [totalRows, setTotalRows] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
+    const [pagination, setPagination] = useState<PaginationState>({
+        pageIndex: 0,
+        pageSize: 10,
+    });
+    const [globalFilter, setGlobalFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState("all");
+    const [priorityFilter, setPriorityFilter] = useState("all");
+
+    // Detail Modal State
     const [selectedEnquiry, setSelectedEnquiry] = useState<DesignEnquiry | null>(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [adminNotes, setAdminNotes] = useState("");
     const [isUpdating, setIsUpdating] = useState(false);
 
-    // Date filter states for export
+    // Export State
     const [exportStartDate, setExportStartDate] = useState("");
     const [exportEndDate, setExportEndDate] = useState("");
 
+    // Debounce hook implementation
+    function useDebounce<T>(value: T, delay: number): T {
+        const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+        useEffect(() => {
+            const handler = setTimeout(() => {
+                setDebouncedValue(value);
+            }, delay);
+
+            return () => {
+                clearTimeout(handler);
+            };
+        }, [value, delay]);
+
+        return debouncedValue;
+    }
+
+    const debouncedGlobalFilter = useDebounce(globalFilter, 500);
+
     const fetchEnquiries = async () => {
+        setIsLoading(true);
         try {
-            const response = await fetch("/api/design-enquiries");
+            const params = new URLSearchParams({
+                page: (pagination.pageIndex + 1).toString(),
+                limit: pagination.pageSize.toString(),
+                ...(statusFilter !== "all" && { status: statusFilter }),
+                ...(priorityFilter !== "all" && { priority: priorityFilter }),
+                ...(debouncedGlobalFilter && { search: debouncedGlobalFilter }),
+            });
+
+            const response = await fetch(`/api/design-enquiries?${params}`);
             const result = await response.json();
             if (result.success) {
-                setEnquiries(result.data);
+                setData(result.data);
+                setTotalRows(result.pagination.total);
             }
         } catch (error) {
             console.error("Failed to fetch design enquiries:", error);
@@ -110,33 +167,27 @@ export default function DesignEnquiriesPage() {
 
     useEffect(() => {
         fetchEnquiries();
-    }, []);
+    }, [pagination.pageIndex, pagination.pageSize, statusFilter, priorityFilter, debouncedGlobalFilter]);
 
-    const openDetail = (enquiry: DesignEnquiry) => {
-        setSelectedEnquiry(enquiry);
-        setAdminNotes(enquiry.adminNotes || "");
-        setIsDetailOpen(true);
-    };
-
-    const handleStatusChange = async (id: string, status: string) => {
+    const handleUpdate = async (id: string, updates: Partial<DesignEnquiry>) => {
         setIsUpdating(true);
         try {
             const response = await fetch(`/api/design-enquiries/${id}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status, adminNotes }),
+                body: JSON.stringify(updates),
             });
 
             const result = await response.json();
 
             if (result.success) {
-                toast.success("Status updated");
+                toast.success("Design enquiry updated");
                 fetchEnquiries();
                 if (selectedEnquiry?.id === id) {
-                    setSelectedEnquiry({ ...selectedEnquiry, status, adminNotes });
+                    setSelectedEnquiry({ ...selectedEnquiry, ...updates });
                 }
             } else {
-                toast.error(result.error || "Failed to update status");
+                toast.error(result.error || "Failed to update");
             }
         } catch (error) {
             toast.error("An error occurred");
@@ -200,12 +251,6 @@ export default function DesignEnquiriesPage() {
         });
     };
 
-    const getStatusBadge = (status: string | null) => {
-        const option = statusOptions.find((o) => o.value === status) ||
-            statusOptions[0];
-        return <Badge variant={option.color as "default" | "secondary" | "outline"}>{option.label}</Badge>;
-    };
-
     const downloadDesignImage = (imageUrl: string, id: string) => {
         const link = document.createElement("a");
         link.href = imageUrl;
@@ -215,95 +260,225 @@ export default function DesignEnquiriesPage() {
         document.body.removeChild(link);
     };
 
-    const exportToCSV = () => {
-        // Filter enquiries by date range if specified
-        let filteredEnquiries = [...enquiries];
+    const exportToCSV = async () => {
+        try {
+            const params = new URLSearchParams({
+                page: "1",
+                limit: "10000", // Fetch a large number for export
+                ...(statusFilter !== "all" && { status: statusFilter }),
+                ...(priorityFilter !== "all" && { priority: priorityFilter }),
+                ...(debouncedGlobalFilter && { search: debouncedGlobalFilter }),
+            });
 
-        if (exportStartDate) {
-            const startDate = new Date(exportStartDate);
-            startDate.setHours(0, 0, 0, 0);
-            filteredEnquiries = filteredEnquiries.filter(e =>
-                e.createdAt && new Date(e.createdAt) >= startDate
-            );
-        }
+            const response = await fetch(`/api/design-enquiries?${params}`);
+            const result = await response.json();
 
-        if (exportEndDate) {
-            const endDate = new Date(exportEndDate);
-            endDate.setHours(23, 59, 59, 999);
-            filteredEnquiries = filteredEnquiries.filter(e =>
-                e.createdAt && new Date(e.createdAt) <= endDate
-            );
-        }
-
-        if (filteredEnquiries.length === 0) {
-            toast.error("No enquiries found for the selected date range");
-            return;
-        }
-
-        // Define CSV headers (no URLs)
-        const headers = [
-            "ID",
-            "Date",
-            "Phone Number",
-            "Email",
-            "Company Name",
-            "Contact Person",
-            "Fabric",
-            "Print Type",
-            "Quantity",
-            "Size Range",
-            "Status",
-            "Customer Notes",
-            "Admin Notes",
-        ];
-
-        // Convert enquiries to CSV rows (no URLs)
-        const rows = filteredEnquiries.map((enquiry) => [
-            enquiry.id,
-            enquiry.createdAt ? new Date(enquiry.createdAt).toLocaleDateString("en-IN") : "",
-            enquiry.phoneNumber || "",
-            enquiry.email || "",
-            enquiry.companyName || "",
-            enquiry.contactPerson || "",
-            enquiry.fabricName || "",
-            enquiry.printType || "",
-            enquiry.quantity?.toString() || "",
-            enquiry.sizeRange || "",
-            enquiry.status || "pending",
-            enquiry.notes || "",
-            enquiry.adminNotes || "",
-        ]);
-
-        // Escape CSV values
-        const escapeCSV = (value: string) => {
-            if (value.includes(",") || value.includes('"') || value.includes("\n")) {
-                return `"${value.replace(/"/g, '""')}"`;
+            if (!result.success || !result.data.length) {
+                toast.error("No data to export");
+                return;
             }
-            return value;
-        };
 
-        // Build CSV content
-        const csvContent = [
-            headers.join(","),
-            ...rows.map((row) => row.map(escapeCSV).join(",")),
-        ].join("\n");
+            const dataToExport = result.data;
 
-        // Create and download file
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        const dateRange = exportStartDate || exportEndDate
-            ? `-${exportStartDate || "start"}-to-${exportEndDate || "end"}`
-            : `-${new Date().toISOString().split("T")[0]}`;
-        link.download = `design-enquiries${dateRange}.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+            // Define CSV headers (no URLs)
+            const headers = [
+                "ID",
+                "Date",
+                "Phone Number",
+                "Email",
+                "Company Name",
+                "Contact Person",
+                "Fabric",
+                "Print Type",
+                "Quantity",
+                "Size Range",
+                "Status",
+                "Priority",
+                "Deadline",
+                "Customer Notes",
+                "Admin Notes",
+            ];
 
-        toast.success(`Exported ${filteredEnquiries.length} enquiries to CSV`);
+            // Convert enquiries to CSV rows (no URLs)
+            const rows = dataToExport.map((enquiry: DesignEnquiry) => [
+                enquiry.id,
+                enquiry.createdAt ? new Date(enquiry.createdAt).toLocaleDateString("en-IN") : "",
+                enquiry.phoneNumber || "",
+                enquiry.email || "",
+                enquiry.companyName || "",
+                enquiry.contactPerson || "",
+                enquiry.fabricName || "",
+                enquiry.printType || "",
+                enquiry.quantity?.toString() || "",
+                enquiry.sizeRange || "",
+                enquiry.status || "pending",
+                enquiry.priority || "",
+                enquiry.deadline ? new Date(enquiry.deadline).toLocaleDateString() : "",
+                (enquiry.notes || "").replace(/"/g, '""'),
+                (enquiry.adminNotes || "").replace(/"/g, '""'),
+            ]);
+
+            // Build CSV content
+            const csvContent = [
+                headers.join(","),
+                ...rows.map((row: any[]) => row.map(cell => `"${cell}"`).join(","))
+            ].join("\n");
+
+            // Create and download file
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+
+            link.setAttribute("href", url);
+            link.setAttribute("download", `design_enquiries_export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = "hidden";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            toast.success(`Exported ${dataToExport.length} enquiries`);
+        } catch (error) {
+            console.error("Export failed:", error);
+            toast.error("Failed to export enquiries");
+        }
     };
+
+    const columns = useMemo<ColumnDef<DesignEnquiry>[]>(
+        () => [
+            {
+                accessorKey: "designImageUrl",
+                header: "Preview",
+                cell: ({ row }) => (
+                    <div className="w-12 h-12 relative rounded overflow-hidden border border-border">
+                        <Image
+                            src={row.original.designImageUrl}
+                            alt="Design preview"
+                            fill
+                            className="object-cover"
+                        />
+                    </div>
+                ),
+            },
+            {
+                accessorKey: "createdAt",
+                header: "Date",
+                cell: ({ row }) => {
+                    const deadline = row.original.deadline;
+                    const isOverdue = deadline && new Date(deadline) < new Date();
+                    const isDueSoon = deadline && new Date(deadline) < new Date(new Date().setDate(new Date().getDate() + 2));
+
+                    return (
+                        <div className="flex flex-col gap-1">
+                            <span>{formatDate(row.original.createdAt)}</span>
+                            {deadline && (
+                                <span className={`text-xs px-1.5 py-0.5 rounded border w-fit ${isOverdue
+                                    ? "bg-red-100 text-red-800 border-red-200 font-bold"
+                                    : isDueSoon
+                                        ? "bg-orange-50 text-orange-700 border-orange-200 font-medium"
+                                        : "bg-muted text-muted-foreground border-border"
+                                    }`}>
+                                    Due: {new Date(deadline).toLocaleDateString()}
+                                </span>
+                            )}
+                        </div>
+                    );
+                },
+            },
+            {
+                accessorKey: "priority",
+                header: "Priority",
+                cell: ({ row }) => {
+                    const priority = row.original.priority;
+                    if (!priority) return <span className="text-muted-foreground">-</span>;
+                    const option = priorityOptions.find(p => p.value === priority);
+                    return (
+                        <Badge variant="outline" className={option?.color}>
+                            {option?.label}
+                        </Badge>
+                    );
+                }
+            },
+            {
+                accessorKey: "contact",
+                header: "Contact",
+                cell: ({ row }) => (
+                    <div>
+                        <p className="font-medium">
+                            {row.original.companyName || row.original.contactPerson || "N/A"}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                            {row.original.phoneNumber}
+                        </p>
+                    </div>
+                ),
+            },
+            {
+                accessorKey: "details",
+                header: "Details",
+                cell: ({ row }) => (
+                    <div>
+                        <p className="font-medium">{row.original.fabricName}</p>
+                        <p className="text-sm text-muted-foreground">
+                            {printTypeLabels[row.original.printType || ""] || row.original.printType}
+                        </p>
+                    </div>
+                ),
+            },
+            {
+                accessorKey: "quantity",
+                header: "Quantity",
+                cell: ({ row }) => `${row.original.quantity.toLocaleString()} units`,
+            },
+            {
+                accessorKey: "status",
+                header: "Status",
+                cell: ({ row }) => {
+                    const status = row.original.status;
+                    const option = statusOptions.find((o) => o.value === status) || statusOptions[0];
+                    return <Badge variant={option.color as any}>{option.label}</Badge>;
+                },
+            },
+            {
+                id: "actions",
+                header: () => <div className="text-right">Actions</div>,
+                cell: ({ row }) => (
+                    <div className="flex justify-end gap-2">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                                setSelectedEnquiry(row.original);
+                                setAdminNotes(row.original.adminNotes || "");
+                                setIsDetailOpen(true);
+                            }}
+                        >
+                            <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(row.original.id)}
+                        >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                    </div>
+                ),
+            },
+        ],
+        []
+    );
+
+    const table = useReactTable({
+        data,
+        columns,
+        getCoreRowModel: getCoreRowModel(),
+        manualPagination: true,
+        rowCount: totalRows,
+        state: {
+            pagination,
+        },
+        onPaginationChange: setPagination,
+    });
 
     return (
         <div className="space-y-6">
@@ -315,168 +490,157 @@ export default function DesignEnquiriesPage() {
                         Manage custom T-shirt design requests
                     </p>
                 </div>
-                <Button
-                    variant="destructive"
-                    onClick={handleBulkDelete}
-                    disabled={enquiries.length === 0}
-                >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete All
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={exportToCSV}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Export CSV
+                    </Button>
+                    <Button
+                        variant="destructive"
+                        onClick={handleBulkDelete}
+                        disabled={totalRows === 0}
+                    >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete All
+                    </Button>
+                </div>
             </div>
 
-            {/* Export Controls - Grouped separately */}
-            <Card className="bg-muted/30">
-                <CardContent className="pt-6">
-                    <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
-                        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground shrink-0">
-                            <Calendar className="h-4 w-4" />
-                            <span>Export Data</span>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
-                            <div className="space-y-1.5">
-                                <label className="text-xs text-muted-foreground block">From Date</label>
+            <Card>
+                <CardHeader>
+                    <div className="flex flex-col md:flex-row gap-4 justify-between">
+                        <div className="flex items-center gap-2 flex-1">
+                            <div className="relative flex-1 max-w-md">
+                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    type="date"
-                                    value={exportStartDate}
-                                    onChange={(e) => setExportStartDate(e.target.value)}
+                                    placeholder="Search company, contact, email, phone..."
+                                    value={globalFilter}
+                                    onChange={(e) => setGlobalFilter(e.target.value)}
+                                    className="pl-9"
+                                    suppressHydrationWarning
                                 />
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-xs text-muted-foreground block">To Date</label>
-                                <Input
-                                    type="date"
-                                    value={exportEndDate}
-                                    onChange={(e) => setExportEndDate(e.target.value)}
-                                />
-                            </div>
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger className="w-[150px]">
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Statuses</SelectItem>
+                                    {statusOptions.map((option) => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                                <SelectTrigger className="w-[150px]">
+                                    <SelectValue placeholder="Priority" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Priorities</SelectItem>
+                                    {priorityOptions.map((option) => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <div className="flex gap-2 w-full md:w-auto">
-                            {(exportStartDate || exportEndDate) && (
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => { setExportStartDate(""); setExportEndDate(""); }}
-                                    className="shrink-0"
-                                >
-                                    Clear
-                                </Button>
-                            )}
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                {table.getHeaderGroups().map((headerGroup) => (
+                                    <TableRow key={headerGroup.id}>
+                                        {headerGroup.headers.map((header) => (
+                                            <TableHead key={header.id}>
+                                                {header.isPlaceholder
+                                                    ? null
+                                                    : flexRender(
+                                                        header.column.columnDef.header,
+                                                        header.getContext()
+                                                    )}
+                                            </TableHead>
+                                        ))}
+                                    </TableRow>
+                                ))}
+                            </TableHeader>
+                            <TableBody>
+                                {isLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={columns.length} className="h-24 text-center">
+                                            <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                                        </TableCell>
+                                    </TableRow>
+                                ) : table.getRowModel().rows?.length ? (
+                                    table.getRowModel().rows.map((row) => (
+                                        <TableRow
+                                            key={row.id}
+                                            data-state={row.getIsSelected() && "selected"}
+                                        >
+                                            {row.getVisibleCells().map((cell) => (
+                                                <TableCell key={cell.id}>
+                                                    {flexRender(
+                                                        cell.column.columnDef.cell,
+                                                        cell.getContext()
+                                                    )}
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={columns.length} className="h-24 text-center">
+                                            No results.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                    <div className="flex items-center justify-end space-x-2 py-4">
+                        <div className="flex-1 text-sm text-muted-foreground">
+                            Page {table.getState().pagination.pageIndex + 1} of{" "}
+                            {table.getPageCount()}
+                        </div>
+                        <div className="space-x-2">
                             <Button
                                 variant="outline"
-                                onClick={exportToCSV}
-                                disabled={enquiries.length === 0}
-                                className="flex-1 md:flex-none"
+                                size="sm"
+                                onClick={() => table.setPageIndex(0)}
+                                disabled={!table.getCanPreviousPage()}
                             >
-                                <FileDown className="mr-2 h-4 w-4" />
-                                Export CSV
+                                <ChevronsLeft className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => table.previousPage()}
+                                disabled={!table.getCanPreviousPage()}
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => table.nextPage()}
+                                disabled={!table.getCanNextPage()}
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                                disabled={!table.getCanNextPage()}
+                            >
+                                <ChevronsRight className="h-4 w-4" />
                             </Button>
                         </div>
                     </div>
-                    {(exportStartDate || exportEndDate) && (
-                        <p className="text-xs text-muted-foreground mt-3 pl-6">
-                            {exportStartDate && exportEndDate
-                                ? `Will export data from ${new Date(exportStartDate).toLocaleDateString()} to ${new Date(exportEndDate).toLocaleDateString()}`
-                                : exportStartDate
-                                    ? `Will export data from ${new Date(exportStartDate).toLocaleDateString()} onwards`
-                                    : `Will export data up to ${new Date(exportEndDate).toLocaleDateString()}`
-                            }
-                        </p>
-                    )}
-                </CardContent>
-            </Card>
-
-            {/* Enquiries Table */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>All Design Enquiries</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {isLoading ? (
-                        <div className="flex items-center justify-center py-8">
-                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : enquiries.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                            <Palette className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>No design enquiries yet</p>
-                            <p className="text-sm">Design enquiries will appear here when customers submit designs</p>
-                        </div>
-                    ) : (
-                        <div className="rounded-md border max-h-[60vh] overflow-y-auto relative">
-                            <Table>
-                                <TableHeader className="sticky top-0 bg-card z-10 shadow-sm">
-                                    <TableRow>
-                                        <TableHead>Preview</TableHead>
-                                        <TableHead>Date</TableHead>
-                                        <TableHead>Contact</TableHead>
-                                        <TableHead>Details</TableHead>
-                                        <TableHead>Quantity</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {enquiries.map((enquiry) => (
-                                        <TableRow key={enquiry.id}>
-                                            <TableCell>
-                                                <div className="w-12 h-12 relative rounded overflow-hidden border border-border">
-                                                    <Image
-                                                        src={enquiry.designImageUrl}
-                                                        alt="Design preview"
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-muted-foreground text-sm">
-                                                {formatDate(enquiry.createdAt)}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div>
-                                                    <p className="font-medium">
-                                                        {enquiry.companyName || enquiry.contactPerson || "N/A"}
-                                                    </p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {enquiry.phoneNumber}
-                                                    </p>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div>
-                                                    <p className="font-medium">{enquiry.fabricName}</p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {printTypeLabels[enquiry.printType || ""] || enquiry.printType}
-                                                    </p>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                {enquiry.quantity.toLocaleString()} units
-                                            </TableCell>
-                                            <TableCell>{getStatusBadge(enquiry.status)}</TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() => openDetail(enquiry)}
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() => handleDelete(enquiry.id)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    )}
                 </CardContent>
             </Card>
 
@@ -700,7 +864,7 @@ export default function DesignEnquiriesPage() {
                                         <Select
                                             value={selectedEnquiry.status || "pending"}
                                             onValueChange={(value) =>
-                                                handleStatusChange(selectedEnquiry.id, value)
+                                                setSelectedEnquiry({ ...selectedEnquiry, status: value })
                                             }
                                             disabled={isUpdating}
                                         >
@@ -725,18 +889,34 @@ export default function DesignEnquiriesPage() {
                                             rows={3}
                                         />
                                     </div>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        <div>
+                                            <label className="text-sm font-medium mb-1.5 block">Deadline (Priority is auto-calculated)</label>
+                                            <Input
+                                                type="date"
+                                                value={selectedEnquiry.deadline ? new Date(selectedEnquiry.deadline).toISOString().split('T')[0] : ""}
+                                                onChange={(e) =>
+                                                    setSelectedEnquiry({
+                                                        ...selectedEnquiry,
+                                                        deadline: e.target.value ? new Date(e.target.value).toISOString() : null
+                                                    })
+                                                }
+                                            />
+                                        </div>
+                                    </div>
                                     <Button
                                         onClick={() =>
-                                            handleStatusChange(
-                                                selectedEnquiry.id,
-                                                selectedEnquiry.status || "pending"
-                                            )
+                                            handleUpdate(selectedEnquiry.id, {
+                                                status: selectedEnquiry.status || "pending",
+                                                adminNotes,
+                                                deadline: selectedEnquiry.deadline
+                                            })
                                         }
                                         disabled={isUpdating}
                                         className="w-full"
                                     >
                                         {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                        Update
+                                        Update Record
                                     </Button>
                                 </div>
                             </div>
@@ -744,6 +924,6 @@ export default function DesignEnquiriesPage() {
                     )}
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }

@@ -32,6 +32,10 @@ export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const status = searchParams.get("status") || undefined;
+        const priority = searchParams.get("priority") || undefined;
+        const search = searchParams.get("search") || undefined;
+        const page = parseInt(searchParams.get("page") || "1");
+        const limit = parseInt(searchParams.get("limit") || "10");
         const statsOnly = searchParams.get("stats") === "true";
 
         if (statsOnly) {
@@ -39,9 +43,9 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ success: true, data: stats });
         }
 
-        const enquiriesList = await getEnquiries(status);
+        const result = await getEnquiries({ status, priority, search, page, limit });
 
-        return NextResponse.json({ success: true, data: enquiriesList });
+        return NextResponse.json({ success: true, ...result });
     } catch (error) {
         console.error("Failed to fetch enquiries:", error);
         return NextResponse.json(
@@ -119,6 +123,32 @@ export async function POST(request: NextRequest) {
         console.error("Failed to create enquiry:", error);
         return NextResponse.json(
             { success: false, error: "Failed to submit enquiry" },
+            { status: 500 }
+        );
+    }
+}
+
+export async function PUT(request: NextRequest) {
+    try {
+        const body = await request.json();
+        const { id, ...updateData } = body;
+
+        if (!id) {
+            return NextResponse.json(
+                { success: false, error: "Enquiry ID is required" },
+                { status: 400 }
+            );
+        }
+
+        // Import dynamically to avoid circular dependencies if any, though not expected here
+        const { updateEnquiry } = await import("@/lib/services/enquiries");
+        const result = await updateEnquiry(id, updateData);
+
+        return NextResponse.json({ success: true, data: result });
+    } catch (error) {
+        console.error("Failed to update enquiry:", error);
+        return NextResponse.json(
+            { success: false, error: "Failed to update enquiry" },
             { status: 500 }
         );
     }
