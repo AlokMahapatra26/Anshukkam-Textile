@@ -22,6 +22,7 @@ import {
     Scissors, Palette, Sparkles, BadgeCheck, Timer, Calendar,
     type LucideIcon
 } from "lucide-react";
+import { AboutSettings } from "@/components/admin/settings/AboutSettings";
 
 interface CapacityStat {
     icon: string;
@@ -200,6 +201,7 @@ export default function SettingsPage() {
                 <TabsList>
                     <TabsTrigger value="contact">Contact Details</TabsTrigger>
                     <TabsTrigger value="capacity">Production Capabilities</TabsTrigger>
+                    <TabsTrigger value="about">About Page</TabsTrigger>
                 </TabsList>
 
                 {/* Contact Details Tab */}
@@ -369,6 +371,11 @@ export default function SettingsPage() {
                             </div>
                         </CardContent>
                     </Card>
+                </TabsContent>
+
+                {/* About Page Tab */}
+                <TabsContent value="about">
+                    <AboutSettings />
                 </TabsContent>
             </Tabs>
         </div>

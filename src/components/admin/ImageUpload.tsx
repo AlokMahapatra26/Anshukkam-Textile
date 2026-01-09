@@ -17,8 +17,10 @@ interface ImageUploadProps {
     multiple?: boolean;
 }
 
+const DEFAULT_IMAGES: string[] = [];
+
 export function ImageUpload({
-    currentImages = [],
+    currentImages = DEFAULT_IMAGES,
     currentImage,
     onImagesChange,
     onImageUploaded,
@@ -34,13 +36,18 @@ export function ImageUpload({
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        if (currentImages.length > 0) {
-            setImages(currentImages);
-        } else if (currentImage) {
-            setImages([currentImage]);
-        } else {
-            setImages([]);
-        }
+        const newImages = currentImages.length > 0
+            ? currentImages
+            : currentImage
+                ? [currentImage]
+                : [];
+
+        setImages(prev => {
+            if (JSON.stringify(prev) === JSON.stringify(newImages)) {
+                return prev;
+            }
+            return newImages;
+        });
     }, [currentImages, currentImage]);
 
     const compressImage = async (file: File): Promise<File> => {
