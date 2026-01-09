@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Image from "next/image";
 import { Package, ZoomIn } from "lucide-react";
 
 interface ProductImageGalleryProps {
@@ -35,15 +34,13 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
             >
                 {activeImage ? (
                     <>
-                        <Image
+                        <img
                             src={activeImage}
                             alt={productName}
-                            fill
-                            className={`object-cover transition-transform duration-200 ${isZoomed ? "scale-150" : "scale-100"}`}
+                            className={`object-cover transition-transform duration-200 w-full h-full absolute inset-0 ${isZoomed ? "scale-150" : "scale-100"}`}
                             style={isZoomed ? {
                                 transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`
                             } : {}}
-                            priority
                         />
                         <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1.5 rounded-full text-sm flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                             <ZoomIn className="h-4 w-4" />
@@ -69,11 +66,10 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                                 : "border-transparent hover:border-muted-foreground/50"
                                 }`}
                         >
-                            <Image
+                            <img
                                 src={img}
                                 alt={`${productName} view ${index + 1}`}
-                                fill
-                                className="object-cover"
+                                className="object-cover w-full h-full"
                             />
                         </button>
                     ))}

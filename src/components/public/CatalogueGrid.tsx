@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Scissors } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FadeInStagger, FadeInItem } from "@/components/ui/MotionContainer";
@@ -67,11 +66,10 @@ export async function CatalogueGrid() {
 
                                 <div className="aspect-[3/4] bg-muted relative overflow-hidden">
                                     {item.imageUrl ? (
-                                        <Image
+                                        <img
                                             src={item.imageUrl}
                                             alt={item.name}
-                                            fill
-                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                            className="object-cover transition-transform duration-700 group-hover:scale-110 w-full h-full"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-muted/50">

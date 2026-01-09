@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Image from "next/image";
 import { Layers, ZoomIn } from "lucide-react";
 
 interface FabricImageGalleryProps {
@@ -35,16 +34,14 @@ export function FabricImageGallery({ images, fabricName }: FabricImageGalleryPro
             >
                 {activeImage ? (
                     <>
-                        <Image
+                        <img
                             src={activeImage}
                             alt={fabricName}
-                            fill
-                            className={`object-cover transition-transform duration-300 ${isZoomed ? "scale-200" : "scale-100"}`}
+                            className={`object-cover transition-transform duration-300 w-full h-full absolute inset-0 ${isZoomed ? "scale-200" : "scale-100"}`}
                             style={isZoomed ? {
                                 transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
                                 transform: "scale(2.5)"
                             } : {}}
-                            priority
                         />
                         <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1.5 rounded-full text-sm flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                             <ZoomIn className="h-4 w-4" />
@@ -70,11 +67,10 @@ export function FabricImageGallery({ images, fabricName }: FabricImageGalleryPro
                                 : "border-transparent hover:border-muted-foreground/50"
                                 }`}
                         >
-                            <Image
+                            <img
                                 src={img}
                                 alt={`${fabricName} view ${index + 1}`}
-                                fill
-                                className="object-cover"
+                                className="object-cover w-full h-full"
                             />
                         </button>
                     ))}

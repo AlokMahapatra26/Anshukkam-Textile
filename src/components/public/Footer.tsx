@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Heart, Mail, Phone, MapPin, Youtube, Instagram, Facebook } from "lucide-react";
-import Image from "next/image";
 
 export function Footer() {
     return (
@@ -16,11 +15,10 @@ export function Footer() {
                     {/* Company Info */}
                     <div className="space-y-4">
                         <div className="relative h-16 w-48 mb-4">
-                            <Image
+                            <img
                                 src="/logo.png"
                                 alt="Anshuukam Textile"
-                                fill
-                                className="object-contain object-left brightness-0 invert"
+                                className="object-contain object-left brightness-0 invert w-full h-full"
                             />
                         </div>
                         <p className="text-sm opacity-80 leading-relaxed font-mono">

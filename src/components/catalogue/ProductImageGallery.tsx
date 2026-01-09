@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Scissors, ZoomIn } from "lucide-react";
 
@@ -49,16 +48,14 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                     onMouseLeave={() => setIsZoomed(false)}
                     onMouseMove={handleMouseMove}
                 >
-                    <Image
+                    <img
                         src={selectedImage}
                         alt={productName}
-                        fill
-                        className="object-cover transition-transform duration-300"
+                        className="object-cover transition-transform duration-300 w-full h-full absolute inset-0"
                         style={isZoomed ? {
                             transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
                             transform: "scale(2.5)"
                         } : {}}
-                        priority
                     />
 
                     {/* Zoom hint */}
@@ -83,11 +80,10 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                                     : "border-white/10 hover:border-accent/50"
                             )}
                         >
-                            <Image
+                            <img
                                 src={img}
                                 alt={`${productName} view ${idx + 1}`}
-                                fill
-                                className="object-cover"
+                                className="object-cover w-full h-full"
                             />
                             {selectedImage === img && (
                                 <div className="absolute inset-0 bg-accent/10" />

@@ -47,7 +47,6 @@ import {
     Cloud,
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { Inter, Roboto, Oswald, Pacifico, Anton, Lobster } from 'next/font/google';
 import {
     Dialog,
@@ -969,7 +968,7 @@ export default function DesignPage() {
                                                 <>
                                                     {selectedColor?.frontImageUrl && (
                                                         <div className="w-6 h-6 rounded overflow-hidden border border-white/10">
-                                                            <Image
+                                                            <img
                                                                 src={selectedColor.frontImageUrl}
                                                                 alt={selectedItem.name}
                                                                 width={24}
@@ -1009,11 +1008,10 @@ export default function DesignPage() {
                                                         className={`group relative aspect-square rounded-lg overflow-hidden border-2 transition-all hover:scale-[1.02] ${isSelected ? 'border-accent ring-2 ring-accent/20' : 'border-white/10 hover:border-white/20'}`}
                                                     >
                                                         {firstColor?.frontImageUrl ? (
-                                                            <Image
+                                                            <img
                                                                 src={firstColor.frontImageUrl}
                                                                 alt={item.name}
-                                                                fill
-                                                                className="object-cover"
+                                                                className="object-cover w-full h-full"
                                                             />
                                                         ) : (
                                                             <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -1285,12 +1283,10 @@ export default function DesignPage() {
 
                                 return (
                                     <div className="absolute inset-0 z-0">
-                                        <Image
+                                        <img
                                             src={currentSrc}
                                             alt="Product Template"
-                                            fill
-                                            className="object-cover"
-                                            priority
+                                            className="object-cover w-full h-full"
                                         />
                                     </div>
                                 );

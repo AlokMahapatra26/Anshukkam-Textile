@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Heart, Users, MapPin, CheckCircle, Sparkles, Shield, Target, Globe, Award, Zap, Star } from "lucide-react";
 import { getAboutPageSettings } from "@/lib/services/settings";
@@ -71,7 +70,7 @@ export default async function AboutPage() {
                                 <div key={founder.name} className="card-factory p-6 bg-background hover:border-accent transition-colors flex flex-col sm:flex-row gap-6 items-center text-center sm:text-left group">
                                     <div className="relative h-32 w-32 shrink-0 rounded-full overflow-hidden bg-muted border-2 border-border group-hover:border-accent transition-colors shadow-lg">
                                         {founder.imageUrl ? (
-                                            <Image src={founder.imageUrl} alt={founder.name} fill className="object-cover" />
+                                            <img src={founder.imageUrl} alt={founder.name} className="object-cover w-full h-full" />
                                         ) : (
                                             <div className="flex items-center justify-center h-full w-full bg-muted">
                                                 <Users className="h-12 w-12 text-muted-foreground/50" />

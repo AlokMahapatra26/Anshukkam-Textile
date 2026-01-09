@@ -8,7 +8,6 @@ import { Menu, Factory, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import Image from "next/image";
 
 const navigation = [
     { name: "Home", href: "/" },
@@ -48,12 +47,10 @@ export function Header({ navigationData }: HeaderProps) {
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
                         <div className="relative h-12 w-48">
-                            <Image
+                            <img
                                 src="/logo.png"
                                 alt="Anshuukam Textile"
-                                fill
-                                className="object-contain object-left"
-                                priority
+                                className="object-contain object-left w-full h-full"
                             />
                         </div>
                     </Link>
@@ -148,7 +145,7 @@ export function Header({ navigationData }: HeaderProps) {
                                                                                     >
                                                                                         <div className="relative w-12 h-12 rounded bg-muted overflow-hidden flex-shrink-0 border border-border">
                                                                                             {prod.imageUrl ? (
-                                                                                                <Image src={prod.imageUrl} alt={prod.name} fill className="object-cover" />
+                                                                                                <img src={prod.imageUrl} alt={prod.name} className="object-cover w-full h-full" />
                                                                                             ) : (
                                                                                                 <div className="w-full h-full bg-muted" />
                                                                                             )}

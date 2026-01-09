@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Scissors, PenTool } from "lucide-react";
@@ -112,11 +111,10 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
 
                                     <div className="aspect-[3/4] bg-muted relative overflow-hidden">
                                         {product.imageUrl ? (
-                                            <Image
+                                            <img
                                                 src={product.imageUrl}
                                                 alt={product.name}
-                                                fill
-                                                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                                className="object-cover transition-transform duration-700 group-hover:scale-110 w-full h-full"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-muted/50">
