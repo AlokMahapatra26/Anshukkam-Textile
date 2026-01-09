@@ -554,9 +554,8 @@ export default function DesignPage() {
 
                 // Update the source to the optimized one if we compressed it
                 if (finalDataUrl !== originalDataUrl) {
-                    imgInstance.setSrc(finalDataUrl, () => {
-                        fabricCanvasRef.current?.renderAll();
-                    });
+                    await imgInstance.setSrc(finalDataUrl);
+                    fabricCanvasRef.current?.renderAll();
                 }
 
                 fabricCanvasRef.current?.add(imgInstance);
