@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
-import { siteSettings } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { siteSettings, siteSections } from "@/lib/db/schema";
+import { eq, asc } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 
 const SETTING_KEY = "about_page";
@@ -202,3 +202,122 @@ export async function getSettingValue<T>(key: string, defaultValue: T): Promise<
     }
     return setting.value as T;
 }
+
+// ==================== SITE SECTIONS ====================
+
+export const getSiteSections = unstable_cache(
+    async () => {
+        try {
+            return await db.query.siteSections.findMany({
+                orderBy: [asc(siteSections.displayOrder)],
+            });
+        } catch (error) {
+            console.error("Failed to fetch site sections:", error);
+            return [];
+        }
+    },
+    ["site-sections"],
+    {
+        tags: ["sections"],
+        revalidate: 3600
+    }
+);
+
+export const getVisibleSections = unstable_cache(
+    async () => {
+        try {
+            return await db.query.siteSections.findMany({
+                where: eq(siteSections.isVisible, true),
+                orderBy: [asc(siteSections.displayOrder)],
+            });
+        } catch (error) {
+            console.error("Failed to fetch visible sections:", error);
+            return [];
+        }
+    },
+    ["visible-sections"],
+    {
+        tags: ["sections"],
+        revalidate: 3600
+    }
+);
+
+export const getSectionByKey = unstable_cache(
+    async (key: string) => {
+        try {
+            return await db.query.siteSections.findFirst({
+                where: eq(siteSections.sectionKey, key),
+            });
+        } catch (error) {
+            console.error(`Failed to fetch section ${key}:`, error);
+            return null;
+        }
+    },
+    ["section-by-key"],
+    {
+        tags: ["sections"],
+        revalidate: 3600
+    }
+);
+
+export const upsertSection = async (key: string, data: any) => {
+    try {
+        const existing = await db.query.siteSections.findFirst({
+            where: eq(siteSections.sectionKey, key),
+        });
+
+        if (existing) {
+            return await db
+                .update(siteSections)
+                .set({
+                    ...data,
+                    updatedAt: new Date(),
+                })
+                .where(eq(siteSections.sectionKey, key))
+                .returning();
+        } else {
+            return await db
+                .insert(siteSections)
+                .values({
+                    sectionKey: key,
+                    ...data,
+                })
+                .returning();
+        }
+    } catch (error) {
+        console.error(`Failed to upsert section ${key}:`, error);
+        throw error;
+    }
+};
+
+export const updateSectionVisibility = async (key: string, isVisible: boolean) => {
+    try {
+        return await db
+            .update(siteSections)
+            .set({
+                isVisible,
+                updatedAt: new Date(),
+            })
+            .where(eq(siteSections.sectionKey, key))
+            .returning();
+    } catch (error) {
+        console.error(`Failed to update visibility for section ${key}:`, error);
+        throw error;
+    }
+};
+
+export const updateSectionContent = async (key: string, content: any) => {
+    try {
+        return await db
+            .update(siteSections)
+            .set({
+                content,
+                updatedAt: new Date(),
+            })
+            .where(eq(siteSections.sectionKey, key))
+            .returning();
+    } catch (error) {
+        console.error(`Failed to update content for section ${key}:`, error);
+        throw error;
+    }
+};
