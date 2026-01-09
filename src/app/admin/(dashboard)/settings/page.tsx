@@ -23,6 +23,7 @@ import {
     type LucideIcon
 } from "lucide-react";
 import { AboutSettings } from "@/components/admin/settings/AboutSettings";
+import { FactorySettings } from "@/components/admin/settings/FactorySettings";
 
 interface CapacityStat {
     icon: string;
@@ -202,6 +203,7 @@ export default function SettingsPage() {
                     <TabsTrigger value="contact">Contact Details</TabsTrigger>
                     <TabsTrigger value="capacity">Production Capabilities</TabsTrigger>
                     <TabsTrigger value="about">About Page</TabsTrigger>
+                    <TabsTrigger value="factory">Factory Page</TabsTrigger>
                 </TabsList>
 
                 {/* Contact Details Tab */}
@@ -376,6 +378,11 @@ export default function SettingsPage() {
                 {/* About Page Tab */}
                 <TabsContent value="about">
                     <AboutSettings />
+                </TabsContent>
+
+                {/* Factory Page Tab */}
+                <TabsContent value="factory">
+                    <FactorySettings />
                 </TabsContent>
             </Tabs>
         </div>

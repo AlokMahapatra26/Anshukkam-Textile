@@ -4,8 +4,9 @@ import { eq } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 
 const SETTING_KEY = "about_page";
+const FACTORY_SETTING_KEY = "factory_page";
 
-// Default content structure
+// Default content structure for About Page
 const defaultContent = {
     hero: {
         title: "Where Fabric Meets Emotion",
@@ -62,6 +63,24 @@ const defaultContent = {
     }
 };
 
+// Default content structure for Factory Page
+const defaultFactoryContent = {
+    hero: {
+        title: "Our Factory",
+        description: "Take a virtual tour of our state-of-the-art manufacturing facility with 50,000+ sq ft of production space."
+    },
+    stats: [
+        { value: "50,000+", label: "Sq Ft Facility", id: "AREA" },
+        { value: "200+", label: "Skilled Workers", id: "TEAM" },
+        { value: "24/7", label: "Production", id: "TIME" },
+        { value: "100%", label: "Quality Checked", id: "QC" },
+    ],
+    gallery: {
+        title: "Inside Our Facility",
+        description: "Explore our manufacturing facility through these photos. From cutting-edge machinery to our dedicated team."
+    }
+};
+
 export const getAboutPageSettings = unstable_cache(
     async () => {
         try {
@@ -82,6 +101,30 @@ export const getAboutPageSettings = unstable_cache(
     ["about-page-settings"],
     {
         tags: ["about-page"],
+        revalidate: false // Cache indefinitely until revalidated
+    }
+);
+
+export const getFactoryPageSettings = unstable_cache(
+    async () => {
+        try {
+            const setting = await db.query.siteSettings.findFirst({
+                where: eq(siteSettings.key, FACTORY_SETTING_KEY),
+            });
+
+            if (!setting) {
+                return defaultFactoryContent;
+            }
+
+            return setting.value as typeof defaultFactoryContent;
+        } catch (error) {
+            console.error("Failed to fetch factory page settings:", error);
+            return defaultFactoryContent;
+        }
+    },
+    ["factory-page-settings"],
+    {
+        tags: ["factory-page"],
         revalidate: false // Cache indefinitely until revalidated
     }
 );

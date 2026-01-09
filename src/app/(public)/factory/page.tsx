@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getCachedFactoryPhotos } from "@/lib/services/cached-data";
+import { getFactoryPageSettings } from "@/lib/services/settings";
 import { Metadata } from "next";
 import { FactoryGallery } from "@/components/public/FactoryGallery";
 
@@ -30,6 +31,7 @@ const categoryLabels: Record<string, string> = {
 
 export default async function FactoryPage() {
     const photos = await getCachedFactoryPhotos() as FactoryPhoto[];
+    const content = await getFactoryPageSettings();
 
     // Get unique categories from photos
     const categories = Array.from(new Set(photos.map((p) => p.category).filter(Boolean))) as string[];
@@ -52,11 +54,10 @@ export default async function FactoryPage() {
                             INFRASTRUCTURE
                         </div>
                         <h1 className="text-2xl md:text-3xl font-bold mb-2 font-serif-display tracking-wide">
-                            Our Factory
+                            {content.hero.title}
                         </h1>
                         <p className="text-sm text-primary-foreground/70 font-light max-w-2xl leading-relaxed font-mono">
-                            Take a virtual tour of our state-of-the-art manufacturing facility
-                            with 50,000+ sq ft of production space.
+                            {content.hero.description}
                         </p>
                     </div>
                 </div>
@@ -66,12 +67,7 @@ export default async function FactoryPage() {
             <section className="py-12 border-b border-border bg-background/50 backdrop-blur-sm">
                 <div className="container-industrial">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        {[
-                            { value: "50,000+", label: "Sq Ft Facility", id: "AREA" },
-                            { value: "200+", label: "Skilled Workers", id: "TEAM" },
-                            { value: "24/7", label: "Production", id: "TIME" },
-                            { value: "100%", label: "Quality Checked", id: "QC" },
-                        ].map((stat) => (
+                        {content.stats.map((stat: any) => (
                             <div
                                 key={stat.label}
                                 className="card-factory p-6 group hover:border-accent transition-all duration-300"
@@ -102,11 +98,10 @@ export default async function FactoryPage() {
                             GALLERY
                         </div>
                         <h2 className="text-3xl md:text-4xl font-bold mb-4 font-serif-display">
-                            Inside Our Facility
+                            {content.gallery.title}
                         </h2>
                         <p className="text-muted-foreground max-w-2xl mx-auto font-mono text-sm">
-                            Explore our manufacturing facility through these photos.
-                            From cutting-edge machinery to our dedicated team.
+                            {content.gallery.description}
                         </p>
                     </div>
 
