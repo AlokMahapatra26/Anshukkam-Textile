@@ -56,6 +56,7 @@ export const getCachedCatalogueItems = unstable_cache(
                 description: catalogueItems.description,
                 minOrderQuantity: catalogueItems.minOrderQuantity,
                 imageUrl: catalogueImages.imageUrl,
+                isCustomizable: catalogueItems.isCustomizable,
             })
             .from(catalogueItems)
             .leftJoin(

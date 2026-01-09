@@ -24,11 +24,11 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Validate file size (max 5MB)
-        const maxSize = 5 * 1024 * 1024;
+        // Validate file size (max 2MB)
+        const maxSize = 2 * 1024 * 1024;
         if (file.size > maxSize) {
             return NextResponse.json(
-                { success: false, error: "File too large. Max size: 5MB" },
+                { success: false, error: "File too large. Max size: 2MB" },
                 { status: 400 }
             );
         }

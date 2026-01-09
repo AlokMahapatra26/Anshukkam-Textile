@@ -487,6 +487,13 @@ export default function DesignPage() {
         const file = e.target.files?.[0];
         if (!file || !fabricCanvasRef.current) return;
 
+        // Check file size (2MB limit)
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error("File size too large. Max limit is 2MB.");
+            e.target.value = ""; // Reset input
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = async (event) => {
             const dataUrl = event.target?.result as string;
