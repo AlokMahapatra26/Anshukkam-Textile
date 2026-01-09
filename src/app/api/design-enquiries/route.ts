@@ -14,7 +14,6 @@ const createDesignEnquirySchema = z.object({
     backDesignImageUrl: z.string().nullable().optional(), // Back design - Can be data URL
     sideDesignImageUrl: z.string().nullable().optional(), // Side design - Can be data URL
     originalLogoUrl: z.string().nullable().optional(), // Can be data URL
-    designJson: z.any().nullable().optional(),
     fabricId: z.string().uuid(),
     printType: z.string().min(1),
     quantity: z.number().int().min(1),

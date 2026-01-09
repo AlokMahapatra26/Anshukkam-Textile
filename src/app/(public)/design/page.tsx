@@ -747,6 +747,69 @@ export default function DesignPage() {
                 sideDesignImageUrl = fabricCanvasRef.current.toDataURL();
             }
 
+            // Helper to upload base64 image
+            const uploadBase64Image = async (base64Data: string, prefix: string): Promise<string | null> => {
+                if (!base64Data) return null;
+                try {
+                    // Convert base64 to blob
+                    const res = await fetch(base64Data);
+                    const blob = await res.blob();
+                    const file = new File([blob], `${prefix}-${Date.now()}.jpg`, { type: "image/jpeg" });
+
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    formData.append("bucket", "factory-photos"); // Using existing bucket
+
+                    const uploadRes = await fetch("/api/upload", {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    const result = await uploadRes.json();
+                    if (result.success) {
+                        return result.data.url;
+                    }
+                    console.error("Upload failed", result.error);
+                    return null;
+                } catch (e) {
+                    console.error("Error uploading image", e);
+                    return null;
+                }
+            };
+
+            // Upload generated images
+            let uploadedDesignUrl = designImageUrl;
+            if (designImageUrl.startsWith("data:")) {
+                const url = await uploadBase64Image(designImageUrl, "design-front");
+                if (url) uploadedDesignUrl = url;
+            }
+
+            let uploadedBackDesignUrl = backDesignImageUrl;
+            if (backDesignImageUrl && backDesignImageUrl.startsWith("data:")) {
+                const url = await uploadBase64Image(backDesignImageUrl, "design-back");
+                if (url) uploadedBackDesignUrl = url;
+            }
+
+            let uploadedSideDesignUrl = sideDesignImageUrl;
+            if (sideDesignImageUrl && sideDesignImageUrl.startsWith("data:")) {
+                const url = await uploadBase64Image(sideDesignImageUrl, "design-side");
+                if (url) uploadedSideDesignUrl = url;
+            }
+
+            // Upload original logos
+            let uploadedOriginalLogos: string[] = [];
+            if (originalLogoUrls.length > 0) {
+                for (let i = 0; i < originalLogoUrls.length; i++) {
+                    const logo = originalLogoUrls[i];
+                    if (logo.startsWith("data:")) {
+                        const url = await uploadBase64Image(logo, `logo-${i}`);
+                        if (url) uploadedOriginalLogos.push(url);
+                    } else {
+                        uploadedOriginalLogos.push(logo);
+                    }
+                }
+            }
+
             // Restore current view state
             if (fabricCanvasRef.current && updatedCanvasStates[currentView]) {
                 await fabricCanvasRef.current.loadFromJSON(updatedCanvasStates[currentView]);
@@ -757,11 +820,10 @@ export default function DesignPage() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    designImageUrl,
-                    backDesignImageUrl: backDesignImageUrl || undefined,
-                    sideDesignImageUrl: sideDesignImageUrl || undefined,
-                    originalLogoUrl: originalLogoUrls.length > 0 ? JSON.stringify(originalLogoUrls) : undefined,
-                    designJson: updatedCanvasStates, // Send ALL views
+                    designImageUrl: uploadedDesignUrl,
+                    backDesignImageUrl: uploadedBackDesignUrl || undefined,
+                    sideDesignImageUrl: uploadedSideDesignUrl || undefined,
+                    originalLogoUrl: uploadedOriginalLogos.length > 0 ? JSON.stringify(uploadedOriginalLogos) : undefined,
                     fabricId: formData.fabricId,
                     printType: formData.printType,
                     quantity: parseInt(formData.quantity),
