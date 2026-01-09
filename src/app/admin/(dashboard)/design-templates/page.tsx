@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Plus, Trash2, Upload, Loader2, Image as ImageIcon } from "lucide-react";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import Image from "next/image";
 
 interface DesignTemplate {
@@ -50,9 +51,7 @@ export default function DesignTemplatesPage() {
         sideImageUrl: "",
     });
 
-    const frontInputRef = useRef<HTMLInputElement>(null);
-    const backInputRef = useRef<HTMLInputElement>(null);
-    const sideInputRef = useRef<HTMLInputElement>(null);
+
 
     const fetchTemplates = async () => {
         try {
@@ -72,16 +71,7 @@ export default function DesignTemplatesPage() {
         fetchTemplates();
     }, []);
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            setFormData((prev) => ({ ...prev, [field]: event.target?.result as string }));
-        };
-        reader.readAsDataURL(file);
-    };
 
     const handleSubmit = async () => {
         if (!formData.name || !formData.colorName || !formData.frontImageUrl || !formData.backImageUrl || !formData.sideImageUrl) {
@@ -201,75 +191,36 @@ export default function DesignTemplatesPage() {
                                 {/* Front Image */}
                                 <div className="space-y-2">
                                     <Label>Front View</Label>
-                                    <div
-                                        className="aspect-[3/4] border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 relative overflow-hidden"
-                                        onClick={() => frontInputRef.current?.click()}
-                                    >
-                                        {formData.frontImageUrl ? (
-                                            <Image src={formData.frontImageUrl} alt="Front" fill className="object-cover" />
-                                        ) : (
-                                            <>
-                                                <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                                                <span className="text-xs text-muted-foreground">Upload Front</span>
-                                            </>
-                                        )}
-                                    </div>
-                                    <input
-                                        type="file"
-                                        ref={frontInputRef}
-                                        className="hidden"
-                                        accept="image/*"
-                                        onChange={(e) => handleImageUpload(e, "frontImageUrl")}
+                                    <ImageUpload
+                                        currentImage={formData.frontImageUrl}
+                                        onImageUploaded={(url) => setFormData(prev => ({ ...prev, frontImageUrl: url }))}
+                                        onImageRemoved={() => setFormData(prev => ({ ...prev, frontImageUrl: "" }))}
+                                        maxFiles={1}
+                                        className="h-full"
                                     />
                                 </div>
 
                                 {/* Back Image */}
                                 <div className="space-y-2">
                                     <Label>Back View</Label>
-                                    <div
-                                        className="aspect-[3/4] border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 relative overflow-hidden"
-                                        onClick={() => backInputRef.current?.click()}
-                                    >
-                                        {formData.backImageUrl ? (
-                                            <Image src={formData.backImageUrl} alt="Back" fill className="object-cover" />
-                                        ) : (
-                                            <>
-                                                <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                                                <span className="text-xs text-muted-foreground">Upload Back</span>
-                                            </>
-                                        )}
-                                    </div>
-                                    <input
-                                        type="file"
-                                        ref={backInputRef}
-                                        className="hidden"
-                                        accept="image/*"
-                                        onChange={(e) => handleImageUpload(e, "backImageUrl")}
+                                    <ImageUpload
+                                        currentImage={formData.backImageUrl}
+                                        onImageUploaded={(url) => setFormData(prev => ({ ...prev, backImageUrl: url }))}
+                                        onImageRemoved={() => setFormData(prev => ({ ...prev, backImageUrl: "" }))}
+                                        maxFiles={1}
+                                        className="h-full"
                                     />
                                 </div>
 
                                 {/* Side Image */}
                                 <div className="space-y-2">
                                     <Label>Side View</Label>
-                                    <div
-                                        className="aspect-[3/4] border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 relative overflow-hidden"
-                                        onClick={() => sideInputRef.current?.click()}
-                                    >
-                                        {formData.sideImageUrl ? (
-                                            <Image src={formData.sideImageUrl} alt="Side" fill className="object-cover" />
-                                        ) : (
-                                            <>
-                                                <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                                                <span className="text-xs text-muted-foreground">Upload Side</span>
-                                            </>
-                                        )}
-                                    </div>
-                                    <input
-                                        type="file"
-                                        ref={sideInputRef}
-                                        className="hidden"
-                                        accept="image/*"
-                                        onChange={(e) => handleImageUpload(e, "sideImageUrl")}
+                                    <ImageUpload
+                                        currentImage={formData.sideImageUrl}
+                                        onImageUploaded={(url) => setFormData(prev => ({ ...prev, sideImageUrl: url }))}
+                                        onImageRemoved={() => setFormData(prev => ({ ...prev, sideImageUrl: "" }))}
+                                        maxFiles={1}
+                                        className="h-full"
                                     />
                                 </div>
                             </div>

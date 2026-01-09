@@ -28,8 +28,9 @@ export function ImageUpload({
     multiple = false,
 }: ImageUploadProps) {
     const [isUploading, setIsUploading] = useState(false);
-    // Initialize state combining both props
     const [images, setImages] = useState<string[]>([]);
+    const [error, setError] = useState<string | null>(null);
+    const [shouldCompress, setShouldCompress] = useState(true);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -42,13 +43,67 @@ export function ImageUpload({
         }
     }, [currentImages, currentImage]);
 
+    const compressImage = async (file: File): Promise<File> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new window.Image(); // Use window.Image to avoid conflict with next/image
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1024;
+                    const MAX_HEIGHT = 1024;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+                        if (width > height) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        } else {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) {
+                        reject(new Error("Failed to get canvas context"));
+                        return;
+                    }
+
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            reject(new Error("Compression failed"));
+                            return;
+                        }
+                        const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                            type: "image/jpeg",
+                            lastModified: Date.now(),
+                        });
+                        resolve(compressedFile);
+                    }, 'image/jpeg', 0.7);
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    };
+
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
+        setError(null);
+
         // Check limits
         if (images.length + files.length > maxFiles) {
-            toast.error(`You can only upload up to ${maxFiles} images`);
+            setError(`You can only upload up to ${maxFiles} images`);
             return;
         }
 
@@ -56,20 +111,28 @@ export function ImageUpload({
         const newUrls: string[] = [];
 
         try {
-            // Upload files sequentially or in parallel
             const uploadPromises = Array.from(files).map(async (file) => {
                 // Validate file type
                 if (!file.type.startsWith("image/")) {
                     throw new Error(`File ${file.name} is not an image`);
                 }
 
-                // Validate file size (5MB max)
-                if (file.size > 5 * 1024 * 1024) {
-                    throw new Error(`File ${file.name} is larger than 5MB`);
+                // Validate file size (2MB max)
+                if (file.size > 2 * 1024 * 1024) {
+                    throw new Error(`File ${file.name} exceeds the 2MB limit`);
+                }
+
+                let fileToUpload = file;
+                if (shouldCompress) {
+                    try {
+                        fileToUpload = await compressImage(file);
+                    } catch (err) {
+                        console.error("Compression failed, uploading original", err);
+                    }
                 }
 
                 const formData = new FormData();
-                formData.append("file", file);
+                formData.append("file", fileToUpload);
 
                 const response = await fetch("/api/upload", {
                     method: "POST",
@@ -91,11 +154,9 @@ export function ImageUpload({
             const updatedImages = [...images, ...newUrls];
             setImages(updatedImages);
 
-            // Notify parent
             if (onImagesChange) {
                 onImagesChange(updatedImages);
             }
-            // Backward compatibility for single image
             if (onImageUploaded && newUrls.length > 0) {
                 onImageUploaded(newUrls[0]);
             }
@@ -103,10 +164,9 @@ export function ImageUpload({
             toast.success(`Successfully uploaded ${newUrls.length} image(s)`);
         } catch (error: any) {
             console.error("Upload error:", error);
-            toast.error(error.message || "Failed to upload images");
+            setError(error.message || "Failed to upload images");
         } finally {
             setIsUploading(false);
-            // Reset input
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
@@ -119,23 +179,18 @@ export function ImageUpload({
 
         setImages(updatedImages);
 
-        // Notify parent
         if (onImagesChange) {
             onImagesChange(updatedImages);
         }
 
-        // Backward compatibility
         if (updatedImages.length === 0 && onImageRemoved) {
             onImageRemoved();
         } else if (onImageUploaded && updatedImages.length > 0) {
-            // If we removed the "current" one in single mode, we might want to update to the next one?
-            // But usually single mode only has 1 image.
             if (maxFiles === 1) {
                 onImageRemoved?.();
             }
         }
 
-        // Optionally delete from storage
         try {
             await fetch("/api/upload", {
                 method: "DELETE",
@@ -158,6 +213,20 @@ export function ImageUpload({
                 className="hidden"
             />
 
+            {/* Compression Toggle */}
+            <div className="flex items-center space-x-2">
+                <input
+                    type="checkbox"
+                    id="compress-toggle"
+                    checked={shouldCompress}
+                    onChange={(e) => setShouldCompress(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <label htmlFor="compress-toggle" className="text-xs text-muted-foreground cursor-pointer select-none">
+                    Compress image (Recommended)
+                </label>
+            </div>
+
             {/* Image Grid */}
             {images.length > 0 && (
                 <div className={`grid gap-4 ${multiple ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
@@ -179,7 +248,6 @@ export function ImageUpload({
                                     <X className="h-4 w-4" />
                                 </Button>
                             </div>
-                            {/* Primary Badge for first image if multiple */}
                             {multiple && index === 0 && (
                                 <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded shadow-sm">
                                     Main
@@ -188,7 +256,6 @@ export function ImageUpload({
                         </div>
                     ))}
 
-                    {/* Add Button in Grid (if multiple and limit not reached) */}
                     {multiple && images.length < maxFiles && (
                         <div
                             onClick={() => !isUploading && fileInputRef.current?.click()}
@@ -207,11 +274,11 @@ export function ImageUpload({
                 </div>
             )}
 
-            {/* Empty State / Single Upload Button */}
+            {/* Empty State */}
             {images.length === 0 && (
                 <div
                     onClick={() => !isUploading && fileInputRef.current?.click()}
-                    className="flex flex-col items-center justify-center aspect-video w-full rounded-lg border-2 border-dashed border-border bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
+                    className={`flex flex-col items-center justify-center aspect-video w-full rounded-lg border-2 border-dashed ${error ? 'border-red-500 bg-red-50' : 'border-border bg-muted/50'} cursor-pointer hover:bg-muted transition-colors`}
                 >
                     {isUploading ? (
                         <>
@@ -220,17 +287,25 @@ export function ImageUpload({
                         </>
                     ) : (
                         <>
-                            <ImageIcon className="h-8 w-8 text-muted-foreground mb-2" />
-                            <p className="text-sm text-muted-foreground">Click to upload {multiple ? "images" : "image"}</p>
+                            <ImageIcon className={`h-8 w-8 ${error ? 'text-red-500' : 'text-muted-foreground'} mb-2`} />
+                            <p className={`text-sm ${error ? 'text-red-600 font-medium' : 'text-muted-foreground'}`}>
+                                {error ? "Upload Failed" : `Click to upload ${multiple ? "images" : "image"}`}
+                            </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                                PNG, JPG, WebP up to 5MB
+                                Max 2MB per file
                             </p>
                         </>
                     )}
                 </div>
             )}
 
-            {/* Helper text */}
+            {/* Inline Error Message */}
+            {error && (
+                <div className="text-red-500 text-xs font-medium mt-2 animate-in fade-in slide-in-from-top-1">
+                    {error}
+                </div>
+            )}
+
             {multiple && (
                 <p className="text-xs text-muted-foreground text-right">
                     {images.length} / {maxFiles} images
