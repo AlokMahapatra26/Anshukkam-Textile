@@ -487,7 +487,7 @@ export default function DesignPage() {
         const file = e.target.files?.[0];
         if (!file || !fabricCanvasRef.current) return;
 
-        // Check file size (2MB limit)
+        // Check file size (2MB limit) - Strict safety net
         if (file.size > 2 * 1024 * 1024) {
             toast.error("File size too large. Max limit is 2MB.");
             e.target.value = ""; // Reset input
@@ -496,23 +496,72 @@ export default function DesignPage() {
 
         const reader = new FileReader();
         reader.onload = async (event) => {
-            const dataUrl = event.target?.result as string;
-            // Add to array of original logos
-            setOriginalLogoUrls(prev => [...prev, dataUrl]);
+            const originalDataUrl = event.target?.result as string;
 
-            const { FabricImage } = await import("fabric");
-            const imgElement = new window.Image();
-            imgElement.src = dataUrl;
-            imgElement.onload = () => {
-                const imgInstance = new FabricImage(imgElement, {
-                    scaleX: 0.3,
+            // Image Compression Logic
+            const img = new window.Image();
+            img.src = originalDataUrl;
+
+            img.onload = async () => {
+                let finalDataUrl = originalDataUrl;
+
+                // Compress if larger than 500KB or dimensions > 1024px
+                const MAX_WIDTH = 1024;
+                const MAX_HEIGHT = 1024;
+                let width = img.width;
+                let height = img.height;
+
+                // Calculate new dimensions
+                if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+                    if (width > height) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    } else {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                // Compress via Canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0, width, height);
+                    // Compress to JPEG with 0.7 quality
+                    // Only compress if it actually saves space or if we resized
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+                    // Simple heuristic: use compressed if we resized OR if original was huge
+                    if (width < img.width || file.size > 500 * 1024) {
+                        finalDataUrl = compressedDataUrl;
+                        toast.success("Image optimized for performance");
+                    }
+                }
+
+                // Add to array of original logos (using optimized version)
+                setOriginalLogoUrls(prev => [...prev, finalDataUrl]);
+
+                const { FabricImage } = await import("fabric");
+                const imgInstance = new FabricImage(img, {
+                    scaleX: 0.3, // Initial display scale
                     scaleY: 0.3,
                     left: 100,
                     top: 100,
                 });
-                fabricCanvasRef.current.add(imgInstance);
-                fabricCanvasRef.current.setActiveObject(imgInstance);
-                fabricCanvasRef.current.renderAll();
+
+                // Update the source to the optimized one if we compressed it
+                if (finalDataUrl !== originalDataUrl) {
+                    imgInstance.setSrc(finalDataUrl, () => {
+                        fabricCanvasRef.current?.renderAll();
+                    });
+                }
+
+                fabricCanvasRef.current?.add(imgInstance);
+                fabricCanvasRef.current?.setActiveObject(imgInstance);
+                fabricCanvasRef.current?.renderAll();
             };
         };
         reader.readAsDataURL(file);
